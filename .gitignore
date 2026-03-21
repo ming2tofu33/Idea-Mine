@@ -28,3 +28,14 @@ dist/
 
 # Expo
 web-build/
+.expo/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+backend/.env
+
+# Claude
+.claude/
