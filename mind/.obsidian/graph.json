@@ -1,0 +1,107 @@
+{
+  "collapse-filter": false,
+  "search": "",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": false,
+  "showOrphans": true,
+  "collapse-color-groups": true,
+  "colorGroups": [
+    {
+      "query": "path:00-Root",
+      "color": {
+        "a": 1,
+        "rgb": 16777215
+      }
+    },
+    {
+      "query": "path:01-Core",
+      "color": {
+        "a": 1,
+        "rgb": 14706278
+      }
+    },
+    {
+      "query": "path:02-World-Building",
+      "color": {
+        "a": 1,
+        "rgb": 9338051
+      }
+    },
+    {
+      "query": "path:03-Spaces",
+      "color": {
+        "a": 1,
+        "rgb": 9684093
+      }
+    },
+    {
+      "query": "path:04-Features",
+      "color": {
+        "a": 1,
+        "rgb": 7317724
+      }
+    },
+    {
+      "query": "path:05-UX-Writing",
+      "color": {
+        "a": 1,
+        "rgb": 16167531
+      }
+    },
+    {
+      "query": "path:06-Business",
+      "color": {
+        "a": 1,
+        "rgb": 16767334
+      }
+    },
+    {
+      "query": "path:07-Game-Economy",
+      "color": {
+        "a": 1,
+        "rgb": 16738740
+      }
+    },
+    {
+      "query": "path:08-Design",
+      "color": {
+        "a": 1,
+        "rgb": 7775663
+      }
+    },
+    {
+      "query": "path:09-Implementation/plans",
+      "color": {
+        "a": 1,
+        "rgb": 10066329
+      }
+    },
+    {
+      "query": "path:09-Implementation",
+      "color": {
+        "a": 1,
+        "rgb": 11839446
+      }
+    },
+    {
+      "query": "path:11-Inbox",
+      "color": {
+        "a": 1,
+        "rgb": 16776960
+      }
+    }
+  ],
+  "collapse-display": true,
+  "showArrow": false,
+  "textFadeMultiplier": 0,
+  "nodeSizeMultiplier": 1,
+  "lineSizeMultiplier": 1,
+  "collapse-forces": false,
+  "centerStrength": 0.505208333333333,
+  "repelStrength": 11.4583333333333,
+  "linkStrength": 1,
+  "linkDistance": 353,
+  "scale": 0.2871082067971481,
+  "close": true
+}

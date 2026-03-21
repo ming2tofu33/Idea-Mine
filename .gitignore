@@ -1,0 +1,30 @@
+# Obsidian
+mind/.obsidian/workspace.json
+mind/.obsidian/workspace-mobile.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+.expo/
+dist/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Build
+*.apk
+*.aab
+*.ipa
+*.tgz
+
+# IDE
+.vscode/
+.idea/
+
+# Expo
+web-build/
