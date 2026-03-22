@@ -1,0 +1,133 @@
+<h2>키워드 칩 스타일</h2>
+<p class="subtitle">광맥 카드 안에서 키워드(원석)를 어떻게 표시할까요? 카테고리별 색상 구분 방식.</p>
+
+<div class="cards">
+  <!-- Option A: 테두리 컬러만 -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px;">
+      <div style="background: #1A1C25; border-radius: 4px; padding: 20px;">
+        <div style="text-align: center; color: #C4B07A; font-size: 12px; margin-bottom: 12px;">✦ 감정 케어 광맥</div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
+          <span style="background: #222433; padding: 4px 10px; font-size: 11px; border: 2px solid #8B5CF6; color: #C8CDD8; font-family: monospace;">음성AI</span>
+          <span style="background: #222433; padding: 4px 10px; font-size: 11px; border: 2px solid #EC4899; color: #C8CDD8; font-family: monospace;">1인가구</span>
+          <span style="background: #222433; padding: 4px 10px; font-size: 11px; border: 2px solid #4E9A6B; color: #C8CDD8; font-family: monospace;">헬스케어</span>
+          <span style="background: #222433; padding: 4px 10px; font-size: 11px; border: 2px solid #6496FF; color: #C8CDD8; font-family: monospace;">앱</span>
+          <span style="background: #222433; padding: 4px 10px; font-size: 11px; border: 2px solid #C9A044; color: #C8CDD8; font-family: monospace;">감정케어</span>
+          <span style="background: #222433; padding: 4px 10px; font-size: 11px; border: 2px solid #B85450; color: #C8CDD8; font-family: monospace;">구독</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. 테두리 컬러</h3>
+      <p>배경은 동일, 테두리 색만 카테고리별로 다름. 깔끔하고 눈이 편함. 색이 은은하게 구분됨.</p>
+    </div>
+  </div>
+
+  <!-- Option B: 좌측 컬러 바 -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px;">
+      <div style="background: #1A1C25; border-radius: 4px; padding: 20px;">
+        <div style="text-align: center; color: #C4B07A; font-size: 12px; margin-bottom: 12px;">✦ 감정 케어 광맥</div>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; align-items: center; gap: 0;">
+            <span style="background: #8B5CF6; width: 3px; height: 24px; display: inline-block;"></span>
+            <span style="background: #222433; padding: 4px 10px; font-size: 11px; color: #C8CDD8; font-family: monospace; flex: 1; border: 1px solid #2E3242; border-left: none;">음성AI</span>
+            <span style="font-size: 9px; color: #7E8596; margin-left: 6px; font-family: monospace;">AI</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0;">
+            <span style="background: #EC4899; width: 3px; height: 24px; display: inline-block;"></span>
+            <span style="background: #222433; padding: 4px 10px; font-size: 11px; color: #C8CDD8; font-family: monospace; flex: 1; border: 1px solid #2E3242; border-left: none;">1인가구</span>
+            <span style="font-size: 9px; color: #7E8596; margin-left: 6px; font-family: monospace;">대상</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0;">
+            <span style="background: #4E9A6B; width: 3px; height: 24px; display: inline-block;"></span>
+            <span style="background: #222433; padding: 4px 10px; font-size: 11px; color: #C8CDD8; font-family: monospace; flex: 1; border: 1px solid #2E3242; border-left: none;">헬스케어</span>
+            <span style="font-size: 9px; color: #7E8596; margin-left: 6px; font-family: monospace;">산업</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0;">
+            <span style="background: #6496FF; width: 3px; height: 24px; display: inline-block;"></span>
+            <span style="background: #222433; padding: 4px 10px; font-size: 11px; color: #C8CDD8; font-family: monospace; flex: 1; border: 1px solid #2E3242; border-left: none;">앱</span>
+            <span style="font-size: 9px; color: #7E8596; margin-left: 6px; font-family: monospace;">형태</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0;">
+            <span style="background: #C9A044; width: 3px; height: 24px; display: inline-block;"></span>
+            <span style="background: #222433; padding: 4px 10px; font-size: 11px; color: #C8CDD8; font-family: monospace; flex: 1; border: 1px solid #2E3242; border-left: none;">감정케어</span>
+            <span style="font-size: 9px; color: #7E8596; margin-left: 6px; font-family: monospace;">가치</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0;">
+            <span style="background: #B85450; width: 3px; height: 24px; display: inline-block;"></span>
+            <span style="background: #222433; padding: 4px 10px; font-size: 11px; color: #C8CDD8; font-family: monospace; flex: 1; border: 1px solid #2E3242; border-left: none;">구독</span>
+            <span style="font-size: 9px; color: #7E8596; margin-left: 6px; font-family: monospace;">수익</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. 세로 리스트 + 컬러 바</h3>
+      <p>키워드가 세로로 나열되고 좌측에 카테고리 컬러 바. 우측에 카테고리 라벨. 구조가 명확하고 카테고리가 뭔지 바로 보임.</p>
+    </div>
+  </div>
+
+  <!-- Option C: 칩 + 작은 라벨 -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 20px;">
+      <div style="background: #1A1C25; border-radius: 4px; padding: 20px;">
+        <div style="text-align: center; color: #C4B07A; font-size: 12px; margin-bottom: 12px;">✦ 감정 케어 광맥</div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: center;">
+          <span style="display: inline-flex; align-items: center; gap: 4px; background: #222433; padding: 4px 10px; font-size: 11px; border: 1px solid #2E3242; font-family: monospace;">
+            <span style="width: 6px; height: 6px; background: #8B5CF6; display: inline-block;"></span>
+            <span style="color: #C8CDD8;">음성AI</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 4px; background: #222433; padding: 4px 10px; font-size: 11px; border: 1px solid #2E3242; font-family: monospace;">
+            <span style="width: 6px; height: 6px; background: #EC4899; display: inline-block;"></span>
+            <span style="color: #C8CDD8;">1인가구</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 4px; background: #222433; padding: 4px 10px; font-size: 11px; border: 1px solid #2E3242; font-family: monospace;">
+            <span style="width: 6px; height: 6px; background: #4E9A6B; display: inline-block;"></span>
+            <span style="color: #C8CDD8;">헬스케어</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 4px; background: #222433; padding: 4px 10px; font-size: 11px; border: 1px solid #2E3242; font-family: monospace;">
+            <span style="width: 6px; height: 6px; background: #6496FF; display: inline-block;"></span>
+            <span style="color: #C8CDD8;">앱</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 4px; background: #222433; padding: 4px 10px; font-size: 11px; border: 1px solid #2E3242; font-family: monospace;">
+            <span style="width: 6px; height: 6px; background: #C9A044; display: inline-block;"></span>
+            <span style="color: #C8CDD8;">감정케어</span>
+          </span>
+          <span style="display: inline-flex; align-items: center; gap: 4px; background: #222433; padding: 4px 10px; font-size: 11px; border: 1px solid #2E3242; font-family: monospace;">
+            <span style="width: 6px; height: 6px; background: #B85450; display: inline-block;"></span>
+            <span style="color: #C8CDD8;">구독</span>
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. 칩 + 도트 인디케이터</h3>
+      <p>가로 칩 배열에 각 칩 앞에 작은 컬러 도트. 테두리보다 미니멀하면서도 카테고리 구분이 됨. 공간 효율적.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 24px;">
+  <h3>카테고리별 컬러 매핑</h3>
+  <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 8px;">
+    <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #A0A6B4;">
+      <span style="width: 10px; height: 10px; background: #8B5CF6; display: inline-block;"></span> AI
+    </span>
+    <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #A0A6B4;">
+      <span style="width: 10px; height: 10px; background: #EC4899; display: inline-block;"></span> 대상(Who)
+    </span>
+    <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #A0A6B4;">
+      <span style="width: 10px; height: 10px; background: #4E9A6B; display: inline-block;"></span> 산업(Domain)
+    </span>
+    <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #A0A6B4;">
+      <span style="width: 10px; height: 10px; background: #6496FF; display: inline-block;"></span> 형태(Tech)
+    </span>
+    <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #A0A6B4;">
+      <span style="width: 10px; height: 10px; background: #C9A044; display: inline-block;"></span> 가치(Value)
+    </span>
+    <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #A0A6B4;">
+      <span style="width: 10px; height: 10px; background: #B85450; display: inline-block;"></span> 수익(Money)
+    </span>
+  </div>
+</div>

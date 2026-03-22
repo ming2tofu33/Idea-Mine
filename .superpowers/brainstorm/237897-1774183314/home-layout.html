@@ -1,0 +1,126 @@
+<h2>홈 화면 (The Mine) 레이아웃</h2>
+<p class="subtitle">광맥 카드 3개를 어떻게 배치할까요?</p>
+
+<div class="cards">
+  <!-- Option A: 세로 스크롤 -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px;">
+      <div style="background: #101218; border-radius: 8px; padding: 16px; font-family: monospace; color: #C8CDD8; font-size: 11px; line-height: 1.8;">
+        <div style="text-align: center; color: #C4B07A; margin-bottom: 8px;">[ 상태바: 닉네임 · 연속 3일 · 💎120 ]</div>
+        <div style="border: 2px solid #C4B07A; padding: 12px; margin-bottom: 8px; background: #1A1C25;">
+          <div style="color: #C4B07A; font-size: 10px;">✦ 반짝 광맥</div>
+          <div style="margin: 6px 0; display: flex; gap: 4px; flex-wrap: wrap;">
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">음성AI</span>
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">1인가구</span>
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">헬스케어</span>
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">앱</span>
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">감정케어</span>
+          </div>
+          <div style="text-align: center; margin-top: 8px;">
+            <span style="background: #C4B07A; color: #08090E; padding: 4px 16px; font-size: 10px; font-weight: bold;">채굴하기</span>
+          </div>
+        </div>
+        <div style="border: 2px solid #2E3242; padding: 12px; margin-bottom: 8px; background: #1A1C25;">
+          <div style="color: #7E8596; font-size: 10px;">일반 광맥</div>
+          <div style="margin: 6px 0; display: flex; gap: 4px; flex-wrap: wrap;">
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">Z세대</span>
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">에듀테크</span>
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">챗봇</span>
+          </div>
+        </div>
+        <div style="border: 2px solid #2E3242; padding: 12px; background: #1A1C25;">
+          <div style="color: #7E8596; font-size: 10px;">일반 광맥</div>
+          <div style="margin: 6px 0; display: flex; gap: 4px; flex-wrap: wrap;">
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">프리랜서</span>
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">핀테크</span>
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">대시보드</span>
+          </div>
+        </div>
+        <div style="text-align: center; margin-top: 12px;">
+          <span style="border: 1px solid #2E3242; padding: 4px 12px; font-size: 10px; color: #A0A6B4;">⛏ 다시 파기 (2/2)</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. 세로 스택</h3>
+      <p>광맥 3개가 위에서 아래로 쌓임. 한 눈에 3개 모두 보임. 선택한 광맥에 "채굴하기" 버튼 표시.</p>
+    </div>
+  </div>
+
+  <!-- Option B: 가로 캐러셀 -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px;">
+      <div style="background: #101218; border-radius: 8px; padding: 16px; font-family: monospace; color: #C8CDD8; font-size: 11px; line-height: 1.8;">
+        <div style="text-align: center; color: #C4B07A; margin-bottom: 8px;">[ 상태바: 닉네임 · 연속 3일 · 💎120 ]</div>
+        <div style="text-align: center; color: #7E8596; font-size: 10px; margin-bottom: 4px;">1 / 3</div>
+        <div style="border: 2px solid #C4B07A; padding: 16px; background: #1A1C25; min-height: 120px;">
+          <div style="text-align: center; color: #C4B07A; font-size: 12px; margin-bottom: 4px;">✦ 감정 케어 광맥</div>
+          <div style="text-align: center; color: #C4B07A; font-size: 10px; margin-bottom: 10px;">반짝 광맥</div>
+          <div style="display: flex; gap: 4px; flex-wrap: wrap; justify-content: center;">
+            <span style="background: #222433; padding: 3px 8px; font-size: 10px; border: 1px solid #C4B07A; color: #C4B07A;">음성AI</span>
+            <span style="background: #222433; padding: 3px 8px; font-size: 10px; border: 1px solid #2E3242;">1인가구</span>
+            <span style="background: #222433; padding: 3px 8px; font-size: 10px; border: 1px solid #2E3242;">헬스케어</span>
+            <span style="background: #222433; padding: 3px 8px; font-size: 10px; border: 1px solid #2E3242;">앱</span>
+            <span style="background: #222433; padding: 3px 8px; font-size: 10px; border: 1px solid #2E3242;">감정케어</span>
+          </div>
+          <div style="text-align: center; margin-top: 16px;">
+            <span style="background: #C4B07A; color: #08090E; padding: 6px 24px; font-size: 11px; font-weight: bold;">채굴하기</span>
+          </div>
+        </div>
+        <div style="text-align: center; margin-top: 8px; color: #7E8596; font-size: 10px;">
+          ← 스와이프하여 다른 광맥 보기 →
+        </div>
+        <div style="text-align: center; margin-top: 12px;">
+          <span style="border: 1px solid #2E3242; padding: 4px 12px; font-size: 10px; color: #A0A6B4;">⛏ 다시 파기 (2/2)</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. 가로 캐러셀 (풀 카드)</h3>
+      <p>한 번에 1개 광맥을 크게 보여줌. 좌우 스와이프로 탐색. 카드가 커서 키워드와 분위기를 더 잘 보여줄 수 있음.</p>
+    </div>
+  </div>
+
+  <!-- Option C: 하이브리드 -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px;">
+      <div style="background: #101218; border-radius: 8px; padding: 16px; font-family: monospace; color: #C8CDD8; font-size: 11px; line-height: 1.8;">
+        <div style="text-align: center; color: #C4B07A; margin-bottom: 8px;">[ 상태바: 닉네임 · 연속 3일 · 💎120 ]</div>
+        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+          <div style="flex: 1; border: 2px solid #C4B07A; padding: 8px; background: #1A1C25; text-align: center;">
+            <div style="color: #C4B07A; font-size: 9px;">✦ 반짝</div>
+            <div style="font-size: 8px; margin-top: 4px;">음성AI · 1인가구 · 헬스케어...</div>
+          </div>
+          <div style="flex: 1; border: 2px solid #2E3242; padding: 8px; background: #1A1C25; text-align: center; opacity: 0.7;">
+            <div style="color: #7E8596; font-size: 9px;">일반</div>
+            <div style="font-size: 8px; margin-top: 4px;">Z세대 · 에듀테크...</div>
+          </div>
+          <div style="flex: 1; border: 2px solid #2E3242; padding: 8px; background: #1A1C25; text-align: center; opacity: 0.7;">
+            <div style="color: #7E8596; font-size: 9px;">일반</div>
+            <div style="font-size: 8px; margin-top: 4px;">프리랜서 · 핀테크...</div>
+          </div>
+        </div>
+        <div style="border: 2px solid #C4B07A; padding: 12px; background: #1A1C25;">
+          <div style="color: #C4B07A; font-size: 11px; margin-bottom: 4px;">✦ 감정 케어 광맥</div>
+          <div style="display: flex; gap: 4px; flex-wrap: wrap; margin: 6px 0;">
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #C4B07A; color: #C4B07A;">음성AI</span>
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">1인가구</span>
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">헬스케어</span>
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">앱</span>
+            <span style="background: #222433; padding: 2px 6px; font-size: 9px; border: 1px solid #2E3242;">감정케어</span>
+          </div>
+          <div style="text-align: center; margin-top: 10px;">
+            <span style="background: #C4B07A; color: #08090E; padding: 4px 16px; font-size: 10px; font-weight: bold;">채굴하기</span>
+          </div>
+        </div>
+        <div style="text-align: center; margin-top: 12px;">
+          <span style="border: 1px solid #2E3242; padding: 4px 12px; font-size: 10px; color: #A0A6B4;">⛏ 다시 파기 (2/2)</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. 하이브리드 (미니 3개 + 확장)</h3>
+      <p>상단에 미니 카드 3개가 나란히 보임. 하나를 탭하면 아래에 상세 확장. 3개를 한 눈에 비교하면서도 상세 정보를 볼 수 있음.</p>
+    </div>
+  </div>
+</div>

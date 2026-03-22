@@ -66,7 +66,11 @@ tags:
 | 고대 동전 | Ancient Coin |
 | 캠프 | Camp |
 | 곡괭이 | Pickaxe |
-| 반입 슬롯 | Carry Slot |
+| 가방 | Bag |
+| 광차 | Mine Cart |
+| 가방에 담기 | Put in Bag |
+| 광차에 싣기 | Load on Cart |
+| Vault로 반입 | Store in Vault |
 
 ---
 
