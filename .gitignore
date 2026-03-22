@@ -8,34 +8,44 @@ Thumbs.db
 
 # Node
 node_modules/
+
+# Expo
 .expo/
 dist/
+web-build/
+*.expo-shared/
 
-# Environment
-.env
-.env.local
-.env.production
-
-# Build
+# Build artifacts
 *.apk
 *.aab
 *.ipa
 *.tgz
 
-# IDE
-.vscode/
-.idea/
+# EAS
+.eas/
 
-# Expo
-web-build/
-.expo/
+# Environment
+.env
+.env.*
+!.env.example
 
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
 .venv/
 venv/
-backend/.env
+
+# Supabase
+supabase/.temp/
+supabase/.branches/
+
+# IDE
+.vscode/settings.json
+.idea/
 
 # Claude
 .claude/
+
+# Temp
+*.log
+*.tmp

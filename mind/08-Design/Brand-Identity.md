@@ -48,6 +48,8 @@ tags:
 ## Related
 
 - [[Pixel-Art-Style-Guide]] — 픽셀 아트 제작 가이드
+- [[Color-Theme]] — 컬러 토큰
+- [[Screen-Map]] — 화면 구조
 
 ## See Also
 

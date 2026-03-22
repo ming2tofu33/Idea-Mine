@@ -42,7 +42,7 @@ tags:
 
 ### 금고 확장 슬롯
 
-- 저장 공간 확장 (Premium/Pink Diamond)
+- 저장 공간 확장 (Lite/Pro 또는 Pink Diamond 사용)
 
 ---
 

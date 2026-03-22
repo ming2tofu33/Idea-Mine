@@ -25,9 +25,10 @@ tags:
 | 07-Game-Economy | 게임 경제, 꾸미기 | 재화, 메타 루프, 장식, 밸런스 |
 | 08-Design | UI/UX, 비주얼 | 픽셀 아트 스타일, 브랜드, 컴포넌트 |
 | 09-Implementation | 스프린트, 계획, 체크리스트 | 실행 문서 + `plans/` 하위 폴더 |
+| 10-Journal | 저널, 의사결정 로그 | 세션 기록, QUICK-DECISIONS, 회고 |
 | 11-Inbox | 아이디어 수집함 | 날것의 아이디어, 영감 메모 |
 | 90-Archive | 아카이브 | 폐기/교체된 노트 보관 |
-| 99-Reference | 참고 자료 | 빠른 의사결정 로그, 외부 레퍼런스 |
+| 99-Reference | 참고 자료 | 외부 레퍼런스, API 문서 링크 |
 
 > [!warning] 새 레이어 추가 금지
 > 기존 레이어에 맞지 않는 노트는 가장 가까운 레이어에 배치하거나, 이 문서를 먼저 업데이트한다.
@@ -135,6 +136,8 @@ tags:
 | 지식 노트 | `Title-Case-Hyphens.md` | `The-Mine.md` |
 | Plan 파일 | `YYYY-MM-DD-slug.md` | `2026-03-21-mvp-core-loop.md` |
 | Inbox 메모 | `YYYY-MM-DD-slug.md` | `2026-03-21-night-mining-idea.md` |
+| Journal 세션 | `YYYY-MM-DD-slug.md` | `2026-03-22-session.md` |
+| 의사결정 로그 | `QUICK-DECISIONS.md` | 단일 파일, append-only |
 | 스프린트 | `CURRENT-SPRINT.md` | `CURRENT-SPRINT.md` |
 | 메타 문서 | `UPPER_CASE.md` | `MIND_RULES.md` |
 
@@ -168,4 +171,5 @@ tags:
 | 08-Design | 청록 |
 | 09-Implementation/plans | 회색 |
 | 09-Implementation | 연보라 |
+| 10-Journal | 연갈색 |
 | 11-Inbox | 연노랑 |

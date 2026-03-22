@@ -21,18 +21,23 @@ tags:
 ### 화면
 
 - 홈 / 광산 (The Mine) — 광맥 3개 + 리롤
-- 원석 결과 화면 — 아이디어 5개
+- 원석 결과 화면 — 아이디어 10개 (4군 구조)
 - 금고 (The Vault) — 저장/관리
 - 실험실 (The Lab) — 개요서 + 감정
-- My Mine — 프로필/설정 (최소)
+- 캠프 (Camp) — 프로필/설정 (최소)
 
 ### 기능
 
 - 오늘의 광맥 3개 + 리롤 2회
-- 아이디어 **5개** 생성 (OpenAI)
+- 아이디어 **10개** 생성 (4군: 안정3 + 확장3 + 전환2 + 희귀2, 군 라벨 비노출)
 - 금고 반입 + 관리
 - 프로젝트 개요 생성 + 기본 감정
-- API rate limiting
+- Abuse Prevention L1~L2 (속도 제한 + 일일 상한) + L4 (비용 차단기)
+- AI 비용 로깅 시스템 (`ai_usage_logs` 13필드)
+- L3 행동 패턴 시그널 로깅 (자동 대응은 Phase 1.5~2)
+- Supabase RLS 전 테이블 적용
+- API 키 보호 (프론트→백엔드→OpenAI 아키텍처)
+- 프롬프트 인젝션 방어 (프롬프트 설계와 동시)
 - Haptic 피드백 (리롤, 채굴, 반입)
 - 기본 Analytics 이벤트 트래킹
 
@@ -60,7 +65,8 @@ tags:
 | 광고 연동 | 유저 없이 의미 없음 | Phase 2 |
 | 3티어/결제 | 핵심 루프 먼저 | Phase 1.5 |
 | 공사 중 배너 | 불필요 | Phase 2 |
-| Clean Mine Protocol | 공개 콘텐츠 없음 | Phase 2 |
+| Clean Mine Protocol (콘텐츠 필터링) | 공개 콘텐츠 없음 | Phase 2 |
+| L3 행동 패턴 자동 대응 | Phase 1에서 로깅 데이터 수집 먼저 | Phase 1.5~2 |
 
 ---
 
@@ -69,7 +75,7 @@ tags:
 1. **The Mine:** 광맥 + 리롤 + 아이디어 생성
 2. **The Lab:** 개요서 + 감정
 3. **The Vault:** 저장/관리
-4. **My Mine:** 프로필/설정
+4. **Camp:** 프로필/설정
 
 ---
 
@@ -80,6 +86,15 @@ tags:
 - Python + FastAPI (백엔드)
 - OpenAI API (아이디어 + 개요서 생성)
 - EAS Build (development build)
+- **Python + FastMCP** (MCP 서버 — Sprint 3 완료 후 1~2일에 배포)
+
+### MCP 서버
+
+Sprint 3에서 백엔드 API가 완성되면, 그 위에 MCP 래퍼를 씌워 배포.
+앱과 동일한 Free 티어 경험(광맥 3개, 리롤 2회, 채굴 1회, 개요서 1회)을 MCP로 제공.
+결과는 휘발성(저장 불가) → 앱으로 유도.
+API `source` 태그로 앱/MCP 비용 분리 추적.
+상세 스펙: `plans/2026-03-22-mcp-server-spec.md`
 
 ---
 
@@ -106,3 +121,4 @@ Gate 실패 -> 핵심 루프 개선 후 재도전
 - [[Phases-Roadmap]] — 전체 Gate-Based 로드맵 (01-Core)
 - [[KPI-Success-Metrics]] — 성공 지표 (06-Business)
 - [[Improvement-Roadmap]] — 이 lean 접근의 근거 (06-Business)
+- [[Security-Policy]] — 보안 정책 전체 (04-Features)

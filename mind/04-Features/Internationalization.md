@@ -64,9 +64,24 @@ tags:
 | 광부 | Miner |
 | 핑크 결정 | Pink Crystal |
 | 고대 동전 | Ancient Coin |
-| 광부수첩 | Miner's Log |
+| 캠프 | Camp |
 | 곡괭이 | Pickaxe |
 | 반입 슬롯 | Carry Slot |
+
+---
+
+## 카테고리 노출명 한/영 매핑
+
+| 내부 스키마 | 한국어 노출 | English Label |
+|------------|------------|---------------|
+| AI | AI | AI |
+| Who | 대상 | Target |
+| Domain | 산업 | Industry |
+| Tech | 형태 | Platform |
+| Value | 가치 | Value |
+| Money | 수익모델 | Business Model |
+
+> 내부 스키마명은 구현과 프롬프트 구조를 위해 유지하고, UI와 마케팅에서는 노출 라벨을 사용한다.
 
 ---
 

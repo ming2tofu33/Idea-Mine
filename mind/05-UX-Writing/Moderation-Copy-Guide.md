@@ -187,3 +187,4 @@ tags:
 ## See Also
 
 - [[Clean-Mine-Protocol]] -- 대응 구조 설계 (04-Features)
+- `2026-03-22-abuse-prevention-design` -- 속도 제한/비용 차단 시 UX 메시지 참조 (09-Implementation/plans)

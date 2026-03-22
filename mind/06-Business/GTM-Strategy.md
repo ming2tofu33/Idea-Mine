@@ -295,6 +295,7 @@ Expo Router는 이미 웹을 지원. 같은 코드베이스로 iOS + Android + W
 | 프로그래매틱 SEO | Post-launch | $0 | 월 1,000 오가닉 방문 (3개월 후) | Search Console |
 | 뉴스레터 | Post-launch | $0 | 오픈율 40%+, 클릭률 10%+ | 이메일 서비스 |
 | 파트너십 | Post-launch | $0 | 뉴스레터/미디어 소개 2건+ | 수동 추적 |
+| **MCP 서버** | Pre-launch~ | $0 | MCP에서 앱 전환 50명+ | UTM 추적 |
 
 ---
 
@@ -303,6 +304,7 @@ Expo Router는 이미 웹을 지원. 같은 코드베이스로 iOS + Android + W
 - [[Counter-Strategies]] -- GTM 전략의 근거가 되는 반격 전략
 - [[Monetization-Strategy]] -- 수익 모델과 GTM 연결
 - [[Competitive-Analysis]] -- 경쟁 방어 마케팅 콘텐츠
+- [[MCP-Distribution-Channel]] -- MCP 획득 채널 상세
 
 ## See Also
 

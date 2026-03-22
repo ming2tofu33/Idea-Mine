@@ -148,7 +148,9 @@ tags:
 
 - [[Badge-System]] -- 신뢰도 배지와 연계 (반대축)
 - [[Onboarding]] -- 초기 사용자 안내
+- [[Security-Policy]] -- 보안 정책 전체 (프롬프트 인젝션, RLS 등)
 
 ## See Also
 
+- `2026-03-22-abuse-prevention-design` -- 사용량/비용 악용 방지 (09-Implementation/plans)
 - [[The-Showcase]] -- 공개 콘텐츠 품질이 중요한 공간 (03-Spaces)
