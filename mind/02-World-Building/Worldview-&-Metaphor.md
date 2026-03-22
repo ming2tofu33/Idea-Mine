@@ -67,7 +67,8 @@ tags:
 
 ## Related
 
-- [[Keyword-Taxonomy]] — 5원석 키워드 체계
+- [[Keyword-Taxonomy]] — 6원석 키워드 체계
+- [[Naming-Convention]] — 제품 용어 네이밍 원칙
 
 ## See Also
 

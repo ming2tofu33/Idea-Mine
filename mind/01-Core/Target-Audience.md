@@ -58,4 +58,4 @@ tags:
 
 ## See Also
 
-- [[Monetization-Strategy]] — 타겟별 수익 모델 (06-Business)
+- [[Counter-Strategies]] — 타겟 확장 전략 (06-Business)

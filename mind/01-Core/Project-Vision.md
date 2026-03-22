@@ -94,3 +94,4 @@ AI 기술은 빠르게 늘어나고 있지만, 기획자는 다음 문제를 반
 ## See Also
 
 - [[Worldview-&-Metaphor]] — 광산 세계관 상세 (02-World-Building)
+- [[Business-Audit]] — 비전 대비 비즈니스 종합 평가 (06-Business)

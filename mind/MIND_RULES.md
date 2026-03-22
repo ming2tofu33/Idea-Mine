@@ -1,12 +1,12 @@
 ---
-title: Vault 운영 규칙
+title: Mind 운영 규칙
 tags:
   - meta
 ---
 
-# Vault 운영 규칙
+# Mind 운영 규칙
 
-> 이 문서는 IDEA MINE vault에 노트를 추가하거나 수정할 때 따라야 할 규칙을 정의한다.
+> 이 문서는 IDEA MINE mind에 노트를 추가하거나 수정할 때 따라야 할 규칙을 정의한다.
 > 그래프 품질 유지와 일관성 있는 노트 구조가 목적.
 
 ---
@@ -123,7 +123,7 @@ tags:
 
 - 아이디어는 일단 Inbox에 던져둔다
 - 정리가 되면 해당 레이어의 노트로 승격하거나, 기존 노트에 병합한다
-- 승격된 아이디어는 Inbox에서 삭제하거나 90-Archive로 이동한다
+- 승격된 아이디어는 Inbox에서 90-Archive로 이동한다 (삭제 금지)
 - Inbox 노트에는 frontmatter만 최소로 붙인다 (title, tags: inbox)
 
 ---
@@ -136,7 +136,7 @@ tags:
 | Plan 파일 | `YYYY-MM-DD-slug.md` | `2026-03-21-mvp-core-loop.md` |
 | Inbox 메모 | `YYYY-MM-DD-slug.md` | `2026-03-21-night-mining-idea.md` |
 | 스프린트 | `CURRENT-SPRINT.md` | `CURRENT-SPRINT.md` |
-| 메타 문서 | `UPPER_CASE.md` | `VAULT_RULES.md` |
+| 메타 문서 | `UPPER_CASE.md` | `MIND_RULES.md` |
 
 ---
 

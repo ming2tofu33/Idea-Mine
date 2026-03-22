@@ -43,6 +43,7 @@ tags:
 
 - [[Monetization-Strategy]] — 수익 구조
 - [[Tier-Structure]] — 티어별 전환
+- [[Improvement-Roadmap]] — Gate 판단 기준으로 활용
 
 ## See Also
 

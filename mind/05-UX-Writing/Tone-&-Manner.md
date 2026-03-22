@@ -68,6 +68,7 @@ tags:
 ## Related
 
 - [[In-App-Copy-Guide]] — 화면별 인앱 카피 가이드
+- [[Moderation-Copy-Guide]] — 모더레이션 단계별 카피
 
 ## See Also
 
