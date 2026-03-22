@@ -1,11 +1,15 @@
 import { Slot, useRouter, useSegments } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
 import {
   SessionContext,
   useSession,
   useSessionProvider,
 } from "../hooks/useSession";
 import { View, ActivityIndicator, StyleSheet } from "react-native";
+
+SplashScreen.preventAutoHideAsync();
 
 function AuthGate() {
   const { session, isLoading } = useSession();
@@ -38,10 +42,30 @@ function AuthGate() {
 export default function RootLayout() {
   const sessionState = useSessionProvider();
 
+  const [fontsLoaded] = useFonts({
+    Galmuri11: require("../assets/fonts/Galmuri11.ttf"),
+    "Galmuri11-Bold": require("../assets/fonts/Galmuri11-Bold.ttf"),
+    Mona12: require("../assets/fonts/Mona12.ttf"),
+    "Mona12-Bold": require("../assets/fonts/Mona12-Bold.ttf"),
+    Mona12ColorEmoji: require("../assets/fonts/Mona12ColorEmoji.ttf"),
+  });
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
-    <SessionContext.Provider value={sessionState}>
-      <AuthGate />
-    </SessionContext.Provider>
+    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+      <SessionContext.Provider value={sessionState}>
+        <AuthGate />
+      </SessionContext.Provider>
+    </View>
   );
 }
 

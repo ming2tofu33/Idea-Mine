@@ -270,6 +270,7 @@ Pro는 "아이디어를 프로젝트로 내리는 권한"이 핵심.
 - [[Monetization-Strategy]] -- 전체 수익 구조
 - [[KPI-Success-Metrics]] -- 전환율 지표
 - [[Business-Audit]] -- 티어 구조 평가 및 개선 제안
+- [[legal/Legal-Compliance]] -- 티어별 결제 관련 법적 고지
 
 ## See Also
 

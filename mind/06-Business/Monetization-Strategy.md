@@ -58,6 +58,7 @@ tags:
 - [[Tier-Structure]] — Free/Lite/Pro 티어 상세
 - [[KPI-Success-Metrics]] — 핵심 성공 지표
 - [[Competitive-Analysis]] — 경쟁사 대비 수익 모델 차별화
+- [[legal/Legal-Compliance]] — 결제/구독 관련 법적 요구사항
 
 ## See Also
 
