@@ -21,7 +21,8 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.ideamineai.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -32,6 +33,13 @@
       "expo-secure-store",
       "expo-web-browser",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "6af78b19-64e0-47ca-8a75-f9e59b850817"
+      }
+    },
+    "owner": "ideamineai"
   }
 }
