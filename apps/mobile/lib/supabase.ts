@@ -1,6 +1,8 @@
 import "react-native-url-polyfill/auto";
 import { createClient } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
+import * as WebBrowser from "expo-web-browser";
+import { makeRedirectUri } from "expo-linking";
 import { Platform } from "react-native";
 
 const ExpoSecureStoreAdapter = {
@@ -37,3 +39,37 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: false,
   },
 });
+
+export async function signInWithOAuth(provider: "google" | "github") {
+  const redirectTo = makeRedirectUri();
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo,
+      skipBrowserRedirect: true,
+    },
+  });
+
+  if (error) throw error;
+  if (!data.url) throw new Error("No OAuth URL returned");
+
+  const result = await WebBrowser.openAuthSessionAsync(
+    data.url,
+    redirectTo
+  );
+
+  if (result.type === "success") {
+    const url = new URL(result.url);
+    const params = new URLSearchParams(url.hash.substring(1));
+    const accessToken = params.get("access_token");
+    const refreshToken = params.get("refresh_token");
+
+    if (accessToken && refreshToken) {
+      await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken,
+      });
+    }
+  }
+}

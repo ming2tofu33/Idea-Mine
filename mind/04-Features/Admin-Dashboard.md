@@ -335,7 +335,15 @@ feature_flags 테이블
 ├── abuse/            -- Abuse 로그 + 시그널
 ├── users/            -- 유저 목록/상세
 ├── prompts/          -- 프롬프트 버전 관리
-└── revenue/          -- 수익 지표 (Phase 1.5+)
+├── revenue/          -- 수익 지표 (Phase 1.5+)
+├── veins/            -- 광맥 관리 + 키워드 통계
+├── keywords/         -- 키워드 CRUD + 커스텀 키워드 통계
+├── quality/          -- AI 출력 샘플 + 품질 지표
+├── flags/            -- Feature flag CRUD + 토글
+├── mcp/              -- MCP source별 사용량/비용
+├── notices/          -- 공지사항 CRUD
+├── events/           -- 이벤트 스케줄링
+└── health/           -- 시스템 상태 집계
 ```
 
 ### 보안
@@ -347,6 +355,8 @@ feature_flags 테이블
 ### DB 설계 방향
 
 - `admin_settings` 테이블: admin 계정별 설정 저장 (페르소나 tier, 대시보드 환경설정 등)
+- `feature_flags` 테이블: flag_key, enabled, target_tiers, description, updated_at
+- `notices` 테이블: 공지사항 CRUD + 예약 발행 + 만료
 - 집계 뷰: KPI/비용/유저 통계를 위한 materialized view (실시간 쿼리 부담 줄임)
 - 별도 집계 테이블 vs materialized view는 데이터 규모에 따라 결정
 
@@ -354,11 +364,12 @@ feature_flags 테이블
 
 ## Phase별 구현 범위
 
-| Phase | 패널 |
-|-------|------|
-| Phase 1 | AI 비용 모니터링 (ai_usage_logs 기반), Abuse 로그 열람, 유저 목록 (최소) |
-| Phase 1.5 | 페르소나 전환, KPI 대시보드, 유저 관리 확장, 수익 현황 |
-| Phase 2 | 프롬프트 관리, Abuse 자동 조치, A/B 테스트 |
+| Phase | 패널 | 이유 |
+|-------|------|------|
+| Phase 1 | AI 비용 모니터링, Abuse 로그, 유저 목록 (최소), AI 출력 품질 (샘플 열람), 시스템 상태, Feature Flags | MVP 운영에 필수인 비용/품질/안정성 모니터링 |
+| Phase 1.5 | 페르소나 전환, KPI 대시보드, 유저 관리 확장, 수익 현황, 광맥/키워드 관리 | 3티어 도입 + 콘텐츠 운영 본격화 |
+| Phase 2 | 프롬프트 관리 (A/B 테스트), Abuse 자동 조치, MCP 모니터링 | MCP 서버 운영 + 프롬프트 최적화 |
+| Phase 3+ | 공지/이벤트 관리, 시즌 이벤트, 키워드 조합 패턴 분석 | 커뮤니티/이벤트 기능 확장 시 |
 
 ---
 
