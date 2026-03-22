@@ -273,5 +273,5 @@ Pro는 "아이디어를 프로젝트로 내리는 권한"이 핵심.
 
 ## See Also
 
-- [[Upsell-Copy-Guide]] -- 업셀 문구 상세 (05-UX-Writing)
+- [[Admin-Persona]] -- admin 페르소나 전환으로 티어별 UX 검증 (04-Features)
 - [[The-Lab]] -- Pro 가치가 집중되는 공간 (03-Spaces)

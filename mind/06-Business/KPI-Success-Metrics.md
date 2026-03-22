@@ -47,4 +47,5 @@ tags:
 
 ## See Also
 
+- [[Admin-Dashboard]] -- KPI 지표를 앱 내 대시보드로 시각화 (04-Features)
 - [[Phase-1-MVP]] — MVP 범위와 검증 목표 (09-Implementation)
