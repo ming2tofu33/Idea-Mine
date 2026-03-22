@@ -2,7 +2,7 @@ import "react-native-url-polyfill/auto";
 import { createClient } from "@supabase/supabase-js";
 import * as SecureStore from "expo-secure-store";
 import * as WebBrowser from "expo-web-browser";
-import { makeRedirectUri } from "expo-linking";
+import { makeRedirectUri } from "expo-auth-session";
 import { Platform } from "react-native";
 
 const isWeb = Platform.OS === "web";

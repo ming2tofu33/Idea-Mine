@@ -28,33 +28,34 @@ export default function MyMineScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#101218",
+    backgroundColor: midnight.bg.primary,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 24,
   },
   title: {
+    fontFamily: "Galmuri11-Bold",
     fontSize: 24,
-    fontWeight: "bold",
-    color: "#EC4899",
+    color: midnight.accent.primary,
     marginBottom: 8,
   },
   email: {
+    fontFamily: "Galmuri11",
     fontSize: 14,
-    color: "#A0A6B4",
+    color: midnight.text.secondary,
     marginBottom: 32,
   },
   signOutButton: {
-    backgroundColor: "#222433",
+    backgroundColor: midnight.bg.tertiary,
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderWidth: 1,
-    borderColor: "#2E3242",
+    borderColor: midnight.border.default,
   },
   signOutText: {
-    color: "#B85450",
+    fontFamily: "Galmuri11-Bold",
+    color: midnight.semantic.danger,
     fontSize: 14,
-    fontWeight: "bold",
   },
 });

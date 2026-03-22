@@ -53,7 +53,7 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#101218",
+    backgroundColor: midnight.bg.primary,
   },
   inner: {
     flex: 1,
@@ -61,15 +61,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   title: {
+    fontFamily: "Galmuri11-Bold",
     fontSize: 28,
-    fontWeight: "bold",
-    color: "#EC4899",
+    color: midnight.accent.primary,
     textAlign: "center",
     marginBottom: 8,
   },
   subtitle: {
+    fontFamily: "Galmuri11",
     fontSize: 14,
-    color: "#A0A6B4",
+    color: midnight.text.secondary,
     textAlign: "center",
     marginBottom: 48,
   },
@@ -80,22 +81,23 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   googleButton: {
-    backgroundColor: "#222433",
+    backgroundColor: midnight.bg.tertiary,
     borderWidth: 1,
-    borderColor: "#2E3242",
+    borderColor: midnight.border.default,
   },
   githubButton: {
-    backgroundColor: "#222433",
+    backgroundColor: midnight.bg.tertiary,
     borderWidth: 1,
-    borderColor: "#2E3242",
+    borderColor: midnight.border.default,
   },
   buttonText: {
-    color: "#C8CDD8",
+    fontFamily: "Galmuri11-Bold",
+    color: midnight.text.primary,
     fontSize: 16,
-    fontWeight: "600",
   },
   footer: {
-    color: "#7E8596",
+    fontFamily: "Galmuri11",
+    color: midnight.text.muted,
     textAlign: "center",
     fontSize: 12,
     marginTop: 24,

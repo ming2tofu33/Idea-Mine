@@ -32,7 +32,7 @@ function AuthGate() {
   if (isLoading) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator size="large" color="#EC4899" />
+        <ActivityIndicator size="large" color={midnight.accent.primary} />
       </View>
     );
   }
@@ -73,7 +73,7 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   loading: {
     flex: 1,
-    backgroundColor: "#101218",
+    backgroundColor: midnight.bg.primary,
     alignItems: "center",
     justifyContent: "center",
   },

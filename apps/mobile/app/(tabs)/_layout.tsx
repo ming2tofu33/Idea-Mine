@@ -7,11 +7,14 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: "#1a1a2e",
-          borderTopColor: "#2a2a4e",
+          backgroundColor: midnight.bg.secondary,
+          borderTopColor: midnight.border.subtle,
         },
-        tabBarActiveTintColor: "#ff6b9d",
-        tabBarInactiveTintColor: "#666",
+        tabBarActiveTintColor: midnight.accent.active,
+        tabBarInactiveTintColor: midnight.accent.inactive,
+        tabBarLabelStyle: {
+          fontFamily: "Galmuri11",
+        },
       }}
     >
       <Tabs.Screen
@@ -35,7 +38,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="my-mine"
         options={{
-          title: "My Mine",
+          title: "My Camp",
         }}
       />
     </Tabs>

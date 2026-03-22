@@ -17,8 +17,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
+    fontFamily: "Galmuri11-Bold",
     fontSize: 24,
-    fontWeight: "bold",
     color: midnight.accent.primary,
   },
 });

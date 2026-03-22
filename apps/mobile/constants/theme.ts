@@ -1,32 +1,92 @@
 /**
- * IDEA MINE — Midnight Theme Tokens
+ * IDEA MINE — Theme Tokens
+ * 기반: Midnight (쿨 잉크) + IDEA MINE 세계관 컬러
+ * 골드 기본, 핑크는 포인트로만.
  */
 
 export const midnight = {
+  // 배경 — 깊은 잉크빛 동굴
   bg: {
-    primary: "#0F1119",
-    secondary: "#161825",
-    tertiary: "#1E2033",
+    deep: "#08090E",
+    primary: "#101218",
+    elevated: "#1A1C25",
+    surface: "#222433",
+    // 하위 호환
+    secondary: "#101218",
+    tertiary: "#1A1C25",
+    card: "#101218",
   },
 
-  border: {
-    subtle: "#252840",
-    default: "#2E3250",
-  },
-
+  // 텍스트 — 은빛
   text: {
-    primary: "#E2E8F0",
-    secondary: "#A0A8C0",
-    muted: "#6B7394",
+    primary: "#C8CDD8",
+    secondary: "#A0A6B4",
+    muted: "#7E8596",
+    onAccent: "#FFFFFF",
   },
 
+  // 경계
+  border: {
+    default: "#2E3242",
+    subtle: "rgba(255,255,255,0.06)",
+  },
+
+  // 그림자
+  shadow: {
+    default: "rgba(0,0,0,0.6)",
+  },
+
+  // 골드 — 기본 액센트 (보상, 레벨업)
   accent: {
-    primary: "#E2E8F0",
-    active: "#E2E8F0",
+    gold: "#C4B07A",
+    goldHover: "#D4C08A",
+    goldDark: "#8A7A50",
+    goldGlow: "rgba(196,176,122,0.15)",
+    goldSubtle: "rgba(196,176,122,0.08)",
+    // 하위 호환
+    primary: "#C4B07A",
+    hover: "#D4C08A",
+    glow: "rgba(196,176,122,0.15)",
+    subtle: "rgba(196,176,122,0.08)",
+    active: "#C4B07A",
     inactive: "#4A5170",
   },
 
+  // 핑크 — 포인트 (CTA, 핑크 결정)
+  pink: {
+    default: "#EC4899",
+    hover: "#F472B6",
+    pressed: "#DB2777",
+    dark: "#B03570",
+    glow: "rgba(236,72,153,0.15)",
+    subtle: "rgba(236,72,153,0.08)",
+  },
+
+  // 퍼플 — 희귀/Pro
+  purple: {
+    default: "#8B5CF6",
+    hover: "#A78BFA",
+    glow: "rgba(139,92,246,0.15)",
+  },
+
+  // 블루 — 탐색/호버
+  blue: {
+    default: "#6496FF",
+    glow: "rgba(100,150,255,0.12)",
+    subtle: "rgba(100,150,255,0.06)",
+  },
+
+  // 상태
+  status: {
+    success: "#4E9A6B",
+    warning: "#C9A044",
+    error: "#B85450",
+  },
+
+  // 하위 호환
   semantic: {
+    success: "#4E9A6B",
+    warning: "#C9A044",
     danger: "#B85450",
   },
 } as const;

@@ -1,12 +1,17 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { midnight } from "../../constants/theme";
+import { PixelText } from "../../components/PixelText";
 
 export default function MineScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>The Mine</Text>
-      <Text style={styles.subtitle}>Welcome to IDEA MINE</Text>
-      <Text style={styles.emoji}>Mona12 Emoji Test: 💎⛏️🪨</Text>
+      <PixelText variant="title">The Mine</PixelText>
+      <PixelText variant="body" style={{ marginTop: 8 }}>
+        Welcome to IDEA MINE
+      </PixelText>
+      <PixelText variant="body" emoji style={{ marginTop: 16 }}>
+        💎⛏️🪨
+      </PixelText>
     </View>
   );
 }
@@ -17,22 +22,5 @@ const styles = StyleSheet.create({
     backgroundColor: midnight.bg.primary,
     alignItems: "center",
     justifyContent: "center",
-  },
-  title: {
-    fontFamily: "Galmuri11-Bold",
-    fontSize: 24,
-    color: midnight.accent.primary,
-  },
-  subtitle: {
-    fontFamily: "Galmuri11",
-    fontSize: 14,
-    color: midnight.text.secondary,
-    marginTop: 8,
-  },
-  emoji: {
-    fontFamily: "Mona12ColorEmoji",
-    fontSize: 16,
-    color: midnight.text.primary,
-    marginTop: 16,
   },
 });
