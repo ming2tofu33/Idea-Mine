@@ -1,7 +1,9 @@
-import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { useSession } from "../../hooks/useSession";
 import { midnight } from "../../constants/theme";
+import { PixelText } from "../../components/PixelText";
+import { PixelButton } from "../../components/PixelButton";
 
 export default function MyMineScreen() {
   const { session } = useSession();
@@ -15,12 +17,16 @@ export default function MyMineScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Camp</Text>
-      <Text style={styles.email}>{session?.user?.email}</Text>
+      <PixelText variant="title" style={{ marginBottom: 8 }}>
+        Camp
+      </PixelText>
+      <PixelText variant="caption" style={{ marginBottom: 32 }}>
+        {session?.user?.email}
+      </PixelText>
 
-      <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-        <Text style={styles.signOutText}>Sign Out</Text>
-      </TouchableOpacity>
+      <PixelButton variant="danger" onPress={handleSignOut}>
+        Sign Out
+      </PixelButton>
     </View>
   );
 }
@@ -32,30 +38,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 24,
-  },
-  title: {
-    fontFamily: "Galmuri11-Bold",
-    fontSize: 24,
-    color: midnight.accent.primary,
-    marginBottom: 8,
-  },
-  email: {
-    fontFamily: "Galmuri11",
-    fontSize: 14,
-    color: midnight.text.secondary,
-    marginBottom: 32,
-  },
-  signOutButton: {
-    backgroundColor: midnight.bg.tertiary,
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderWidth: 1,
-    borderColor: midnight.border.default,
-  },
-  signOutText: {
-    fontFamily: "Galmuri11-Bold",
-    color: midnight.semantic.danger,
-    fontSize: 14,
   },
 });

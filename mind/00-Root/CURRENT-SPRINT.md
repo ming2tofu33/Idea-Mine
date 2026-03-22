@@ -23,6 +23,9 @@ tags:
 - [x] Git 세팅 + GitHub push
 - [x] .env 설정 (프론트 + 백엔드)
 - [x] 컬러 테마 확정 (Midnight + Cave Pink)
+- [x] 컬러 테마 토큰 (constants/theme.ts — IDEA MINE 전용)
+- [x] 이미지 렌더링 설정 (PixelImage 컴포넌트, pixelated)
+- [x] 공통 UI 컴포넌트 기초 (PixelText, PixelButton, PixelCard, PixelImage)
 - [x] 키워드 인벤토리 확정 (6카테고리 109개)
 - [x] 비즈니스 문서 체계화 (Audit, GTM, 경쟁분석, 반격전략, 티어구조)
 - [x] Phase 로드맵 Gate-Based로 전면 개편
