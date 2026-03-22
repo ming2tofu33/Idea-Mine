@@ -5,22 +5,22 @@ import * as WebBrowser from "expo-web-browser";
 import { makeRedirectUri } from "expo-linking";
 import { Platform } from "react-native";
 
+const isWeb = Platform.OS === "web";
+
 const ExpoSecureStoreAdapter = {
   getItem: (key: string) => {
-    if (Platform.OS === "web") {
-      return localStorage.getItem(key);
-    }
+    if (isWeb) return localStorage.getItem(key);
     return SecureStore.getItemAsync(key);
   },
   setItem: (key: string, value: string) => {
-    if (Platform.OS === "web") {
+    if (isWeb) {
       localStorage.setItem(key, value);
       return;
     }
     return SecureStore.setItemAsync(key, value);
   },
   removeItem: (key: string) => {
-    if (Platform.OS === "web") {
+    if (isWeb) {
       localStorage.removeItem(key);
       return;
     }
@@ -36,40 +36,50 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     storage: ExpoSecureStoreAdapter,
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: false,
+    detectSessionInUrl: isWeb,
   },
 });
 
 export async function signInWithOAuth(provider: "google" | "github") {
-  const redirectTo = makeRedirectUri();
+  if (isWeb) {
+    // 웹: 브라우저가 직접 리다이렉트 -> Supabase가 토큰을 URL hash로 반환
+    // detectSessionInUrl: true 이므로 페이지 로드 시 자동으로 세션 설정됨
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+    if (error) throw error;
+  } else {
+    // 모바일: expo-web-browser로 OAuth 팝업 -> 딥링크로 토큰 수신
+    const redirectTo = makeRedirectUri();
 
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
-    options: {
-      redirectTo,
-      skipBrowserRedirect: true,
-    },
-  });
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo,
+        skipBrowserRedirect: true,
+      },
+    });
 
-  if (error) throw error;
-  if (!data.url) throw new Error("No OAuth URL returned");
+    if (error) throw error;
+    if (!data.url) throw new Error("No OAuth URL returned");
 
-  const result = await WebBrowser.openAuthSessionAsync(
-    data.url,
-    redirectTo
-  );
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
 
-  if (result.type === "success") {
-    const url = new URL(result.url);
-    const params = new URLSearchParams(url.hash.substring(1));
-    const accessToken = params.get("access_token");
-    const refreshToken = params.get("refresh_token");
+    if (result.type === "success") {
+      const url = new URL(result.url);
+      const params = new URLSearchParams(url.hash.substring(1));
+      const accessToken = params.get("access_token");
+      const refreshToken = params.get("refresh_token");
 
-    if (accessToken && refreshToken) {
-      await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      });
+      if (accessToken && refreshToken) {
+        await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+      }
     }
   }
 }
