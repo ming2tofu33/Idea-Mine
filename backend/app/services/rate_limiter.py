@@ -1,0 +1,131 @@
+import time
+from datetime import date
+from fastapi import HTTPException
+from supabase import Client
+
+# L1: 속도 제한 (인메모리)
+_request_counts: dict[str, list[float]] = {}
+
+TIER_LIMITS = {
+    "free": {"rerolls": 2, "generations": 1},
+    "lite": {"rerolls": 10, "generations": 5},
+    "pro": {"rerolls": 20, "generations": 50},
+}
+
+
+def check_rate_limit_l1(user_id: str) -> None:
+    """L1: 분당 3회, 시간당 20회 속도 제한."""
+    now = time.time()
+    key = f"mining:{user_id}"
+
+    if key not in _request_counts:
+        _request_counts[key] = []
+
+    # 1시간 이상 된 기록 제거
+    _request_counts[key] = [t for t in _request_counts[key] if now - t < 3600]
+
+    # 분당 체크
+    recent_minute = [t for t in _request_counts[key] if now - t < 60]
+    if len(recent_minute) >= 3:
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "error": "rate_limited",
+                "message": "광맥이 불안정합니다. 잠시 후 다시 시도해주세요",
+                "retry_after": 20,
+            },
+        )
+
+    # 시간당 체크
+    if len(_request_counts[key]) >= 20:
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "error": "rate_limited",
+                "message": "광맥이 불안정합니다. 잠시 후 다시 시도해주세요",
+                "retry_after": 300,
+            },
+        )
+
+    _request_counts[key].append(now)
+
+
+async def check_daily_limit_l2(
+    supabase: Client,
+    user_id: str,
+    tier: str,
+    action: str,
+) -> dict:
+    """L2: 일일 상한 체크. user_daily_state 조회/생성 후 반환."""
+    today = date.today().isoformat()
+    limits = TIER_LIMITS.get(tier, TIER_LIMITS["free"])
+
+    # 오늘 상태 조회 또는 생성
+    result = (
+        supabase.table("user_daily_state")
+        .select("*")
+        .eq("user_id", user_id)
+        .eq("date", today)
+        .maybe_single()
+        .execute()
+    )
+
+    if result.data:
+        state = result.data
+    else:
+        state = (
+            supabase.table("user_daily_state")
+            .insert({"user_id": user_id, "date": today})
+            .execute()
+            .data[0]
+        )
+
+    # 액션별 상한 체크 (action="none"이면 조회만)
+    if action == "reroll":
+        if state["rerolls_used"] >= limits["rerolls"]:
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "error": "daily_limit",
+                    "message": "오늘의 리롤을 모두 사용했습니다",
+                },
+            )
+    elif action == "generation":
+        if state["generations_used"] >= limits["generations"]:
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "error": "daily_limit",
+                    "message": "오늘의 채굴 에너지를 모두 사용했습니다. 내일 광맥이 새로 열립니다",
+                },
+            )
+
+    return state
+
+
+async def increment_daily_count(
+    supabase: Client,
+    user_id: str,
+    action: str,
+) -> None:
+    """일일 사용량 +1."""
+    today = date.today().isoformat()
+    field = f"{action}s_used"
+
+    result = (
+        supabase.table("user_daily_state")
+        .select(field)
+        .eq("user_id", user_id)
+        .eq("date", today)
+        .single()
+        .execute()
+    )
+
+    new_count = result.data[field] + 1
+    (
+        supabase.table("user_daily_state")
+        .update({field: new_count})
+        .eq("user_id", user_id)
+        .eq("date", today)
+        .execute()
+    )
