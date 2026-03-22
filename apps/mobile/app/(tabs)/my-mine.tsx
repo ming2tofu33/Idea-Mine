@@ -1,159 +1,188 @@
-import { View, ScrollView, Pressable, StyleSheet, Alert } from "react-native";
+import { useState } from "react";
+import {
+  View,
+  Pressable,
+  Modal,
+  StyleSheet,
+  Alert,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabase";
 import { useSession } from "../../hooks/useSession";
 import { midnight } from "../../constants/theme";
 import { PixelText } from "../../components/PixelText";
 import { PixelButton } from "../../components/PixelButton";
-import { PixelCard } from "../../components/PixelCard";
 
-function BadgeSlot() {
-  return <View style={styles.badgeSlot} />;
-}
-
-function StatItem({ label, value }: { label: string; value: string }) {
-  return (
-    <View style={styles.statItem}>
-      <PixelText variant="title" style={{ fontSize: 20 }}>
-        {value}
-      </PixelText>
-      <PixelText variant="muted" style={{ marginTop: 4 }}>
-        {label}
-      </PixelText>
-    </View>
-  );
-}
-
-function MenuItem({
-  label,
-  locked,
-  onPress,
+function SettingsSheet({
+  visible,
+  email,
+  onClose,
+  onSignOut,
 }: {
-  label: string;
-  locked?: boolean;
-  onPress?: () => void;
+  visible: boolean;
+  email: string;
+  onClose: () => void;
+  onSignOut: () => void;
 }) {
   return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.menuItem,
-        pressed && !locked && styles.menuItemPressed,
-      ]}
-      onPress={locked ? undefined : onPress}
-      disabled={locked}
+    <Modal
+      visible={visible}
+      transparent
+      animationType="slide"
+      onRequestClose={onClose}
     >
-      <PixelText
-        variant="body"
-        color={locked ? midnight.text.muted : midnight.text.primary}
-      >
-        {label}
-      </PixelText>
-      {locked ? (
-        <PixelText variant="muted">Soon</PixelText>
-      ) : (
-        <PixelText variant="muted">{">"}</PixelText>
-      )}
-    </Pressable>
+      <Pressable style={styles.sheetOverlay} onPress={onClose}>
+        <Pressable style={styles.sheetContent} onPress={() => {}}>
+          <View style={styles.sheetHandle} />
+
+          <PixelText variant="subtitle" style={{ marginBottom: 20 }}>
+            설정
+          </PixelText>
+
+          {/* 계정 */}
+          <View style={styles.sheetSection}>
+            <PixelText variant="caption" style={{ marginBottom: 8 }}>
+              계정
+            </PixelText>
+            <PixelText variant="body">{email}</PixelText>
+          </View>
+
+          {/* 언어 */}
+          <Pressable
+            style={({ pressed }) => [
+              styles.sheetItem,
+              pressed && { backgroundColor: midnight.bg.surface },
+            ]}
+            onPress={() => {}}
+          >
+            <PixelText variant="body">언어 / Language</PixelText>
+            <PixelText variant="muted">한국어</PixelText>
+          </Pressable>
+
+          {/* 구독 관리 */}
+          <View style={[styles.sheetItem, { opacity: 0.4 }]}>
+            <PixelText variant="body" color={midnight.text.muted}>
+              구독 관리
+            </PixelText>
+            <PixelText variant="muted">Soon</PixelText>
+          </View>
+
+          {/* 로그아웃 */}
+          <View style={{ alignItems: "center", marginTop: 24 }}>
+            <PixelButton variant="danger" onPress={onSignOut}>
+              Sign Out
+            </PixelButton>
+          </View>
+        </Pressable>
+      </Pressable>
+    </Modal>
   );
 }
 
 export default function MyMineScreen() {
   const { session } = useSession();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  // 더미 데이터 (Phase 1에서 Supabase 연결)
+  const streak = 0;
+  const totalMines = 0;
+  const totalGems = 0;
 
   async function handleSignOut() {
     const { error } = await supabase.auth.signOut();
     if (error) {
       Alert.alert("Error", error.message);
     }
+    setSettingsOpen(false);
   }
 
   return (
-    <ScrollView
-      style={styles.scroll}
-      contentContainerStyle={styles.container}
-    >
-      <PixelText variant="title" style={{ marginBottom: 24 }}>
-        My Camp
-      </PixelText>
-
-      {/* 캐릭터 영역 */}
-      <View style={styles.characterArea}>
+    <SafeAreaView style={styles.screen} edges={["top"]}>
+      {/* 캠프 공간: 화면 대부분 */}
+      <View style={styles.campSpace}>
         <View style={styles.characterPlaceholder}>
-          <PixelText variant="body" emoji style={{ fontSize: 32 }}>
-            ⛏️
+          <PixelText variant="body" emoji style={{ fontSize: 48 }}>
+            ⛏
           </PixelText>
         </View>
       </View>
 
-      {/* 프로필 카드 */}
-      <PixelCard variant="gold" style={{ width: "100%", marginBottom: 16 }}>
+      {/* 설정 버튼: 하단 바 위 */}
+      <View style={styles.settingsRow}>
+        <Pressable
+          onPress={() => setSettingsOpen(true)}
+          style={({ pressed }) => [
+            styles.settingsButton,
+            pressed && { backgroundColor: midnight.bg.surface },
+          ]}
+        >
+          <PixelText variant="body" emoji>⚙️</PixelText>
+        </Pressable>
+      </View>
+
+      {/* 하단 바: 프로필 + 스탯 */}
+      <View style={styles.bottomBar}>
         <View style={styles.profileRow}>
           <PixelText variant="subtitle">광부</PixelText>
-          <PixelText variant="caption">Lv.1</PixelText>
+          <PixelText variant="caption" style={{ marginLeft: 8 }}>
+            Lv.1
+          </PixelText>
         </View>
-        <PixelText variant="muted" style={{ marginTop: 4 }}>
-          {session?.user?.email}
-        </PixelText>
-        <View style={styles.badgeRow}>
-          <BadgeSlot />
-          <BadgeSlot />
-          <BadgeSlot />
-        </View>
-      </PixelCard>
 
-      {/* 채굴 기록 */}
-      <PixelCard style={{ width: "100%", marginBottom: 24 }}>
-        <PixelText variant="caption" style={{ marginBottom: 12 }}>
-          채굴 기록
-        </PixelText>
         <View style={styles.statsRow}>
-          <StatItem label="연속" value="0일" />
-          <View style={styles.statDivider} />
-          <StatItem label="총 채굴" value="0회" />
-          <View style={styles.statDivider} />
-          <StatItem label="원석" value="0개" />
+          <View style={styles.statItem}>
+            <PixelText variant="body" emoji>🔥</PixelText>
+            <PixelText
+              variant="body"
+              color={streak > 0 ? midnight.accent.gold : midnight.text.muted}
+              style={{ marginLeft: 4 }}
+            >
+              {streak}일
+            </PixelText>
+          </View>
+
+          <View style={styles.statItem}>
+            <PixelText variant="body" emoji>⛏</PixelText>
+            <PixelText variant="body" color={midnight.text.secondary} style={{ marginLeft: 4 }}>
+              {totalMines}회
+            </PixelText>
+          </View>
+
+          <View style={styles.statItem}>
+            <PixelText variant="body" emoji>💎</PixelText>
+            <PixelText variant="body" color={midnight.text.secondary} style={{ marginLeft: 4 }}>
+              {totalGems}개
+            </PixelText>
+          </View>
         </View>
-      </PixelCard>
-
-      {/* 메뉴 */}
-      <View style={styles.menuCard}>
-        <MenuItem label="설정" onPress={() => {}} />
-        <View style={styles.menuDivider} />
-        <MenuItem label="언어 / Language" onPress={() => {}} />
-        <View style={styles.menuDivider} />
-        <MenuItem label="구독 관리" locked />
-        <View style={styles.menuDivider} />
-        <MenuItem label="배지 목록" locked />
       </View>
 
-      {/* 로그아웃 */}
-      <View style={{ marginTop: 32, marginBottom: 48 }}>
-        <PixelButton variant="danger" onPress={handleSignOut}>
-          Sign Out
-        </PixelButton>
-      </View>
-    </ScrollView>
+      {/* 설정 바텀 시트 */}
+      <SettingsSheet
+        visible={settingsOpen}
+        email={session?.user?.email ?? ""}
+        onClose={() => setSettingsOpen(false)}
+        onSignOut={handleSignOut}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: {
+  screen: {
     flex: 1,
     backgroundColor: midnight.bg.primary,
   },
-  container: {
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 60,
-  },
 
-  // 캐릭터
-  characterArea: {
-    marginBottom: 20,
+  // 캠프 공간
+  campSpace: {
+    flex: 1,
     alignItems: "center",
+    justifyContent: "center",
   },
   characterPlaceholder: {
-    width: 80,
-    height: 80,
+    width: 96,
+    height: 96,
     backgroundColor: midnight.bg.surface,
     borderWidth: 2,
     borderColor: midnight.border.default,
@@ -161,62 +190,75 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  // 프로필
+  // 설정 버튼
+  settingsRow: {
+    alignItems: "flex-end",
+    paddingHorizontal: 20,
+    paddingBottom: 8,
+  },
+
+  // 하단 바
+  bottomBar: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: midnight.border.default,
+    backgroundColor: midnight.bg.elevated,
+  },
   profileRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 12,
   },
-  badgeRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 12,
-  },
-  badgeSlot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+  settingsButton: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 1,
     borderColor: midnight.border.default,
-    borderStyle: "dashed",
-    backgroundColor: midnight.bg.surface,
   },
-
-  // 스탯
   statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  statItem: {
     flexDirection: "row",
     alignItems: "center",
   },
-  statItem: {
-    flex: 1,
-    alignItems: "center",
-  },
-  statDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: midnight.border.default,
-  },
 
-  // 메뉴
-  menuCard: {
-    width: "100%",
-    backgroundColor: midnight.bg.elevated,
-    borderWidth: 2,
-    borderColor: midnight.border.default,
+  // 바텀 시트
+  sheetOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
   },
-  menuItem: {
+  sheetContent: {
+    backgroundColor: midnight.bg.elevated,
+    borderTopWidth: 2,
+    borderTopColor: midnight.border.default,
+    paddingHorizontal: 24,
+    paddingBottom: 48,
+    paddingTop: 12,
+  },
+  sheetHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: midnight.border.default,
+    alignSelf: "center",
+    marginBottom: 20,
+  },
+  sheetSection: {
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: midnight.border.default,
+  },
+  sheetItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  menuItemPressed: {
-    backgroundColor: midnight.bg.surface,
-  },
-  menuDivider: {
-    height: 1,
-    backgroundColor: midnight.border.default,
-    marginHorizontal: 12,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: midnight.border.default,
   },
 });
