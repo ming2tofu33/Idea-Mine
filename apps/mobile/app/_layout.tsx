@@ -8,6 +8,7 @@ import {
   useSessionProvider,
 } from "../hooks/useSession";
 import { View, ActivityIndicator, StyleSheet } from "react-native";
+import { midnight } from "../constants/theme";
 
 SplashScreen.preventAutoHideAsync();
 

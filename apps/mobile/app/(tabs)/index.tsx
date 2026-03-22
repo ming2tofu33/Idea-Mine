@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
+import { midnight } from "../../constants/theme";
 
 export default function MineScreen() {
   return (
@@ -13,25 +14,25 @@ export default function MineScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#101218",
+    backgroundColor: midnight.bg.primary,
     alignItems: "center",
     justifyContent: "center",
   },
   title: {
     fontFamily: "Galmuri11-Bold",
     fontSize: 24,
-    color: "#EC4899",
+    color: midnight.accent.primary,
   },
   subtitle: {
     fontFamily: "Galmuri11",
     fontSize: 14,
-    color: "#A0A6B4",
+    color: midnight.text.secondary,
     marginTop: 8,
   },
   emoji: {
     fontFamily: "Mona12ColorEmoji",
     fontSize: 16,
-    color: "#C8CDD8",
+    color: midnight.text.primary,
     marginTop: 16,
   },
 });

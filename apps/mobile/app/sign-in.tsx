@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { signInWithOAuth } from "../lib/supabase";
+import { midnight } from "../constants/theme";
 
 export default function SignInScreen() {
   const [loading, setLoading] = useState<"google" | "github" | null>(null);

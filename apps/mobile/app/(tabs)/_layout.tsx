@@ -1,4 +1,5 @@
 import { Tabs } from "expo-router";
+import { midnight } from "../../constants/theme";
 
 export default function TabLayout() {
   return (

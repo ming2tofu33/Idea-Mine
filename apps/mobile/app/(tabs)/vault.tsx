@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet } from "react-native";
+import { midnight } from "../../constants/theme";
 
 export default function VaultScreen() {
   return (
@@ -11,13 +12,13 @@ export default function VaultScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1a1a2e",
+    backgroundColor: midnight.bg.primary,
     alignItems: "center",
     justifyContent: "center",
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#ff6b9d",
+    color: midnight.accent.primary,
   },
 });

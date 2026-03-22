@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { supabase } from "../../lib/supabase";
 import { useSession } from "../../hooks/useSession";
+import { midnight } from "../../constants/theme";
 
 export default function MyMineScreen() {
   const { session } = useSession();
