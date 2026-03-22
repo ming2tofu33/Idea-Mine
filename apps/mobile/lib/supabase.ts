@@ -5,6 +5,8 @@ import * as WebBrowser from "expo-web-browser";
 import { makeRedirectUri } from "expo-auth-session";
 import { Platform } from "react-native";
 
+WebBrowser.maybeCompleteAuthSession();
+
 const isWeb = Platform.OS === "web";
 
 const ExpoSecureStoreAdapter = {
@@ -53,7 +55,7 @@ export async function signInWithOAuth(provider: "google" | "github") {
     if (error) throw error;
   } else {
     // 모바일: expo-web-browser로 OAuth 팝업 -> 딥링크로 토큰 수신
-    const redirectTo = makeRedirectUri();
+    const redirectTo = makeRedirectUri({ scheme: "idea-mine" });
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,

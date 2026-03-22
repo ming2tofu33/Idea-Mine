@@ -18,43 +18,62 @@ tags:
 - [x] Mind 노트 레이어 구조 설계
 - [x] 기술 스택 확정 (Expo + Supabase + Python + OpenAI)
 - [x] Expo 프로젝트 초기화 + 4탭 네비게이션
-- [x] Python 백엔드 초기화 (FastAPI)
-- [x] Supabase 프로젝트 생성 (us-east-1)
-- [x] Git 세팅 + GitHub push
-- [x] .env 설정 (프론트 + 백엔드)
+- [x] Python 백엔드 초기화 (FastAPI + venv)
+- [x] Supabase 프로젝트 생성 (us-east-1) + CLI 연결
+- [x] Git 세팅 + GitHub push (SSH, ming2tofu33)
+- [x] .env 설정 (프론트 + 백엔드 + Supabase CLI)
 - [x] 컬러 테마 확정 (Midnight + Cave Pink)
-- [x] 컬러 테마 토큰 (constants/theme.ts — IDEA MINE 전용)
-- [x] 이미지 렌더링 설정 (PixelImage 컴포넌트, pixelated)
-- [x] 공통 UI 컴포넌트 기초 (PixelText, PixelButton, PixelCard, PixelImage)
-- [x] 키워드 인벤토리 확정 (6카테고리 109개)
+- [x] 컬러 테마 토큰 (constants/theme.ts)
+- [x] 이미지 렌더링 설정 (PixelImage 컴포넌트)
+- [x] 공통 UI 컴포넌트 (PixelText, PixelButton, PixelCard, PixelImage)
+- [x] 키워드 인벤토리 확정 (6카테고리 118개 + subtype 매핑)
 - [x] 비즈니스 문서 체계화 (Audit, GTM, 경쟁분석, 반격전략, 티어구조)
-- [x] Phase 로드맵 Gate-Based로 전면 개편
+- [x] Phase 로드맵 Gate-Based 전면 개편
 
 ---
 
-## Phase 0 — 검증 (현재)
+## Sprint 1 — DB + Auth + 디자인 토큰 (완료)
+
+**기간:** 2026-03-22
+**상태:** DONE
+
+- [x] DB 스키마 생성 (Supabase — 7개 테이블 + RLS)
+- [x] 키워드 시드 데이터 118개 삽입 (6카테고리, 한/영, subtype)
+- [x] profiles role 컬럼 + 트리거 보호 (admin 계정)
+- [x] Supabase Auth 연동 (Google + GitHub OAuth)
+- [x] 이메일 로그인 제거 → OAuth 전용
+- [x] EAS Build 세팅 (Android package: com.ideamineai.app)
+- [x] 픽셀 폰트 (Galmuri11 + Mona12 + Mona12ColorEmoji)
+
+---
+
+## Sprint 2 — The Mine + 아이디어 생성 (진행 중)
 
 **기간:** 2026-03-22 ~
-**목표:** 코드 쓰기 전에 "만들 가치가 있는가?" 확인
+**Phase:** 1 (Lean MVP)
 
-### Week 1: 만들기 + 배포
+### 백엔드 (완료)
 
-- [ ] ChatGPT 비교 테스트 (6원석 조합 직접 요청, 결과 비교)
-- [ ] Waitlist 랜딩 배포 (ideamineai.com)
-- [ ] 프로토타입 — Expo에서 키워드 선택 -> OpenAI -> 결과 표시 (최소한)
-- [ ] 트위터/X BIP 첫 게시 + 테스터 모집
+- [x] Supabase 클라이언트 + JWT 인증 미들웨어
+- [x] 광맥 생성/리롤 서비스 (vein_service)
+- [x] OpenAI 아이디어 생성 프롬프트 (한/영, 4군 구조, AI 고정)
+- [x] 아이디어 생성 서비스 (idea_service + 비용 로깅)
+- [x] Rate limiter (L1 속도 제한 + L2 일일 상한)
+- [x] API 엔드포인트 3개:
+  - GET /mining/veins/today
+  - POST /mining/veins/reroll
+  - POST /mining/veins/{vein_id}/mine
 
-### Week 2: 테스트 + 분석
+### 프론트엔드 (다음 작업)
 
-- [ ] 기획자/창업자 5~10명에게 프로토타입 공유 + 피드백
-- [ ] Van Westendorp 4질문 실시
-- [ ] 결과 분석 + Gate 0 판단
-
-### Gate 0 (3개 중 2개+ 통과?)
-
-1. 테스터 5명 중 3명+ "다시 쓰고 싶다"
-2. Waitlist 50명+
-3. 테스터 5명 중 2명+ "유료 의향"
+- [ ] 홈 화면 UI (광맥 카드 캐러셀)
+- [ ] 광맥 카드 디자인 (키워드 칩, 희귀도, 분위기 태그)
+- [ ] 리롤 버튼 + Haptic 피드백
+- [ ] 상단 상태바 (닉네임, 리롤 잔여)
+- [ ] 백엔드 API 연결 (lib/api.ts)
+- [ ] 원석 결과 화면 (10개 카드 리스트)
+- [ ] 원석 선택 → 금고 반입 인터랙션
+- [ ] user_daily_state 표시
 
 ---
 
@@ -62,7 +81,7 @@ tags:
 
 | Phase | 목표 | Gate |
 |-------|------|------|
-| Phase 1 (S1~3) | Lean MVP — 핵심 루프 | D1 리텐션 > 20% |
+| Phase 1 S3 | The Vault + The Lab | D1 리텐션 > 20% |
 | Phase 1.5 (S4~5) | 리텐션 + 3티어 + 웹 | Pro 전환율 > 2% |
 | Phase 2 (S6~8) | 풀 픽셀 + 게임 경제 + 앱스토어 | - |
 | Phase 3 (S9~11) | 실험실 고도화 + Pro 가치 | - |
