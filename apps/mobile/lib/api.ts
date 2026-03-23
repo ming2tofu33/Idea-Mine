@@ -101,3 +101,22 @@ export const ideasApi = {
     });
   },
 };
+
+// --- Admin API ---
+
+export const adminApi = {
+  setPersona(personaTier: string | null): Promise<{ status: string; persona_tier: string | null }> {
+    return apiFetch("/admin/persona", {
+      method: "POST",
+      body: JSON.stringify({ persona_tier: personaTier }),
+    });
+  },
+
+  resetDailyState(): Promise<{ status: string }> {
+    return apiFetch("/admin/reset-daily-state", { method: "POST" });
+  },
+
+  regenerateVeins(): Promise<TodayVeinsResponse> {
+    return apiFetch("/admin/regenerate-veins", { method: "POST" });
+  },
+};

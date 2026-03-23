@@ -6,6 +6,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
+import { adminApi } from "../lib/api";
 import type { UserProfile } from "../types/api";
 
 export function useProfile() {
@@ -21,7 +22,7 @@ export function useProfile() {
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, nickname, language, tier, miner_level, consecutive_days, role")
+      .select("id, nickname, language, tier, miner_level, consecutive_days, role, persona_tier")
       .eq("id", session.user.id)
       .single();
 
@@ -47,5 +48,27 @@ export function useProfile() {
     return error;
   };
 
-  return { profile, loading, refetch: fetchProfile, updateNickname };
+  const updateLanguage = async (language: "ko" | "en") => {
+    if (!profile) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ language })
+      .eq("id", profile.id);
+    if (!error) {
+      setProfile({ ...profile, language });
+    }
+    return error;
+  };
+
+  const setPersona = async (personaTier: "free" | "lite" | "pro" | null) => {
+    if (!profile || profile.role !== "admin") return;
+    try {
+      await adminApi.setPersona(personaTier);
+      setProfile({ ...profile, persona_tier: personaTier });
+    } catch (e) {
+      console.error("Failed to set persona:", e);
+    }
+  };
+
+  return { profile, loading, refetch: fetchProfile, updateNickname, updateLanguage, setPersona };
 }

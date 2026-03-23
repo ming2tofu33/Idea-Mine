@@ -89,6 +89,7 @@ export interface UserProfile {
   miner_level: number;
   consecutive_days: number;
   role: "user" | "admin";
+  persona_tier: UserTier | null;
 }
 
 // --- Daily State ---
