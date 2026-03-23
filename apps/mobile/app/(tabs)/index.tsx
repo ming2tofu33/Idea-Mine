@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { View, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import { useEffect, useState } from "react";
+import { View, StyleSheet, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { midnight } from "../../constants/theme";
@@ -14,6 +14,8 @@ import { ExhaustedBanner } from "../../components/mine/ExhaustedBanner";
 import { MiningLoader } from "../../components/mine/MiningLoader";
 import { NicknameModal } from "../../components/mine/NicknameModal";
 import { PixelText } from "../../components/PixelText";
+import { PixelButton } from "../../components/PixelButton";
+import { PixelLoadingBar } from "../../components/PixelLoadingBar";
 import { PersonaFab } from "../../components/admin/PersonaFab";
 
 export default function MineScreen() {
@@ -30,7 +32,8 @@ export default function MineScreen() {
 
   const language = profile?.language ?? "ko";
   const bagMax = getBagCapacity(profile?.miner_level ?? 1);
-  const showNicknameModal = !profileLoading && profile && (!profile.nickname || profile.nickname.trim() === "");
+  const [forceNicknameModal, setForceNicknameModal] = useState(false);
+  const showNicknameModal = forceNicknameModal || (!profileLoading && profile && (!profile.nickname || profile.nickname.trim() === ""));
 
   useEffect(() => {
     loadTodayVeins();
@@ -69,8 +72,26 @@ export default function MineScreen() {
     return <MiningLoader language={language} />;
   }
 
+  const handleNicknameModalTest = () => {
+    setForceNicknameModal(true);
+  };
+
+  const handleNicknameSubmitWrapped = async (nickname: string) => {
+    await handleNicknameSubmit(nickname);
+    setForceNicknameModal(false);
+  };
+
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
+      {profile?.role === "admin" && (
+        <PixelButton
+          title="[Admin] 닉네임 모달 테스트"
+          variant="secondary"
+          size="sm"
+          onPress={handleNicknameModalTest}
+          style={{ alignSelf: "center", marginTop: 4, marginBottom: 4 }}
+        />
+      )}
       <MineStatusBar
         profile={profile}
         dailyState={dailyState}
@@ -93,7 +114,9 @@ export default function MineScreen() {
         )}
 
         {isLoading && (
-          <ActivityIndicator size="large" color={midnight.accent.gold} style={{ marginTop: 40 }} />
+          <View style={{ marginTop: 40 }}>
+            <PixelLoadingBar />
+          </View>
         )}
 
         {!isLoading && veins.length === 0 && !error && (
@@ -138,7 +161,7 @@ export default function MineScreen() {
 
       <NicknameModal
         visible={!!showNicknameModal}
-        onSubmit={handleNicknameSubmit}
+        onSubmit={handleNicknameSubmitWrapped}
       />
 
       {profile?.role === "admin" && (
