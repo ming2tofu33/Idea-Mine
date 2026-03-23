@@ -68,7 +68,7 @@ export function useMining({ role, personaTier }: MiningOptions) {
   const reroll = useCallback(async () => {
     setState((s) => ({ ...s, error: null }));
     try {
-      const res = await withMinDelay(miningApi.reroll(), 1500);
+      const res = await miningApi.reroll();
       setState((s) => ({
         ...s,
         veins: res.veins,
