@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from supabase import Client
 from app.dependencies import get_supabase, get_current_user
+from app.utils import validate_uuid
 
 router = APIRouter(prefix="/ideas", tags=["ideas"])
 
@@ -40,6 +41,10 @@ async def vault_ideas(
     supabase: Client = Depends(get_supabase),
 ):
     """선택된 아이디어를 Vault에 반입. 가방 용량 서버 검증."""
+    validate_uuid(req.vein_id, "vein_id")
+    for idea_id in req.idea_ids:
+        validate_uuid(idea_id, "idea_id")
+
     tier = user.get("tier", "free")
     level = user.get("miner_level", 1)
 

@@ -3,6 +3,7 @@ from supabase import Client
 from app.dependencies import get_supabase, get_current_user, get_effective_tier, get_effective_role
 from app.services import vein_service, idea_service, rate_limiter
 from app.models.schemas import TodayVeinsResponse, RerollResponse, MineResponse
+from app.utils import validate_uuid
 
 router = APIRouter(prefix="/mining", tags=["mining"])
 
@@ -69,6 +70,8 @@ async def mine_vein(
     supabase: Client = Depends(get_supabase),
 ):
     """광맥 선택 -> 아이디어 10개 생성."""
+    validate_uuid(vein_id, "vein_id")
+
     tier = get_effective_tier(user)
     role = get_effective_role(user)
 
@@ -80,14 +83,14 @@ async def mine_vein(
         .select("*")
         .eq("id", vein_id)
         .eq("user_id", user["id"])
-        .single()
         .execute()
     )
+    vein_data = vein.data[0] if vein.data else None
 
-    if not vein.data:
+    if not vein_data:
         raise HTTPException(status_code=404, detail="Vein not found")
 
-    if vein.data.get("is_selected"):
+    if vein_data.get("is_selected"):
         raise HTTPException(
             status_code=400,
             detail={"error": "already_mined", "message": "이미 채굴한 광맥이에요"}
@@ -96,7 +99,7 @@ async def mine_vein(
     keywords = (
         supabase.table("keywords")
         .select("id, slug, category, ko, en, is_premium")
-        .in_("id", vein.data["keyword_ids"])
+        .in_("id", vein_data["keyword_ids"])
         .execute()
     ).data
 

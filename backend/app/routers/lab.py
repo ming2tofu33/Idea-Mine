@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from supabase import Client
 from app.dependencies import get_supabase, get_current_user
 from app.services import overview_service
+from app.utils import validate_uuid
 
 router = APIRouter(prefix="/lab", tags=["lab"])
 
@@ -17,6 +18,8 @@ async def create_overview(
     user: dict = Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
 ):
+    validate_uuid(req.idea_id, "idea_id")
+
     idea_result = (
         supabase.table("ideas")
         .select("*")
