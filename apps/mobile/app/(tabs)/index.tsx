@@ -30,7 +30,7 @@ export default function MineScreen() {
 
   const language = profile?.language ?? "ko";
   const bagMax = getBagCapacity(profile?.miner_level ?? 1);
-  const showNicknameModal = !profileLoading && profile && !profile.nickname;
+  const showNicknameModal = !profileLoading && profile && (!profile.nickname || profile.nickname.trim() === "");
 
   useEffect(() => {
     loadTodayVeins();
