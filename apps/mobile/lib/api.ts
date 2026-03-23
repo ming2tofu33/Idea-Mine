@@ -13,6 +13,9 @@ import type {
   VaultResponse,
   ApiError,
 } from "../types/api";
+import { mockMiningApi, mockIdeasApi, mockAdminApi } from "./mock-data";
+
+export const MOCK_MODE = process.env.EXPO_PUBLIC_MOCK === "true";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL!;
 
@@ -77,7 +80,7 @@ export class ApiClientError extends Error {
 
 // --- Mining API ---
 
-export const miningApi = {
+export const miningApi = MOCK_MODE ? mockMiningApi : {
   getTodayVeins(): Promise<TodayVeinsResponse> {
     return apiFetch("/mining/veins/today");
   },
@@ -93,7 +96,7 @@ export const miningApi = {
 
 // --- Ideas API (Vault 반입) ---
 
-export const ideasApi = {
+export const ideasApi = MOCK_MODE ? mockIdeasApi : {
   vaultIdeas(ideaIds: string[], veinId: string): Promise<VaultResponse> {
     return apiFetch("/ideas/vault", {
       method: "PATCH",
@@ -104,7 +107,7 @@ export const ideasApi = {
 
 // --- Admin API ---
 
-export const adminApi = {
+export const adminApi = MOCK_MODE ? mockAdminApi : {
   setPersona(personaTier: string | null): Promise<{ status: string; persona_tier: string | null }> {
     return apiFetch("/admin/persona", {
       method: "POST",
