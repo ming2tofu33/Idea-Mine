@@ -5,6 +5,7 @@
 
 import { useState, useCallback } from "react";
 import { miningApi, ApiClientError } from "../lib/api";
+import { withMinDelay } from "../lib/minDelay";
 import type { Vein, DailyState } from "../types/api";
 
 interface MiningState {
@@ -41,7 +42,7 @@ export function useMining({ role, personaTier }: MiningOptions) {
   const loadTodayVeins = useCallback(async () => {
     setState((s) => ({ ...s, isLoading: true, error: null }));
     try {
-      const res = await miningApi.getTodayVeins();
+      const res = await withMinDelay(miningApi.getTodayVeins(), 1500);
       setState((s) => ({
         ...s,
         veins: res.veins,
@@ -67,7 +68,7 @@ export function useMining({ role, personaTier }: MiningOptions) {
   const reroll = useCallback(async () => {
     setState((s) => ({ ...s, error: null }));
     try {
-      const res = await miningApi.reroll();
+      const res = await withMinDelay(miningApi.reroll(), 1500);
       setState((s) => ({
         ...s,
         veins: res.veins,
