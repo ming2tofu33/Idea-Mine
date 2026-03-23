@@ -14,10 +14,11 @@ import { ExhaustedBanner } from "../../components/mine/ExhaustedBanner";
 import { MiningLoader } from "../../components/mine/MiningLoader";
 import { NicknameModal } from "../../components/mine/NicknameModal";
 import { PixelText } from "../../components/PixelText";
+import { PersonaPicker } from "../../components/admin/PersonaPicker";
 
 export default function MineScreen() {
   const router = useRouter();
-  const { profile, loading: profileLoading, updateNickname } = useProfile();
+  const { profile, loading: profileLoading, updateNickname, setPersona } = useProfile();
   const {
     veins, dailyState, selectedVein, selectedVeinId,
     isLoading, isGenerating, isExhausted, rerollsLeft, error,
@@ -56,12 +57,26 @@ export default function MineScreen() {
     await updateNickname(nickname);
   };
 
+  const currentPersona = (profile?.persona_tier ?? "admin") as "admin" | "free" | "lite" | "pro";
+
+  const handlePersonaChange = async (mode: "admin" | "free" | "lite" | "pro") => {
+    const personaTier = mode === "admin" ? null : mode;
+    await setPersona(personaTier);
+    loadTodayVeins();
+  };
+
   if (isGenerating) {
     return <MiningLoader language={language} />;
   }
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
+      {profile?.role === "admin" && (
+        <PersonaPicker
+          currentPersona={currentPersona}
+          onSelect={handlePersonaChange}
+        />
+      )}
       <MineStatusBar
         profile={profile}
         dailyState={dailyState}
