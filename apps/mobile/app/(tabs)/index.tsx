@@ -15,6 +15,7 @@ import { MiningLoader } from "../../components/mine/MiningLoader";
 import { NicknameModal } from "../../components/mine/NicknameModal";
 import { PixelText } from "../../components/PixelText";
 import { LanternScan } from "../../components/mine/LanternScan";
+import { RerollBlast } from "../../components/mine/RerollBlast";
 import { AdminFab } from "../../components/admin/AdminFab";
 import { adminApi } from "../../lib/api";
 
@@ -33,6 +34,7 @@ export default function MineScreen() {
   const language = profile?.language ?? "ko";
   const bagMax = getBagCapacity(profile?.miner_level ?? 1);
   const [forceNicknameModal, setForceNicknameModal] = useState(false);
+  const [isRerolling, setIsRerolling] = useState(false);
   const showNicknameModal = forceNicknameModal || (!profileLoading && profile && (!profile.nickname || profile.nickname.trim() === ""));
 
   useEffect(() => {
@@ -54,6 +56,11 @@ export default function MineScreen() {
         },
       });
     }
+  };
+
+  const handleReroll = async () => {
+    setIsRerolling(true);
+    await reroll();
   };
 
   const handleNicknameSubmit = async (nickname: string) => {
@@ -128,16 +135,21 @@ export default function MineScreen() {
 
         {!isLoading && veins.length > 0 && (
           <>
-            <View style={styles.miniCards}>
-              {veins.map((v) => (
-                <MiniVeinCard
-                  key={v.id}
-                  vein={v}
-                  isSelected={v.id === selectedVeinId}
-                  language={language}
-                  onPress={() => selectVein(v.id)}
-                />
-              ))}
+            <View style={{ position: "relative" }}>
+              <View style={styles.miniCards}>
+                {veins.map((v) => (
+                  <MiniVeinCard
+                    key={v.id}
+                    vein={v}
+                    isSelected={v.id === selectedVeinId}
+                    language={language}
+                    onPress={() => selectVein(v.id)}
+                  />
+                ))}
+              </View>
+              {isRerolling && (
+                <RerollBlast onComplete={() => setIsRerolling(false)} />
+              )}
             </View>
 
             {selectedVein && (
@@ -152,7 +164,7 @@ export default function MineScreen() {
             <RerollButton
               rerollsLeft={rerollsLeft}
               rerollsMax={dailyState.rerolls_max}
-              onPress={reroll}
+              onPress={handleReroll}
             />
 
             {isExhausted && <ExhaustedBanner />}

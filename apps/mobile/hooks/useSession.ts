@@ -21,9 +21,16 @@ export function useSessionProvider() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    const MIN_SPLASH_MS = 2000;
+    const start = Date.now();
+
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setIsLoading(false);
+      const elapsed = Date.now() - start;
+      const remaining = Math.max(0, MIN_SPLASH_MS - elapsed);
+      setTimeout(() => {
+        setSession(session);
+        setIsLoading(false);
+      }, remaining);
     });
 
     const {

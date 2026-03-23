@@ -1,5 +1,6 @@
 import { View, StyleSheet } from "react-native";
 import { PixelButton } from "../PixelButton";
+import { MinecartDepart } from "./MinecartDepart";
 import { midnight } from "../../constants/theme";
 
 interface VaultButtonProps {
@@ -11,12 +12,16 @@ interface VaultButtonProps {
 export function VaultButton({ count, isLoading, onPress }: VaultButtonProps) {
   return (
     <View style={styles.container}>
-      <PixelButton
-        title={isLoading ? "반입 중..." : `Vault로 반입하기 (${count})`}
-        variant="pink"
-        disabled={count === 0 || isLoading}
-        onPress={onPress}
-      />
+      {isLoading ? (
+        <MinecartDepart gemCount={count} />
+      ) : (
+        <PixelButton
+          title={`금고로 반입하기 (${count})`}
+          variant="pink"
+          disabled={count === 0}
+          onPress={onPress}
+        />
+      )}
     </View>
   );
 }

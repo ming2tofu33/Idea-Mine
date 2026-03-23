@@ -20,25 +20,25 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "The Mine",
+          title: "광산",
         }}
       />
       <Tabs.Screen
         name="lab"
         options={{
-          title: "The Lab",
+          title: "실험실",
         }}
       />
       <Tabs.Screen
         name="vault"
         options={{
-          title: "The Vault",
+          title: "금고",
         }}
       />
       <Tabs.Screen
         name="my-mine"
         options={{
-          title: "My Camp",
+          title: "캠프",
         }}
       />
     </Tabs>

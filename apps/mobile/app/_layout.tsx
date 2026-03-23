@@ -7,8 +7,8 @@ import {
   useSession,
   useSessionProvider,
 } from "../hooks/useSession";
-import { View, ActivityIndicator, StyleSheet } from "react-native";
-import { midnight } from "../constants/theme";
+import { View } from "react-native";
+import { LanternEntry } from "../components/LanternEntry";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -30,11 +30,7 @@ function AuthGate() {
   }, [session, isLoading, segments]);
 
   if (isLoading) {
-    return (
-      <View style={styles.loading}>
-        <ActivityIndicator size="large" color={midnight.accent.primary} />
-      </View>
-    );
+    return <LanternEntry />;
   }
 
   return <Slot />;
@@ -69,12 +65,3 @@ export default function RootLayout() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  loading: {
-    flex: 1,
-    backgroundColor: midnight.bg.primary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

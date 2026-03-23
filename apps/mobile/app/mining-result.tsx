@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { midnight } from "../constants/theme";
 import { ideasApi, ApiClientError } from "../lib/api";
+import { withMinDelay } from "../lib/minDelay";
 import { IdeaCard } from "../components/vault/IdeaCard";
 import { VaultButton } from "../components/vault/VaultButton";
 import { PixelText } from "../components/PixelText";
@@ -52,7 +53,7 @@ export default function MiningResultScreen() {
     if (selectedIds.size === 0) return;
     setIsVaulting(true);
     try {
-      await ideasApi.vaultIdeas(Array.from(selectedIds), veinId);
+      await withMinDelay(ideasApi.vaultIdeas(Array.from(selectedIds), veinId), 1500);
       router.back();
     } catch (e) {
       const msg = e instanceof ApiClientError ? e.message : "반입에 실패했습니다";

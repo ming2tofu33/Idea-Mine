@@ -5,7 +5,7 @@ import { PixelText } from "../../components/PixelText";
 export default function VaultScreen() {
   return (
     <View style={styles.container}>
-      <PixelText variant="title">The Vault</PixelText>
+      <PixelText variant="title">금고</PixelText>
     </View>
   );
 }
