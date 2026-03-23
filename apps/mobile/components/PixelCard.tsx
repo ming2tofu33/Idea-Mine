@@ -1,5 +1,6 @@
 import { View, ViewProps, StyleSheet } from "react-native";
 import { midnight } from "../constants/theme";
+import { PixelText } from "./PixelText";
 
 type Variant = "default" | "gold" | "purple" | "pink";
 
@@ -75,7 +76,13 @@ export function PixelCard({
       <View style={styles.inner}>
         {header && (
           <>
-            <View style={styles.header}>{header}</View>
+            <View style={styles.header}>
+              {typeof header === "string" ? (
+                <PixelText variant="caption" style={{ color: midnight.text.muted }}>{header}</PixelText>
+              ) : (
+                header
+              )}
+            </View>
             <View
               style={[styles.divider, { backgroundColor: v.dividerColor }]}
             />
