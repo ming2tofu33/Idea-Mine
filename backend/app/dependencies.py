@@ -50,3 +50,17 @@ async def get_current_user(
         "email": user.email,
         **profile.data,
     }
+
+
+def get_effective_tier(user: dict) -> str:
+    """admin이 페르소나를 설정했으면 페르소나 티어, 아니면 실제 티어."""
+    if user.get("role") == "admin" and user.get("persona_tier"):
+        return user["persona_tier"]
+    return user.get("tier", "free")
+
+
+def get_effective_role(user: dict) -> str:
+    """admin이 페르소나를 설정했으면 'user'(제한 적용), 아니면 실제 role."""
+    if user.get("role") == "admin" and not user.get("persona_tier"):
+        return "admin"
+    return "user"
