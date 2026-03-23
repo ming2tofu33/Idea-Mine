@@ -19,7 +19,7 @@ async def get_today_veins(
     veins = await vein_service.resolve_vein_keywords(supabase, veins)
 
     state = await rate_limiter.check_daily_limit_l2(
-        supabase, user["id"], user["tier"], action="none"
+        supabase, user["id"], user["tier"], action="none", role=user.get("role", "user")
     )
     limits = rate_limiter.TIER_LIMITS.get(user["tier"], rate_limiter.TIER_LIMITS["free"])
 
@@ -38,10 +38,10 @@ async def reroll(
     supabase: Client = Depends(get_supabase),
 ):
     """광맥 3개를 새로 뽑기 (리롤 횟수 차감)."""
-    rate_limiter.check_rate_limit_l1(user["id"])
+    rate_limiter.check_rate_limit_l1(user["id"], role=user.get("role", "user"))
 
     await rate_limiter.check_daily_limit_l2(
-        supabase, user["id"], user["tier"], action="reroll"
+        supabase, user["id"], user["tier"], action="reroll", role=user.get("role", "user")
     )
 
     veins = await vein_service.reroll_veins(supabase, user["id"], user["tier"])
@@ -51,7 +51,7 @@ async def reroll(
 
     limits = rate_limiter.TIER_LIMITS.get(user["tier"], rate_limiter.TIER_LIMITS["free"])
     state = await rate_limiter.check_daily_limit_l2(
-        supabase, user["id"], user["tier"], action="none"
+        supabase, user["id"], user["tier"], action="none", role=user.get("role", "user")
     )
 
     return RerollResponse(
@@ -68,10 +68,10 @@ async def mine_vein(
     supabase: Client = Depends(get_supabase),
 ):
     """광맥 선택 -> 아이디어 10개 생성."""
-    rate_limiter.check_rate_limit_l1(user["id"])
+    rate_limiter.check_rate_limit_l1(user["id"], role=user.get("role", "user"))
 
     await rate_limiter.check_daily_limit_l2(
-        supabase, user["id"], user["tier"], action="generation"
+        supabase, user["id"], user["tier"], action="generation", role=user.get("role", "user")
     )
 
     # 광맥 조회 + 권한 확인
