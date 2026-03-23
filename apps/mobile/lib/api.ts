@@ -7,12 +7,14 @@
 
 import { supabase } from "./supabase";
 import type {
+  Idea,
   TodayVeinsResponse,
   RerollResponse,
   MineResponse,
   VaultResponse,
   ApiError,
 } from "../types/api";
+import type { Overview } from "../types/overview";
 import { mockMiningApi, mockIdeasApi, mockAdminApi } from "./mock-data";
 
 // 런타임 mock 모드 토글. AdminFab에서 변경 가능.
@@ -133,3 +135,45 @@ function proxy<T extends Record<string, (...args: any[]) => any>>(real: T, mock:
 export const miningApi = proxy(realMiningApi, mockMiningApi);
 export const ideasApi = proxy(realIdeasApi, mockIdeasApi);
 export const adminApi = proxy(realAdminApi, mockAdminApi);
+
+// --- Vault API (Supabase direct) ---
+
+export const vaultApi = {
+  async getVaultedIdeas(): Promise<Idea[]> {
+    const { data, error } = await supabase
+      .from("ideas")
+      .select("*")
+      .eq("is_vaulted", true)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  },
+
+  async getOverviews(): Promise<Overview[]> {
+    const { data, error } = await supabase
+      .from("overviews")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  },
+
+  async deleteIdea(ideaId: string): Promise<void> {
+    const { error } = await supabase
+      .from("ideas")
+      .delete()
+      .eq("id", ideaId);
+    if (error) throw error;
+  },
+};
+
+// --- Lab API (backend) ---
+
+export const labApi = {
+  createOverview(ideaId: string): Promise<Overview> {
+    return apiFetch("/lab/overview", {
+      method: "POST",
+      body: JSON.stringify({ idea_id: ideaId }),
+    });
+  },
+};
