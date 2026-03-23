@@ -22,7 +22,7 @@ export default function MineScreen() {
     veins, dailyState, selectedVein, selectedVeinId,
     isLoading, isGenerating, isExhausted, rerollsLeft, error,
     loadTodayVeins, selectVein, reroll, mine,
-  } = useMining();
+  } = useMining(profile?.role ?? "user");
 
   const language = profile?.language ?? "ko";
   const bagMax = getBagCapacity(profile?.miner_level ?? 1);
@@ -68,7 +68,7 @@ export default function MineScreen() {
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <PixelText variant="title" style={styles.heading}>
-          The Mine
+          광산
         </PixelText>
         <PixelText variant="body" style={styles.subheading}>
           {isExhausted
