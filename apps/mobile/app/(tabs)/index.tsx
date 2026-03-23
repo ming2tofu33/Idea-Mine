@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { midnight } from "../../constants/theme";
@@ -78,6 +78,16 @@ export default function MineScreen() {
 
         {error && (
           <PixelText variant="caption" style={styles.error}>{error}</PixelText>
+        )}
+
+        {isLoading && (
+          <ActivityIndicator size="large" color={midnight.accent.gold} style={{ marginTop: 40 }} />
+        )}
+
+        {!isLoading && veins.length === 0 && !error && (
+          <PixelText variant="body" style={styles.subheading}>
+            광맥을 준비하고 있어요...
+          </PixelText>
         )}
 
         {!isLoading && veins.length > 0 && (

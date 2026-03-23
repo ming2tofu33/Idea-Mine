@@ -19,7 +19,12 @@ export default function MiningResultScreen() {
     language: string;
   }>();
 
-  const ideas: Idea[] = JSON.parse(params.ideas ?? "[]");
+  let ideas: Idea[] = [];
+  try {
+    ideas = JSON.parse(params.ideas ?? "[]");
+  } catch {
+    ideas = [];
+  }
   const veinId = params.veinId ?? "";
   const bagMax = parseInt(params.bagMax ?? "2", 10);
   const tier = params.tier ?? "free";

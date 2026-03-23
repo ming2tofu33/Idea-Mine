@@ -78,6 +78,6 @@ async def vault_ideas(
 
     supabase.table("ideas").update(
         {"is_vaulted": True}
-    ).in_("id", found_ids).execute()
+    ).eq("user_id", user["id"]).in_("id", found_ids).execute()
 
     return VaultResponse(vaulted_count=len(found_ids), idea_ids=found_ids)

@@ -1,4 +1,4 @@
-import { Pressable, View, StyleSheet } from "react-native";
+import { Pressable, View, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
 import { midnight } from "../constants/theme";
 import { PixelText } from "./PixelText";
 
@@ -6,11 +6,13 @@ type Variant = "primary" | "secondary" | "danger" | "pink";
 type Size = "sm" | "md" | "lg";
 
 interface PixelButtonProps {
+  title?: string;
   variant?: Variant;
   size?: Size;
   disabled?: boolean;
   onPress?: () => void;
-  children: string;
+  style?: StyleProp<ViewStyle>;
+  children?: string;
 }
 
 const variantColors = {
@@ -47,14 +49,17 @@ const sizeStyles = {
 } as const;
 
 export function PixelButton({
+  title,
   variant = "secondary",
   size = "md",
   disabled = false,
   onPress,
+  style,
   children,
 }: PixelButtonProps) {
   const colors = variantColors[variant];
   const sizing = sizeStyles[size];
+  const label = title ?? children ?? "";
 
   return (
     <Pressable
@@ -69,6 +74,7 @@ export function PixelButton({
           borderRightColor: pressed ? colors.highlight : colors.shadow,
         },
         disabled && styles.disabled,
+        style,
       ]}
     >
       {({ pressed }) => (
@@ -88,7 +94,7 @@ export function PixelButton({
             color={colors.text}
             style={{ fontSize: sizing.fontSize, fontFamily: "Galmuri11-Bold" }}
           >
-            {children}
+            {label}
           </PixelText>
         </View>
       )}
