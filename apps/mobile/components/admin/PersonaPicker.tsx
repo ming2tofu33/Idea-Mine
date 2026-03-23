@@ -9,34 +9,82 @@ interface PersonaPickerProps {
   onSelect: (mode: PersonaMode) => void;
 }
 
-const MODES: { key: PersonaMode; label: string }[] = [
-  { key: "admin", label: "Admin" },
-  { key: "free", label: "Free" },
-  { key: "lite", label: "Lite" },
-  { key: "pro", label: "Pro" },
+const MODES: {
+  key: PersonaMode;
+  label: string;
+  sub: string;
+  color: string;
+  bgGlow: string;
+}[] = [
+  {
+    key: "admin",
+    label: "ADMIN",
+    sub: "무제한",
+    color: midnight.accent.gold,
+    bgGlow: midnight.accent.goldGlow,
+  },
+  {
+    key: "free",
+    label: "FREE",
+    sub: "채굴 1 · 리롤 2",
+    color: midnight.text.secondary,
+    bgGlow: "rgba(160,166,180,0.08)",
+  },
+  {
+    key: "lite",
+    label: "LITE",
+    sub: "채굴 5 · 리롤 10",
+    color: midnight.blue.default,
+    bgGlow: midnight.blue.subtle,
+  },
+  {
+    key: "pro",
+    label: "PRO",
+    sub: "채굴 50 · 리롤 20",
+    color: midnight.purple.default,
+    bgGlow: midnight.purple.glow,
+  },
 ];
 
 export function PersonaPicker({ currentPersona, onSelect }: PersonaPickerProps) {
   return (
     <View style={styles.container}>
-      <PixelText variant="caption" style={styles.label}>
-        Persona
-      </PixelText>
+      <View style={styles.header}>
+        <View style={styles.indicator} />
+        <PixelText variant="caption" style={styles.label}>
+          PERSONA MODE
+        </PixelText>
+      </View>
       <View style={styles.row}>
-        {MODES.map((m) => (
-          <Pressable
-            key={m.key}
-            style={[styles.chip, currentPersona === m.key && styles.chipActive]}
-            onPress={() => onSelect(m.key)}
-          >
-            <PixelText
-              variant="caption"
-              style={[styles.chipText, currentPersona === m.key && styles.chipTextActive]}
+        {MODES.map((m) => {
+          const isActive = currentPersona === m.key;
+          return (
+            <Pressable
+              key={m.key}
+              style={[
+                styles.chip,
+                { borderColor: isActive ? m.color : midnight.border.default },
+                isActive && { backgroundColor: m.bgGlow },
+              ]}
+              onPress={() => onSelect(m.key)}
             >
-              {m.label}
-            </PixelText>
-          </Pressable>
-        ))}
+              <PixelText
+                variant="caption"
+                style={[
+                  styles.chipLabel,
+                  { color: isActive ? m.color : midnight.text.muted },
+                ]}
+              >
+                {m.label}
+              </PixelText>
+              {isActive && (
+                <PixelText variant="muted" style={[styles.chipSub, { color: m.color }]}>
+                  {m.sub}
+                </PixelText>
+              )}
+            </Pressable>
+          );
+        })}
       </View>
     </View>
   );
@@ -44,35 +92,48 @@ export function PersonaPicker({ currentPersona, onSelect }: PersonaPickerProps) 
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: midnight.bg.deep,
     paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: midnight.bg.surface,
+    paddingTop: 8,
+    paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: midnight.border.subtle,
   },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  indicator: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: midnight.accent.gold,
+    marginRight: 6,
+  },
   label: {
-    color: midnight.pink.default,
-    marginBottom: 4,
+    color: midnight.text.muted,
+    fontSize: 10,
+    letterSpacing: 1,
   },
   row: {
     flexDirection: "row",
-    gap: 8,
+    gap: 6,
   },
   chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 4,
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 6,
+    paddingHorizontal: 4,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: midnight.border.subtle,
   },
-  chipActive: {
-    backgroundColor: midnight.pink.default,
-    borderColor: midnight.pink.default,
+  chipLabel: {
+    fontSize: 11,
+    fontFamily: "Galmuri11-Bold",
   },
-  chipText: {
-    color: midnight.text.secondary,
-  },
-  chipTextActive: {
-    color: midnight.bg.primary,
+  chipSub: {
+    fontSize: 9,
+    marginTop: 2,
   },
 });
