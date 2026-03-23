@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, StyleSheet, FlatList, Alert } from "react-native";
+import { View, StyleSheet, FlatList, Alert, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { midnight } from "../constants/theme";
@@ -63,23 +63,56 @@ export default function MiningResultScreen() {
     }
   };
 
+  const handleClose = () => {
+    if (selectedIds.size > 0) {
+      Alert.alert(
+        "채굴 결과 나가기",
+        `가방에 ${selectedIds.size}개를 담았어요. 어떻게 할까요?`,
+        [
+          { text: "취소", style: "cancel" },
+          {
+            text: `${selectedIds.size}개 반입하고 나가기`,
+            onPress: handleVault,
+          },
+          {
+            text: "담지 않고 나가기",
+            style: "destructive",
+            onPress: () => router.back(),
+          },
+        ]
+      );
+    } else {
+      Alert.alert(
+        "채굴 결과 나가기",
+        "가방에 담지 않은 원석은 사라집니다. 나가시겠어요?",
+        [
+          { text: "계속 고르기", style: "cancel" },
+          {
+            text: "나가기",
+            style: "destructive",
+            onPress: () => router.back(),
+          },
+        ]
+      );
+    }
+  };
+
   const sortedIdeas = [...ideas].sort((a, b) => a.sort_order - b.sort_order);
   const effectiveBagMax = isCart ? 10 : bagMax;
 
   return (
     <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
       <View style={styles.header}>
-        <PixelText
-          variant="body"
-          style={styles.back}
-          onPress={() => router.back()}
-        >
-          {"← "}광산으로
-        </PixelText>
-        <PixelText variant="body" emoji>
-          {isCart ? "🛒 " : "🎒 "}
-          {selectedIds.size}/{effectiveBagMax}
-        </PixelText>
+        <PixelText variant="subtitle">채굴 결과</PixelText>
+        <View style={styles.headerRight}>
+          <PixelText variant="body" emoji style={styles.bagCount}>
+            {isCart ? "🛒 " : "🎒 "}
+            {selectedIds.size}/{effectiveBagMax}
+          </PixelText>
+          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+            <PixelText variant="subtitle" style={styles.closeText}>✕</PixelText>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <FlatList
@@ -121,8 +154,25 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: midnight.border.subtle,
   },
-  back: {
-    color: midnight.accent.gold,
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  bagCount: {
+    marginRight: 12,
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: midnight.bg.surface,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: midnight.border.default,
+  },
+  closeText: {
+    color: midnight.text.muted,
   },
   list: {
     padding: 16,
