@@ -51,6 +51,25 @@ class RerollResponse(BaseModel):
     rerolls_max: int
 
 
+class OverviewOut(BaseModel):
+    id: str
+    idea_id: str
+    problem_ko: str
+    problem_en: str
+    target_ko: str
+    target_en: str
+    features_ko: str
+    features_en: str
+    revenue_ko: str
+    revenue_en: str
+    market_score: int
+    feasibility_score: int
+    market_comment_ko: str
+    market_comment_en: str
+    feasibility_comment_ko: str
+    feasibility_comment_en: str
+
+
 class ErrorResponse(BaseModel):
     error: str
     message: str
