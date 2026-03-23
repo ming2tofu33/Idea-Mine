@@ -21,7 +21,7 @@ export default function VaultFullScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <View style={styles.header}>
-        <PixelText variant="body" style={styles.back} onPress={() => router.back()}>{"← "}금고</PixelText>
+        <PixelText variant="body" style={styles.back} onPress={() => router.replace("/(tabs)/vault")}>{"← "}금고</PixelText>
         <PixelText variant="subtitle">전체 보기</PixelText>
       </View>
       <View style={styles.tabs}>
@@ -34,6 +34,7 @@ export default function VaultFullScreen() {
       </View>
       {tab === "ideas" ? (
         <FlatList
+          key="ideas-grid"
           data={ideas}
           keyExtractor={(item) => item.id}
           numColumns={2}
@@ -51,6 +52,7 @@ export default function VaultFullScreen() {
         />
       ) : (
         <FlatList
+          key="overviews-list"
           data={overviews}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
