@@ -47,13 +47,14 @@ export type IdeaTierType = "stable" | "expanded" | "pivot" | "rare";
 
 export interface Idea {
   id: string;
-  title: string;
-  summary: string;
+  title_ko: string;
+  title_en: string;
+  summary_ko: string;
+  summary_en: string;
   keyword_combo: KeywordComboEntry[];
   tier_type: IdeaTierType;
   sort_order: number;
   is_vaulted: boolean;
-  language: string;
 }
 
 export interface KeywordComboEntry {

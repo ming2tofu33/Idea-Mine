@@ -5,13 +5,13 @@ from openai import OpenAI
 from supabase import Client
 from app.config import settings
 from app.prompts.mining import build_mining_prompt
+from app.services.combo_builder import build_keyword_combos
 
 _openai: OpenAI | None = None
 
 MODEL = "gpt-4o-mini"
-PROMPT_VERSION = "v1"
+PROMPT_VERSION = "v2"
 
-# gpt-4o-mini pricing (per 1K tokens)
 COST_PER_1K_INPUT = 0.00015
 COST_PER_1K_OUTPUT = 0.0006
 
@@ -32,11 +32,12 @@ async def generate_ideas(
     language: str,
     source: str = "app",
 ) -> list[dict]:
-    """OpenAI로 아이디어 10개 생성 + DB 저장 + 비용 로깅."""
+    """v2: Python 키워드 선택 + LLM 한/영 생성."""
     session_id = str(uuid.uuid4())
     has_ai_keyword = any(kw["category"] == "ai" for kw in keywords)
 
-    prompt = build_mining_prompt(keywords, language, has_ai_keyword)
+    combos = build_keyword_combos(keywords, has_ai_keyword)
+    prompt = build_mining_prompt(combos)
 
     client = get_openai()
     start_time = time.time()
@@ -96,54 +97,27 @@ async def generate_ideas(
         )
         raise
 
-    # 광맥을 selected로 표시
     supabase.table("veins").update({"is_selected": True}).eq("id", vein_id).execute()
 
-    # slug -> keyword 매핑 (정확 매칭 + 정규화 fallback)
-    kw_slug_map = {kw["slug"]: kw for kw in keywords}
-    # 정규화된 slug로도 매핑 (하이픈/언더스코어/대소문자 무시)
-    kw_slug_normalized = {
-        kw["slug"].lower().replace("-", "").replace("_", ""): kw
-        for kw in keywords
-    }
+    ideas_by_order = {idea["sort_order"]: idea for idea in ideas_raw}
 
-    def _resolve_slug(slug: str) -> dict | None:
-        """slug 매칭: 정확 → 정규화 순으로 시도."""
-        if slug in kw_slug_map:
-            return kw_slug_map[slug]
-        normalized = slug.lower().replace("-", "").replace("_", "")
-        return kw_slug_normalized.get(normalized)
-
-    # ideas 테이블에 저장
     saved_ideas = []
-    for idea in ideas_raw:
-        used_kws = [
-            kw for slug in idea.get("used_keywords", [])
-            if (kw := _resolve_slug(slug)) is not None
-        ]
-        # fallback: 매칭된 키워드가 없으면 전체 키워드 사용
-        if not used_kws:
-            used_kws = keywords
+    for combo in combos:
+        order = combo["sort_order"]
+        idea_text = ideas_by_order.get(order, {})
 
         row = (
             supabase.table("ideas")
             .insert({
                 "user_id": user_id,
                 "vein_id": vein_id,
-                "title": idea["title"],
-                "summary": idea["summary"],
-                "keyword_combo": [
-                    {
-                        "slug": kw["slug"],
-                        "ko": kw["ko"],
-                        "en": kw["en"],
-                        "category": kw["category"],
-                    }
-                    for kw in used_kws
-                ],
-                "tier_type": idea.get("tier_type", "stable"),
-                "sort_order": idea.get("sort_order", 1),
-                "language": language,
+                "title_ko": idea_text.get("title_ko", "제목 없음"),
+                "title_en": idea_text.get("title_en", "Untitled"),
+                "summary_ko": idea_text.get("summary_ko", "요약 없음"),
+                "summary_en": idea_text.get("summary_en", "No summary"),
+                "keyword_combo": combo["keywords"],
+                "tier_type": combo["tier_type"],
+                "sort_order": order,
             })
             .execute()
         )
@@ -154,7 +128,6 @@ async def generate_ideas(
 
 
 async def _log_ai_usage(supabase: Client, **fields) -> None:
-    """AI 비용을 ai_usage_logs에 기록."""
     supabase.table("ai_usage_logs").insert({
         "user_id": fields["user_id"],
         "tier": fields["tier"],

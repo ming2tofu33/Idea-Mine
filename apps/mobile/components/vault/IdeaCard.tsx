@@ -15,11 +15,14 @@ interface IdeaCardProps {
 }
 
 export function IdeaCard({ idea, language, isInBag, bagFull, transportLabel, onToggle }: IdeaCardProps) {
+  const title = language === "ko" ? idea.title_ko : idea.title_en;
+  const summary = language === "ko" ? idea.summary_ko : idea.summary_en;
+
   return (
     <View style={[styles.card, isInBag && styles.cardSelected]}>
-      <PixelText variant="subtitle">{idea.title}</PixelText>
+      <PixelText variant="subtitle">{title}</PixelText>
       <PixelText variant="body" style={styles.summary}>
-        {idea.summary}
+        {summary}
       </PixelText>
 
       <View style={styles.chips}>

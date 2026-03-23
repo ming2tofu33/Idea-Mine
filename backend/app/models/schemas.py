@@ -30,13 +30,14 @@ class TodayVeinsResponse(BaseModel):
 
 class IdeaOut(BaseModel):
     id: str
-    title: str
-    summary: str
+    title_ko: str
+    title_en: str
+    summary_ko: str
+    summary_en: str
     keyword_combo: list[dict]
     tier_type: str
     sort_order: int
     is_vaulted: bool
-    language: str
 
 
 class MineResponse(BaseModel):
