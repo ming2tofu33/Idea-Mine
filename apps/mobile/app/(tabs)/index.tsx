@@ -14,7 +14,7 @@ import { ExhaustedBanner } from "../../components/mine/ExhaustedBanner";
 import { MiningLoader } from "../../components/mine/MiningLoader";
 import { NicknameModal } from "../../components/mine/NicknameModal";
 import { PixelText } from "../../components/PixelText";
-import { PixelLoadingBar } from "../../components/PixelLoadingBar";
+import { LanternScan } from "../../components/mine/LanternScan";
 import { AdminFab } from "../../components/admin/AdminFab";
 import { adminApi } from "../../lib/api";
 
@@ -78,8 +78,12 @@ export default function MineScreen() {
     loadTodayVeins();
   };
 
-  const handleNicknameModalTest = () => {
+  const handleSimulateNewUser = async () => {
+    await updateNickname("");
+    await adminApi.resetDailyState();
+    await adminApi.regenerateVeins();
     setForceNicknameModal(true);
+    loadTodayVeins();
   };
 
   const handleNicknameSubmitWrapped = async (nickname: string) => {
@@ -114,11 +118,7 @@ export default function MineScreen() {
           <PixelText variant="caption" style={styles.error}>{error}</PixelText>
         )}
 
-        {isLoading && (
-          <View style={{ marginTop: 40 }}>
-            <PixelLoadingBar />
-          </View>
-        )}
+        {isLoading && <LanternScan />}
 
         {!isLoading && veins.length === 0 && !error && (
           <PixelText variant="body" style={styles.subheading}>
@@ -171,7 +171,7 @@ export default function MineScreen() {
           onPersonaChange={handlePersonaChange}
           onResetDaily={handleResetDaily}
           onRegenerateVeins={handleRegenerateVeins}
-          onTestNicknameModal={handleNicknameModalTest}
+          onSimulateNewUser={handleSimulateNewUser}
         />
       )}
     </SafeAreaView>

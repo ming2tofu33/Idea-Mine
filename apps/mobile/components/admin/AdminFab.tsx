@@ -14,7 +14,7 @@ interface AdminFabProps {
   onPersonaChange: (mode: PersonaMode) => void;
   onResetDaily: () => void;
   onRegenerateVeins: () => void;
-  onTestNicknameModal?: () => void;
+  onSimulateNewUser: () => void;
 }
 
 // --- Persona config ---
@@ -44,7 +44,7 @@ export function AdminFab({
   onPersonaChange,
   onResetDaily,
   onRegenerateVeins,
-  onTestNicknameModal,
+  onSimulateNewUser,
 }: AdminFabProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mockOn, setMockOn] = useState(isMockMode());
@@ -106,9 +106,6 @@ export function AdminFab({
               <PixelText variant="muted" style={styles.sectionTitle}>빠른 도구</PixelText>
               <MenuItem label="일일 상태 리셋" onPress={() => handleAction(onResetDaily)} />
               <MenuItem label="광맥 재생성" onPress={() => handleAction(onRegenerateVeins)} />
-              {onTestNicknameModal && (
-                <MenuItem label="닉네임 모달 테스트" onPress={() => handleAction(onTestNicknameModal)} />
-              )}
 
               {/* 환경 — Mock 토글은 자주 쓰므로 위쪽 배치 */}
               <PixelText variant="muted" style={styles.sectionTitle}>환경</PixelText>
@@ -152,6 +149,7 @@ export function AdminFab({
 
               {/* 시뮬레이션 */}
               <PixelText variant="muted" style={styles.sectionTitle}>시뮬레이션</PixelText>
+              <MenuItem label="신규 유저 시뮬레이션" onPress={() => handleAction(onSimulateNewUser)} />
               <MenuItem label="광고 완료 시뮬레이션" onPress={() => placeholder("광고 시뮬레이션")} dim />
               <MenuItem label="구독 만료 시뮬레이션" onPress={() => placeholder("구독 시뮬레이션")} dim />
               <MenuItem label="날짜 점프" onPress={() => placeholder("날짜 점프")} dim />
