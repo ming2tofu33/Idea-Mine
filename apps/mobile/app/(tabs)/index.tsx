@@ -14,7 +14,7 @@ import { ExhaustedBanner } from "../../components/mine/ExhaustedBanner";
 import { MiningLoader } from "../../components/mine/MiningLoader";
 import { NicknameModal } from "../../components/mine/NicknameModal";
 import { PixelText } from "../../components/PixelText";
-import { PersonaPicker } from "../../components/admin/PersonaPicker";
+import { PersonaFab } from "../../components/admin/PersonaFab";
 
 export default function MineScreen() {
   const router = useRouter();
@@ -71,12 +71,6 @@ export default function MineScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      {profile?.role === "admin" && (
-        <PersonaPicker
-          currentPersona={currentPersona}
-          onSelect={handlePersonaChange}
-        />
-      )}
       <MineStatusBar
         profile={profile}
         dailyState={dailyState}
@@ -146,6 +140,13 @@ export default function MineScreen() {
         visible={!!showNicknameModal}
         onSubmit={handleNicknameSubmit}
       />
+
+      {profile?.role === "admin" && (
+        <PersonaFab
+          currentPersona={currentPersona}
+          onSelect={handlePersonaChange}
+        />
+      )}
     </SafeAreaView>
   );
 }
