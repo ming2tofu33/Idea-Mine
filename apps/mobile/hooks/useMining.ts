@@ -53,7 +53,7 @@ export function useMining({ role, personaTier }: MiningOptions) {
           generations_max: res.generations_max,
         },
         isLoading: false,
-        selectedVeinId: res.veins[0]?.id ?? null,
+        selectedVeinId: res.veins.find((v) => !v.is_selected)?.id ?? res.veins[0]?.id ?? null,
       }));
     } catch (e) {
       const msg = e instanceof ApiClientError ? e.message : "광맥을 불러오지 못했습니다";
@@ -92,10 +92,14 @@ export function useMining({ role, personaTier }: MiningOptions) {
       setState((s) => ({
         ...s,
         isGenerating: false,
+        veins: s.veins.map((v) =>
+          v.id === veinId ? { ...v, is_selected: true } : v
+        ),
         dailyState: {
           ...s.dailyState,
           generations_used: s.dailyState.generations_used + 1,
         },
+        selectedVeinId: s.veins.find((v) => v.id !== veinId && !v.is_selected)?.id ?? null,
       }));
       return res;
     } catch (e) {
