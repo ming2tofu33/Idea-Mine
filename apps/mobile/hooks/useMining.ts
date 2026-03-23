@@ -23,7 +23,12 @@ const INITIAL_DAILY_STATE: DailyState = {
   generations_max: 1,
 };
 
-export function useMining(role: "user" | "admin" = "user") {
+interface MiningOptions {
+  role: "user" | "admin";
+  personaTier: "free" | "lite" | "pro" | null;
+}
+
+export function useMining({ role, personaTier }: MiningOptions) {
   const [state, setState] = useState<MiningState>({
     veins: [],
     dailyState: INITIAL_DAILY_STATE,
@@ -99,13 +104,15 @@ export function useMining(role: "user" | "admin" = "user") {
     }
   }, []);
 
-  const isExhausted = role === "admin" ? false : state.dailyState.generations_used >= state.dailyState.generations_max;
-  const rerollsLeft = state.dailyState.rerolls_max - state.dailyState.rerolls_used;
+  const isUnlimited = role === "admin" && !personaTier;
+  const isExhausted = isUnlimited ? false : state.dailyState.generations_used >= state.dailyState.generations_max;
+  const rerollsLeft = isUnlimited ? 999 : state.dailyState.rerolls_max - state.dailyState.rerolls_used;
   const selectedVein = state.veins.find((v) => v.id === state.selectedVeinId) ?? null;
 
   return {
     ...state,
     isExhausted,
+    isUnlimited,
     rerollsLeft,
     selectedVein,
     loadTodayVeins,

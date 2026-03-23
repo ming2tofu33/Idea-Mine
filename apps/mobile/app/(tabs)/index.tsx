@@ -22,7 +22,10 @@ export default function MineScreen() {
     veins, dailyState, selectedVein, selectedVeinId,
     isLoading, isGenerating, isExhausted, rerollsLeft, error,
     loadTodayVeins, selectVein, reroll, mine,
-  } = useMining(profile?.role ?? "user");
+  } = useMining({
+    role: profile?.role ?? "user",
+    personaTier: profile?.persona_tier ?? null,
+  });
 
   const language = profile?.language ?? "ko";
   const bagMax = getBagCapacity(profile?.miner_level ?? 1);
