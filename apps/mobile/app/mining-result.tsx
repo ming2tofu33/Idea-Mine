@@ -17,6 +17,7 @@ export default function MiningResultScreen() {
     veinId: string;
     bagMax: string;
     tier: string;
+    role: string;
     language: string;
   }>();
 
@@ -29,8 +30,10 @@ export default function MiningResultScreen() {
   const veinId = params.veinId ?? "";
   const bagMax = parseInt(params.bagMax ?? "2", 10);
   const tier = params.tier ?? "free";
+  const role = params.role ?? "user";
   const language = (params.language ?? "ko") as "ko" | "en";
-  const isCart = tier === "lite" || tier === "pro";
+  const isAdmin = role === "admin";
+  const isCart = isAdmin || tier === "lite" || tier === "pro";
   const transportLabel = isCart ? "광차에 싣기" : "가방에 담기";
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());

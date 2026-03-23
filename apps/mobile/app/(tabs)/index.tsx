@@ -130,6 +130,7 @@ export default function MineScreen() {
           veinId: result.vein_id,
           bagMax: String(bagMax),
           tier: profile?.tier ?? "free",
+          role: profile?.role ?? "user",
           language,
         },
       });
