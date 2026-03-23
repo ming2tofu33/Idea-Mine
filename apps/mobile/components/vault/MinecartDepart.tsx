@@ -10,37 +10,27 @@ interface MinecartDepartProps {
 }
 
 export function MinecartDepart({ gemCount }: MinecartDepartProps) {
-  const cartX = useRef(new Animated.Value(-60)).current;
-  const gemsOpacity = useRef(new Animated.Value(0)).current;
+  const cartX = useRef(new Animated.Value(0)).current;
+  const gemsOpacity = useRef(new Animated.Value(1)).current;
   const textOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.sequence([
-      Animated.timing(cartX, {
-        toValue: SCREEN_WIDTH * 0.3,
-        duration: 400,
-        easing: Easing.out(Easing.quad),
-        useNativeDriver: true,
-      }),
-      Animated.timing(gemsOpacity, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.delay(200),
+      // 텍스트 표시
       Animated.timing(textOpacity, {
         toValue: 1,
         duration: 200,
         useNativeDriver: true,
       }),
+      // 왼쪽 끝에서 오른쪽 끝까지 이동
       Animated.timing(cartX, {
-        toValue: SCREEN_WIDTH + 60,
-        duration: 800,
-        easing: Easing.in(Easing.quad),
+        toValue: SCREEN_WIDTH,
+        duration: 1200,
+        easing: Easing.inOut(Easing.quad),
         useNativeDriver: true,
       }),
     ]).start();
-  }, [cartX, gemsOpacity, textOpacity]);
+  }, [cartX, textOpacity]);
 
   const wobble = useRef(new Animated.Value(0)).current;
   useEffect(() => {

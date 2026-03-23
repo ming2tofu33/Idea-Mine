@@ -8,6 +8,7 @@ tags:
 # IDEA MINE MCP Server — 구현 계획
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **For Claude:** REQUIRED SKILL: MCP 서버 구현 시 반드시 `/mcp-builder` 스킬을 사용할 것.
 
 **Goal:** 백엔드 API 4개 엔드포인트 + MCP 서버 4개 도구를 구현하여, AI 어시스턴트에서 IDEA MINE 핵심 루프(광맥 보기 → 채굴 → 개요서)를 체험할 수 있게 한다.
 

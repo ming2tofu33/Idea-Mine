@@ -112,3 +112,4 @@ Vault는 여러 방으로 나뉜 시설이 아니라, **하나의 작은 금고 
 
 - [[plans/2026-03-23-camp-screen-direction|Camp Screen Direction]] — 감정 중심 공간 설계 방식 참고
 - [[plans/2026-03-23-lab-screen-direction|Lab Screen Direction]] — Vault 다음 단계의 정제 흐름
+- `2026-03-23-loading-animations.md` — 금고 반입 로딩 연출 (광차 출발)
