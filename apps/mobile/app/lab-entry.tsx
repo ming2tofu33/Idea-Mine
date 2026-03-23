@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { midnight } from "../constants/theme";
+import { midnight, lab } from "../constants/theme";
 import { supabase } from "../lib/supabase";
 import { labApi, ApiClientError } from "../lib/api";
 import { PixelText } from "../components/PixelText";
@@ -48,10 +48,15 @@ export default function LabEntryScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <View style={styles.header}>
-        <PixelText variant="body" style={styles.back} onPress={() => router.back()}>{"← "}돌아가기</PixelText>
+        <PixelText variant="body" style={styles.back} onPress={() => router.back()}>
+          {"← "}실험실
+        </PixelText>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <PixelText variant="title" style={styles.heading}>이 원석을 프로젝트 개요로 다듬어볼까요?</PixelText>
+        <PixelText variant="title" color={lab.panel.default} style={styles.heading}>
+          이 원석을 프로젝트 개요로 다듬어볼까요?
+        </PixelText>
+
         <View style={styles.workbench}>
           <PixelText variant="subtitle">{title}</PixelText>
           <PixelText variant="body" style={styles.summary}>{summary}</PixelText>
@@ -61,20 +66,39 @@ export default function LabEntryScreen() {
             ))}
           </View>
         </View>
+
         {error && <PixelText variant="caption" style={styles.error}>{error}</PixelText>}
-        <PixelButton title="이 원석으로 개요서 만들기" variant="primary" onPress={handleGenerate} style={styles.cta} />
+
+        <PixelButton
+          title="이 원석으로 개요서 만들기"
+          variant="primary"
+          onPress={handleGenerate}
+          style={styles.cta}
+        />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: midnight.bg.primary },
-  header: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: midnight.border.subtle },
-  back: { color: midnight.accent.gold },
+  safe: { flex: 1, backgroundColor: lab.bg.wall },
+  header: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: lab.equipment.default,
+  },
+  back: { color: lab.panel.default },
   content: { padding: 16 },
   heading: { marginBottom: 20 },
-  workbench: { backgroundColor: midnight.bg.elevated, borderRadius: 8, padding: 16, marginBottom: 20 },
+  workbench: {
+    backgroundColor: lab.bg.floor,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: lab.equipment.default,
+    padding: 16,
+    marginBottom: 20,
+  },
   summary: { color: midnight.text.secondary, marginTop: 8, marginBottom: 12 },
   chips: { flexDirection: "row", flexWrap: "wrap" },
   error: { color: midnight.status.error, marginBottom: 12 },
