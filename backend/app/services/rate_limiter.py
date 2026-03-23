@@ -13,8 +13,10 @@ TIER_LIMITS = {
 }
 
 
-def check_rate_limit_l1(user_id: str) -> None:
-    """L1: 분당 3회, 시간당 20회 속도 제한."""
+def check_rate_limit_l1(user_id: str, role: str = "user") -> None:
+    """L1: 분당 3회, 시간당 20회 속도 제한. admin은 건너뜀."""
+    if role == "admin":
+        return
     now = time.time()
     key = f"mining:{user_id}"
 
@@ -55,8 +57,9 @@ async def check_daily_limit_l2(
     user_id: str,
     tier: str,
     action: str,
+    role: str = "user",
 ) -> dict:
-    """L2: 일일 상한 체크. user_daily_state 조회/생성 후 반환."""
+    """L2: 일일 상한 체크. admin은 상한 체크를 건너뛰고 state만 반환."""
     today = date.today().isoformat()
     limits = TIER_LIMITS.get(tier, TIER_LIMITS["free"])
 
@@ -78,6 +81,10 @@ async def check_daily_limit_l2(
             .execute()
         )
         state = insert_result.data[0]
+
+    # admin은 상한 체크 건너뜀
+    if role == "admin":
+        return state
 
     # 액션별 상한 체크 (action="none"이면 조회만)
     if action == "reroll":
