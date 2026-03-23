@@ -21,7 +21,7 @@ async def get_or_create_today_veins(
     user_id: str,
     tier: str,
 ) -> list[dict]:
-    """오늘의 광맥 3개를 조회하거나 새로 생성."""
+    """오늘의 활성 광맥 3개를 조회하거나 새로 생성."""
     today = date.today().isoformat()
 
     existing = (
@@ -29,6 +29,7 @@ async def get_or_create_today_veins(
         .select("*")
         .eq("user_id", user_id)
         .eq("date", today)
+        .eq("is_active", True)
         .order("slot_index")
         .execute()
     )
@@ -44,13 +45,13 @@ async def reroll_veins(
     user_id: str,
     tier: str,
 ) -> list[dict]:
-    """광맥 3개를 새로 뽑아서 교체. 채굴된 광맥(아이디어가 있는)은 보존."""
+    """광맥 3개를 새로 뽑기. 기존 광맥은 비활성화 (히스토리 보존)."""
     today = date.today().isoformat()
 
-    # 오늘 광맥 중 아직 채굴 안 된 것만 삭제 (is_selected=false)
-    supabase.table("veins").delete().eq(
-        "user_id", user_id
-    ).eq("date", today).eq("is_selected", False).execute()
+    # 기존 활성 광맥을 비활성화
+    supabase.table("veins").update(
+        {"is_active": False}
+    ).eq("user_id", user_id).eq("date", today).eq("is_active", True).execute()
 
     return await _create_veins(supabase, user_id, tier, today)
 
@@ -61,7 +62,7 @@ async def _create_veins(
     tier: str,
     today: str,
 ) -> list[dict]:
-    """광맥 3개 생성 내부 로직."""
+    """광맥 3개 생성. slot_index는 기존 max+1부터 시작."""
     categories = ["who", "domain", "tech", "value", "money"]
     if tier in ("lite", "pro"):
         categories.append("ai")
@@ -77,9 +78,22 @@ async def _create_veins(
         )
         keywords_by_cat[cat] = result.data
 
+    # 기존 slot_index 최대값 조회 (리롤 히스토리 포함)
+    existing_slots = (
+        supabase.table("veins")
+        .select("slot_index")
+        .eq("user_id", user_id)
+        .eq("date", today)
+        .order("slot_index", desc=True)
+        .limit(1)
+        .execute()
+    )
+    start_slot = (existing_slots.data[0]["slot_index"] + 1) if existing_slots.data else 1
+
     veins = []
-    for slot in range(1, 4):
-        # 5~6개 카테고리 중 5개를 랜덤 선택 (6개면 1개 빠짐, 5개면 전부)
+    for i in range(3):
+        slot = start_slot + i
+
         num_keywords = min(len(categories), random.randint(5, len(categories)))
         selected_cats = random.sample(categories, num_keywords)
 
@@ -99,6 +113,7 @@ async def _create_veins(
                 "slot_index": slot,
                 "keyword_ids": keyword_ids,
                 "rarity": rarity,
+                "is_active": True,
             })
             .execute()
             .data[0]
