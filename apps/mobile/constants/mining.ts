@@ -1,0 +1,60 @@
+/**
+ * IDEA MINE — Mining Constants
+ * 카테고리 색상, 희귀도 설정, 가방 용량, 로딩 메시지
+ */
+
+import { midnight } from "./theme";
+
+export const CATEGORY_COLORS: Record<string, string> = {
+  ai: "#8B5CF6",
+  who: "#EC4899",
+  domain: "#4E9A6B",
+  tech: "#6496FF",
+  value: "#C9A044",
+  money: "#B85450",
+};
+
+export const CATEGORY_LABELS: Record<string, { ko: string; en: string }> = {
+  ai: { ko: "AI", en: "AI" },
+  who: { ko: "누구", en: "Who" },
+  domain: { ko: "분야", en: "Domain" },
+  tech: { ko: "기술", en: "Tech" },
+  value: { ko: "가치", en: "Value" },
+  money: { ko: "수익", en: "Money" },
+};
+
+export const RARITY_CONFIG = {
+  common: {
+    label: { ko: "일반", en: "Common" },
+    color: midnight.text.muted,
+    borderColor: midnight.border.default,
+  },
+  uncommon: {
+    label: { ko: "반짝", en: "Uncommon" },
+    icon: "✦",
+    color: midnight.accent.gold,
+    borderColor: midnight.accent.gold,
+  },
+  rare: {
+    label: { ko: "희귀", en: "Rare" },
+    icon: "★",
+    color: midnight.purple.default,
+    borderColor: midnight.purple.default,
+  },
+};
+
+export const BAG_CAPACITY_BY_LEVEL: Record<number, number> = {
+  1: 2, 2: 2, 3: 3, 4: 3, 5: 4, 6: 4, 7: 5, 8: 5, 9: 5, 10: 5,
+};
+
+export function getBagCapacity(level: number): number {
+  if (level <= 0) return 2;
+  if (level > 10) return 5;
+  return BAG_CAPACITY_BY_LEVEL[level] ?? 2;
+}
+
+export const MINING_LOADER_MESSAGES = [
+  { ko: "광맥을 스캔하는 중...", en: "Scanning the vein..." },
+  { ko: "결정 구조를 분석하는 중...", en: "Analyzing crystal structure..." },
+  { ko: "아이디어 결정을 추출하는 중...", en: "Extracting idea crystals..." },
+];
