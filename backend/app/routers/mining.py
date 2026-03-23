@@ -87,6 +87,12 @@ async def mine_vein(
     if not vein.data:
         raise HTTPException(status_code=404, detail="Vein not found")
 
+    if vein.data.get("is_selected"):
+        raise HTTPException(
+            status_code=400,
+            detail={"error": "already_mined", "message": "이미 채굴한 광맥이에요"}
+        )
+
     keywords = (
         supabase.table("keywords")
         .select("id, slug, category, ko, en, is_premium")

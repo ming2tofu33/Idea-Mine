@@ -1,8 +1,15 @@
-import { TouchableOpacity, View, StyleSheet } from "react-native";
+import { TouchableOpacity, View, StyleSheet, ImageSourcePropType } from "react-native";
 import { PixelText } from "../PixelText";
+import { PixelImage } from "../PixelImage";
 import { midnight } from "../../constants/theme";
 import { RARITY_CONFIG } from "../../constants/mining";
 import type { Vein } from "../../types/api";
+
+const VEIN_SPRITES: Record<string, ImageSourcePropType> = {
+  common: require("../../assets/sprites/items/vein-common.png"),
+  uncommon: require("../../assets/sprites/items/vein-golden.png"),
+  rare: require("../../assets/sprites/items/vein-legend.png"),
+};
 
 interface MiniVeinCardProps {
   vein: Vein;
@@ -15,21 +22,32 @@ export function MiniVeinCard({ vein, isSelected, language, onPress }: MiniVeinCa
   const rarity = RARITY_CONFIG[vein.rarity] ?? RARITY_CONFIG.common;
   const rarityLabel = rarity.label[language];
   const preview = vein.keywords.slice(0, 2).map((k) => k[language]).join(", ");
+  const isMined = vein.is_selected;
 
   return (
     <TouchableOpacity
       style={[
         styles.card,
-        isSelected && { borderColor: midnight.accent.gold, borderWidth: 2 },
+        isSelected && !isMined && { borderColor: midnight.accent.gold, borderWidth: 2 },
+        isMined && styles.minedCard,
       ]}
-      onPress={onPress}
-      activeOpacity={0.7}
+      onPress={isMined ? undefined : onPress}
+      activeOpacity={isMined ? 1 : 0.7}
+      disabled={isMined}
     >
-      <PixelText variant="caption" style={{ color: rarity.color }}>
-        {"icon" in rarity ? `${rarity.icon} ` : ""}{rarityLabel}
-      </PixelText>
+      <View style={styles.headerRow}>
+        <PixelImage
+          source={VEIN_SPRITES[vein.rarity] ?? VEIN_SPRITES.common}
+          size={32}
+          scale={1}
+          style={styles.veinSprite}
+        />
+        <PixelText variant="caption" style={{ color: rarity.color, flex: 1 }}>
+          {"icon" in rarity ? `${rarity.icon} ` : ""}{rarityLabel}
+        </PixelText>
+      </View>
       <PixelText variant="caption" style={styles.preview} numberOfLines={2}>
-        {preview}
+        {isMined ? "채굴 완료" : preview}
       </PixelText>
     </TouchableOpacity>
   );
@@ -47,8 +65,19 @@ const styles = StyleSheet.create({
     minHeight: 72,
     justifyContent: "space-between",
   },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  veinSprite: {
+    marginRight: 6,
+  },
   preview: {
     color: midnight.text.secondary,
     marginTop: 4,
+  },
+  minedCard: {
+    opacity: 0.4,
+    borderColor: midnight.text.muted,
   },
 });
