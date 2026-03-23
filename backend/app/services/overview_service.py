@@ -5,10 +5,11 @@ from openai import OpenAI
 from supabase import Client
 from app.config import settings
 from app.prompts.overview import build_overview_prompt
+from app.services.market_research import research_market
 
 _openai: OpenAI | None = None
 MODEL = "gpt-4o-mini"
-PROMPT_VERSION = "overview-v1"
+PROMPT_VERSION = "overview-v2"
 COST_PER_1K_INPUT = 0.00015
 COST_PER_1K_OUTPUT = 0.0006
 
@@ -28,12 +29,22 @@ async def generate_overview(
     source: str = "app",
 ) -> dict:
     session_id = str(uuid.uuid4())
+
+    # Step 1: Tavily로 시장 조사
+    market_data = await research_market(
+        title_en=idea["title_en"],
+        summary_en=idea["summary_en"],
+        keywords=idea["keyword_combo"],
+    )
+
+    # Step 2: 시장 데이터를 포함한 프롬프트 생성
     prompt = build_overview_prompt(
         title_ko=idea["title_ko"],
         title_en=idea["title_en"],
         summary_ko=idea["summary_ko"],
         summary_en=idea["summary_en"],
         keywords=idea["keyword_combo"],
+        market_research=market_data,
     )
 
     client = get_openai()

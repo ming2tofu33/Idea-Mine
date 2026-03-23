@@ -4,3 +4,4 @@ pydantic-settings==2.9.1
 openai==1.82.0
 supabase==2.15.2
 python-dotenv==1.1.0
+tavily-python==0.7.23
