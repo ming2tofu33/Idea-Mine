@@ -24,7 +24,7 @@ export function MineStatusBar({ profile, dailyState, bagCount, bagMax }: MineSta
           Lv.{profile?.miner_level ?? 1}
         </PixelText>
         <PixelText variant="caption" emoji style={styles.streakText}>
-          {"🔥 "}연속 {profile?.consecutive_days ?? 0}일
+          {"🔥 "}연속 {profile?.streak_days ?? 0}일
         </PixelText>
       </View>
       <View style={styles.row}>

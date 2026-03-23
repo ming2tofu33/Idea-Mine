@@ -87,7 +87,7 @@ export interface UserProfile {
   language: "ko" | "en";
   tier: UserTier;
   miner_level: number;
-  consecutive_days: number;
+  streak_days: number;
   role: "user" | "admin";
   persona_tier: UserTier | null;
 }

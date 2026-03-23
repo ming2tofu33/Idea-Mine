@@ -22,7 +22,7 @@ export function useProfile() {
 
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, nickname, language, tier, miner_level, consecutive_days, role, persona_tier")
+      .select("id, nickname, language, tier, miner_level, streak_days, role, persona_tier")
       .eq("id", session.user.id)
       .single();
 
