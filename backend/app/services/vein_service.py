@@ -3,7 +3,7 @@ from datetime import date
 from supabase import Client
 
 
-RARITY_WEIGHTS = {"common": 0.7, "shiny": 0.2, "rare": 0.1}
+RARITY_WEIGHTS = {"common": 0.7, "uncommon": 0.2, "rare": 0.1}
 
 
 def pick_rarity() -> str:
@@ -11,8 +11,8 @@ def pick_rarity() -> str:
     roll = random.random()
     if roll < RARITY_WEIGHTS["rare"]:
         return "rare"
-    elif roll < RARITY_WEIGHTS["rare"] + RARITY_WEIGHTS["shiny"]:
-        return "shiny"
+    elif roll < RARITY_WEIGHTS["rare"] + RARITY_WEIGHTS["uncommon"]:
+        return "uncommon"
     return "common"
 
 
@@ -76,8 +76,12 @@ async def _create_veins(
 
     veins = []
     for slot in range(1, 4):
+        # 5~6개 카테고리 중 5개를 랜덤 선택 (6개면 1개 빠짐, 5개면 전부)
+        num_keywords = min(len(categories), random.randint(5, len(categories)))
+        selected_cats = random.sample(categories, num_keywords)
+
         keyword_ids = []
-        for cat in categories:
+        for cat in selected_cats:
             if keywords_by_cat[cat]:
                 chosen = random.choice(keywords_by_cat[cat])
                 keyword_ids.append(chosen["id"])
