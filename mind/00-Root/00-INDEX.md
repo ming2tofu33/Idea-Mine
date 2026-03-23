@@ -21,7 +21,9 @@ tags:
 | Game-Economy | [[Currency-System]] — 재화, 메타 루프, 꾸미기 |
 | Design | [[Brand-Identity]] — 픽셀 아트, 브랜드, 컴포넌트 |
 | Implementation | [[Phase-1-MVP]] — Phase 계획, 스프린트 |
+| Journal | [[QUICK-DECISIONS]] — 세션 저널, 의사결정 로그 |
 
 ## Quick Access
 
 - [[CURRENT-SPRINT]] — 현재 스프린트 현황
+- [[QUICK-DECISIONS]] — 의사결정 로그
