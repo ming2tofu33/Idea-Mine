@@ -6,7 +6,7 @@ def build_mining_prompt(
     """4군 구조 아이디어 생성 프롬프트."""
     lang_key = "en" if language == "en" else "ko"
     keyword_list = "\n".join(
-        f"- [{kw['category'].upper()}] {kw[lang_key]}" for kw in keywords
+        f"- [{kw['category'].upper()}] {kw[lang_key]} (slug: \"{kw['slug']}\")" for kw in keywords
     )
     total_keywords = len(keywords)
 

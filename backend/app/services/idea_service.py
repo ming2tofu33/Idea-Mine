@@ -99,17 +99,31 @@ async def generate_ideas(
     # 광맥을 selected로 표시
     supabase.table("veins").update({"is_selected": True}).eq("id", vein_id).execute()
 
-    # slug -> keyword 매핑
+    # slug -> keyword 매핑 (정확 매칭 + 정규화 fallback)
     kw_slug_map = {kw["slug"]: kw for kw in keywords}
+    # 정규화된 slug로도 매핑 (하이픈/언더스코어/대소문자 무시)
+    kw_slug_normalized = {
+        kw["slug"].lower().replace("-", "").replace("_", ""): kw
+        for kw in keywords
+    }
+
+    def _resolve_slug(slug: str) -> dict | None:
+        """slug 매칭: 정확 → 정규화 순으로 시도."""
+        if slug in kw_slug_map:
+            return kw_slug_map[slug]
+        normalized = slug.lower().replace("-", "").replace("_", "")
+        return kw_slug_normalized.get(normalized)
 
     # ideas 테이블에 저장
     saved_ideas = []
     for idea in ideas_raw:
         used_kws = [
-            kw_slug_map[slug]
-            for slug in idea.get("used_keywords", [])
-            if slug in kw_slug_map
+            kw for slug in idea.get("used_keywords", [])
+            if (kw := _resolve_slug(slug)) is not None
         ]
+        # fallback: 매칭된 키워드가 없으면 전체 키워드 사용
+        if not used_kws:
+            used_kws = keywords
 
         row = (
             supabase.table("ideas")
