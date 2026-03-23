@@ -66,19 +66,18 @@ async def check_daily_limit_l2(
         .select("*")
         .eq("user_id", user_id)
         .eq("date", today)
-        .maybe_single()
         .execute()
     )
 
-    if result.data:
-        state = result.data
+    if result.data and len(result.data) > 0:
+        state = result.data[0]
     else:
-        state = (
+        insert_result = (
             supabase.table("user_daily_state")
             .insert({"user_id": user_id, "date": today})
             .execute()
-            .data[0]
         )
+        state = insert_result.data[0]
 
     # 액션별 상한 체크 (action="none"이면 조회만)
     if action == "reroll":
