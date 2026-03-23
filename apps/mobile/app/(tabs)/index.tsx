@@ -14,9 +14,9 @@ import { ExhaustedBanner } from "../../components/mine/ExhaustedBanner";
 import { MiningLoader } from "../../components/mine/MiningLoader";
 import { NicknameModal } from "../../components/mine/NicknameModal";
 import { PixelText } from "../../components/PixelText";
-import { PixelButton } from "../../components/PixelButton";
 import { PixelLoadingBar } from "../../components/PixelLoadingBar";
-import { PersonaFab } from "../../components/admin/PersonaFab";
+import { AdminFab } from "../../components/admin/AdminFab";
+import { adminApi } from "../../lib/api";
 
 export default function MineScreen() {
   const router = useRouter();
@@ -68,9 +68,15 @@ export default function MineScreen() {
     loadTodayVeins();
   };
 
-  if (isGenerating) {
-    return <MiningLoader language={language} />;
-  }
+  const handleResetDaily = async () => {
+    await adminApi.resetDailyState();
+    loadTodayVeins();
+  };
+
+  const handleRegenerateVeins = async () => {
+    await adminApi.regenerateVeins();
+    loadTodayVeins();
+  };
 
   const handleNicknameModalTest = () => {
     setForceNicknameModal(true);
@@ -81,17 +87,12 @@ export default function MineScreen() {
     setForceNicknameModal(false);
   };
 
+  if (isGenerating) {
+    return <MiningLoader language={language} />;
+  }
+
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      {profile?.role === "admin" && (
-        <PixelButton
-          title="[Admin] 닉네임 모달 테스트"
-          variant="secondary"
-          size="sm"
-          onPress={handleNicknameModalTest}
-          style={{ alignSelf: "center", marginTop: 4, marginBottom: 4 }}
-        />
-      )}
       <MineStatusBar
         profile={profile}
         dailyState={dailyState}
@@ -165,9 +166,12 @@ export default function MineScreen() {
       />
 
       {profile?.role === "admin" && (
-        <PersonaFab
+        <AdminFab
           currentPersona={currentPersona}
-          onSelect={handlePersonaChange}
+          onPersonaChange={handlePersonaChange}
+          onResetDaily={handleResetDaily}
+          onRegenerateVeins={handleRegenerateVeins}
+          onTestNicknameModal={handleNicknameModalTest}
         />
       )}
     </SafeAreaView>
