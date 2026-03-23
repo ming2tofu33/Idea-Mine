@@ -1,5 +1,7 @@
 from datetime import date
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from supabase import Client
 from app.dependencies import get_supabase, get_current_user
 from app.services import vein_service
@@ -56,3 +58,29 @@ async def regenerate_veins(
         generations_used=state["generations_used"],
         generations_max=limits["generations"],
     )
+
+
+class PersonaRequest(BaseModel):
+    persona_tier: Optional[str] = None
+
+
+@router.post("/persona")
+async def set_persona(
+    body: PersonaRequest,
+    user: dict = Depends(require_admin),
+    supabase: Client = Depends(get_supabase),
+):
+    """페르소나 전환. persona_tier=null이면 admin 무제한 모드 복귀."""
+    if body.persona_tier and body.persona_tier not in ("free", "lite", "pro"):
+        raise HTTPException(status_code=400, detail="Invalid tier. Use: free, lite, pro, or null")
+
+    supabase.rpc(
+        "exec_admin_persona",
+        {"target_user_id": user["id"], "target_tier": body.persona_tier},
+    ).execute()
+
+    return {
+        "status": "ok",
+        "persona_tier": body.persona_tier,
+        "message": f"페르소나가 {'해제' if body.persona_tier is None else body.persona_tier + ' 모드로 전환'}되었습니다",
+    }

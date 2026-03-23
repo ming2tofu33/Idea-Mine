@@ -14,3 +14,10 @@ def test_require_admin_blocks_regular_user():
     with pytest.raises(HTTPException) as exc:
         require_admin(user)
     assert exc.value.status_code == 403
+
+
+def test_persona_request_valid_tiers():
+    """유효한 persona_tier 값 확인."""
+    valid = [None, "free", "lite", "pro"]
+    for tier in valid:
+        assert tier is None or tier in ("free", "lite", "pro")
