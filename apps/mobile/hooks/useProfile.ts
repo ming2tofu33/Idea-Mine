@@ -6,7 +6,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
-import { adminApi, MOCK_MODE } from "../lib/api";
+import { adminApi, isMockMode } from "../lib/api";
 import { MOCK_PROFILE } from "../lib/mock-data";
 import type { UserProfile } from "../types/api";
 
@@ -15,7 +15,7 @@ export function useProfile() {
   const [loading, setLoading] = useState(true);
 
   const fetchProfile = useCallback(async () => {
-    if (MOCK_MODE) {
+    if (isMockMode()) {
       setProfile({ ...MOCK_PROFILE });
       setLoading(false);
       return;

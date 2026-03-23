@@ -15,7 +15,10 @@ import type {
 } from "../types/api";
 import { mockMiningApi, mockIdeasApi, mockAdminApi } from "./mock-data";
 
-export const MOCK_MODE = process.env.EXPO_PUBLIC_MOCK === "true";
+// 런타임 mock 모드 토글. AdminFab에서 변경 가능.
+let _mockMode = process.env.EXPO_PUBLIC_MOCK === "true";
+export function isMockMode(): boolean { return _mockMode; }
+export function setMockMode(on: boolean): void { _mockMode = on; }
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL!;
 
@@ -78,25 +81,21 @@ export class ApiClientError extends Error {
   }
 }
 
-// --- Mining API ---
+// --- Real API implementations ---
 
-export const miningApi = MOCK_MODE ? mockMiningApi : {
+const realMiningApi = {
   getTodayVeins(): Promise<TodayVeinsResponse> {
     return apiFetch("/mining/veins/today");
   },
-
   reroll(): Promise<RerollResponse> {
     return apiFetch("/mining/veins/reroll", { method: "POST" });
   },
-
   mine(veinId: string): Promise<MineResponse> {
     return apiFetch(`/mining/veins/${veinId}/mine`, { method: "POST" });
   },
 };
 
-// --- Ideas API (Vault 반입) ---
-
-export const ideasApi = MOCK_MODE ? mockIdeasApi : {
+const realIdeasApi = {
   vaultIdeas(ideaIds: string[], veinId: string): Promise<VaultResponse> {
     return apiFetch("/ideas/vault", {
       method: "PATCH",
@@ -105,21 +104,32 @@ export const ideasApi = MOCK_MODE ? mockIdeasApi : {
   },
 };
 
-// --- Admin API ---
-
-export const adminApi = MOCK_MODE ? mockAdminApi : {
+const realAdminApi = {
   setPersona(personaTier: string | null): Promise<{ status: string; persona_tier: string | null }> {
     return apiFetch("/admin/persona", {
       method: "POST",
       body: JSON.stringify({ persona_tier: personaTier }),
     });
   },
-
   resetDailyState(): Promise<{ status: string }> {
     return apiFetch("/admin/reset-daily-state", { method: "POST" });
   },
-
   regenerateVeins(): Promise<TodayVeinsResponse> {
     return apiFetch("/admin/regenerate-veins", { method: "POST" });
   },
 };
+
+// --- Proxy: 호출 시점에 mock/real 판단 ---
+
+function proxy<T extends Record<string, (...args: any[]) => any>>(real: T, mock: T): T {
+  const handler: ProxyHandler<T> = {
+    get(_, prop: string) {
+      return (...args: any[]) => (_mockMode ? mock : real)[prop](...args);
+    },
+  };
+  return new Proxy(real, handler);
+}
+
+export const miningApi = proxy(realMiningApi, mockMiningApi);
+export const ideasApi = proxy(realIdeasApi, mockIdeasApi);
+export const adminApi = proxy(realAdminApi, mockAdminApi);

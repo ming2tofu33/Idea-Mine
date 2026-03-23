@@ -2,7 +2,7 @@ import { useState } from "react";
 import { View, StyleSheet, Pressable, ScrollView, Alert } from "react-native";
 import { PixelText } from "../PixelText";
 import { midnight } from "../../constants/theme";
-import { adminApi } from "../../lib/api";
+import { isMockMode, setMockMode } from "../../lib/api";
 import Constants from "expo-constants";
 
 // --- Types ---
@@ -47,6 +47,7 @@ export function AdminFab({
   onTestNicknameModal,
 }: AdminFabProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [mockOn, setMockOn] = useState(isMockMode());
   const current = PERSONAS.find((p) => p.key === currentPersona) ?? PERSONAS[0];
 
   const handlePersona = (mode: PersonaMode) => {
@@ -127,7 +128,33 @@ export function AdminFab({
               <MenuItem label="전체 리셋" onPress={() => placeholder("전체 리셋")} dim />
 
               {/* 환경 정보 */}
-              <PixelText variant="muted" style={styles.sectionTitle}>환경 정보</PixelText>
+              <PixelText variant="muted" style={styles.sectionTitle}>환경</PixelText>
+              <Pressable
+                style={styles.mockToggle}
+                onPress={() => {
+                  const next = !mockOn;
+                  setMockMode(next);
+                  setMockOn(next);
+                  Alert.alert(
+                    next ? "Mock 모드 ON" : "Mock 모드 OFF",
+                    next
+                      ? "API 없이 가짜 데이터로 동작합니다. 화면을 새로고침하세요."
+                      : "실제 API에 연결합니다. 화면을 새로고침하세요.",
+                  );
+                }}
+              >
+                <View style={styles.mockToggleRow}>
+                  <PixelText variant="caption" style={styles.menuLabel}>
+                    Mock 모드
+                  </PixelText>
+                  <View style={[styles.togglePill, mockOn && styles.togglePillOn]}>
+                    <View style={[styles.toggleKnob, mockOn && styles.toggleKnobOn]} />
+                  </View>
+                </View>
+                <PixelText variant="muted" style={styles.mockDesc}>
+                  {mockOn ? "가짜 데이터 사용 중" : "실제 API 연결 중"}
+                </PixelText>
+              </Pressable>
               <View style={styles.envRow}>
                 <PixelText variant="muted" style={styles.envText}>
                   App {Constants.expoConfig?.version ?? "0.1.0"} | API v0.1.0
@@ -268,6 +295,47 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
     overflow: "hidden",
+  },
+
+  // Mock 토글
+  mockToggle: {
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: midnight.border.subtle,
+  },
+  mockToggleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  mockDesc: {
+    fontSize: 9,
+    marginTop: 2,
+  },
+  togglePill: {
+    width: 32,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: midnight.bg.surface,
+    borderWidth: 1,
+    borderColor: midnight.border.default,
+    justifyContent: "center",
+    paddingHorizontal: 2,
+  },
+  togglePillOn: {
+    backgroundColor: midnight.status.success,
+    borderColor: midnight.status.success,
+  },
+  toggleKnob: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: midnight.text.muted,
+  },
+  toggleKnobOn: {
+    alignSelf: "flex-end" as const,
+    backgroundColor: "#fff",
   },
 
   // 환경 정보
