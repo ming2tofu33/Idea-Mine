@@ -64,16 +64,21 @@ tags:
   - POST /mining/veins/reroll
   - POST /mining/veins/{vein_id}/mine
 
-### 프론트엔드 (다음 작업)
+### 프론트엔드 (완료)
 
-- [ ] 홈 화면 UI (광맥 카드 캐러셀)
-- [ ] 광맥 카드 디자인 (키워드 칩, 희귀도, 분위기 태그)
-- [ ] 리롤 버튼 + Haptic 피드백
-- [ ] 상단 상태바 (닉네임, 리롤 잔여)
-- [ ] 백엔드 API 연결 (lib/api.ts)
-- [ ] 원석 결과 화면 (10개 카드 리스트)
-- [ ] 원석 선택 → 금고 반입 인터랙션
-- [ ] user_daily_state 표시
+- [x] 백엔드 API 연결 (lib/api.ts + types/api.ts)
+- [x] 홈 화면 UI (하이브리드: 미니 카드 3개 + 확장)
+- [x] 광맥 카드 디자인 (키워드 칩 + 도트 인디케이터)
+- [x] 상단 상태바 (2줄: 프로필 + 자원)
+- [x] 리롤 버튼
+- [x] 원석 결과 화면 (10개 세로 스크롤, 4군 순서)
+- [x] 원석 선택 → 가방에 담기 / 광차에 싣기 인터랙션
+- [x] user_daily_state 표시
+- [x] 세계관 로딩 연출 (MiningLoader)
+- [x] 채굴 소진 배너 + 광고 자리 (ExhaustedBanner)
+- [x] 닉네임 모달 (NicknameModal)
+- [x] Vault 반입 API (가방 용량 서버 검증)
+- [x] 코드 리뷰 수정 (PixelButton API, JSON.parse 가드, 로딩/빈 상태, user_id 방어)
 
 ---
 
