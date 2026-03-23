@@ -28,33 +28,35 @@ export default function OverviewResultScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <View style={styles.header}>
-        <PixelText variant="body" style={styles.back} onPress={() => router.back()}>{"← "}돌아가기</PixelText>
+        <PixelText variant="body" style={styles.back} onPress={() => router.back()}>
+          {"← "}돌아가기
+        </PixelText>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
-        <PixelText variant="title" style={styles.heading}>프로젝트 개요서</PixelText>
-        <View style={styles.scoresRow}>
-          <View style={styles.scoreBox}>
-            <PixelText variant="title" style={styles.scoreNum}>{overview.market_score}</PixelText>
-            <PixelText variant="caption" style={styles.scoreLabel}>시장성</PixelText>
-            <PixelText variant="caption" style={styles.scoreComment}>{get("market_comment")}</PixelText>
-          </View>
-          <View style={styles.scoreBox}>
-            <PixelText variant="title" style={styles.scoreNum}>{overview.feasibility_score}</PixelText>
-            <PixelText variant="caption" style={styles.scoreLabel}>실행성</PixelText>
-            <PixelText variant="caption" style={styles.scoreComment}>{get("feasibility_comment")}</PixelText>
-          </View>
-        </View>
+        <PixelText variant="title" style={styles.heading}>
+          프로젝트 개요서
+        </PixelText>
+
         <Section title="문제 정의" content={get("problem")} />
         <Section title="타깃 사용자" content={get("target")} />
         <Section title="핵심 기능" content={get("features")} />
+        <Section title="차별점" content={get("differentiator")} />
         <Section title="수익 구조" content={get("revenue")} />
-        <PixelButton title="금고로 돌아가기" variant="secondary" onPress={() => router.push("/(tabs)/vault")} style={styles.backButton} />
+        <Section title="MVP 범위" content={get("mvp_scope")} />
+
+        <PixelButton
+          title="금고로 돌아가기"
+          variant="secondary"
+          onPress={() => router.push("/(tabs)/vault")}
+          style={styles.backButton}
+        />
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 function Section({ title, content }: { title: string; content: string }) {
+  if (!content) return null;
   return (
     <View style={sectionStyles.container}>
       <PixelText variant="subtitle" style={sectionStyles.title}>{title}</PixelText>
@@ -69,11 +71,6 @@ const styles = StyleSheet.create({
   back: { color: midnight.accent.gold },
   content: { padding: 16 },
   heading: { marginBottom: 16 },
-  scoresRow: { flexDirection: "row", marginBottom: 24 },
-  scoreBox: { flex: 1, backgroundColor: midnight.bg.elevated, borderRadius: 8, padding: 14, alignItems: "center", marginHorizontal: 4 },
-  scoreNum: { color: midnight.accent.gold, fontSize: 28 },
-  scoreLabel: { color: midnight.text.muted, marginTop: 4 },
-  scoreComment: { color: midnight.text.secondary, marginTop: 6, textAlign: "center" },
   backButton: { marginTop: 24, alignSelf: "stretch" },
 });
 
