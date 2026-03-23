@@ -44,10 +44,13 @@ async def reroll_veins(
     user_id: str,
     tier: str,
 ) -> list[dict]:
-    """광맥 3개를 새로 뽑아서 교체."""
+    """광맥 3개를 새로 뽑아서 교체. 채굴된 광맥(아이디어가 있는)은 보존."""
     today = date.today().isoformat()
 
-    supabase.table("veins").delete().eq("user_id", user_id).eq("date", today).execute()
+    # 오늘 광맥 중 아직 채굴 안 된 것만 삭제 (is_selected=false)
+    supabase.table("veins").delete().eq(
+        "user_id", user_id
+    ).eq("date", today).eq("is_selected", False).execute()
 
     return await _create_veins(supabase, user_id, tier, today)
 
