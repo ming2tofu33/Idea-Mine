@@ -110,24 +110,7 @@ export function AdminFab({
                 <MenuItem label="닉네임 모달 테스트" onPress={() => handleAction(onTestNicknameModal)} />
               )}
 
-              {/* 디버그 */}
-              <PixelText variant="muted" style={styles.sectionTitle}>디버그</PixelText>
-              <MenuItem label="Daily State 보기" onPress={() => placeholder("Daily State")} dim />
-              <MenuItem label="AI 비용 확인" onPress={() => placeholder("AI 비용")} dim />
-              <MenuItem label="프롬프트 뷰어" onPress={() => placeholder("프롬프트 뷰어")} dim />
-
-              {/* 시뮬레이션 */}
-              <PixelText variant="muted" style={styles.sectionTitle}>시뮬레이션</PixelText>
-              <MenuItem label="광고 완료 시뮬레이션" onPress={() => placeholder("광고 시뮬레이션")} dim />
-              <MenuItem label="구독 만료 시뮬레이션" onPress={() => placeholder("구독 시뮬레이션")} dim />
-              <MenuItem label="날짜 점프" onPress={() => placeholder("날짜 점프")} dim />
-
-              {/* 데이터 관리 */}
-              <PixelText variant="muted" style={styles.sectionTitle}>데이터 관리</PixelText>
-              <MenuItem label="금고 초기화" onPress={() => placeholder("금고 초기화")} dim />
-              <MenuItem label="전체 리셋" onPress={() => placeholder("전체 리셋")} dim />
-
-              {/* 환경 정보 */}
+              {/* 환경 — Mock 토글은 자주 쓰므로 위쪽 배치 */}
               <PixelText variant="muted" style={styles.sectionTitle}>환경</PixelText>
               <Pressable
                 style={styles.mockToggle}
@@ -160,6 +143,23 @@ export function AdminFab({
                   App {Constants.expoConfig?.version ?? "0.1.0"} | API v0.1.0
                 </PixelText>
               </View>
+
+              {/* 디버그 */}
+              <PixelText variant="muted" style={styles.sectionTitle}>디버그</PixelText>
+              <MenuItem label="Daily State 보기" onPress={() => placeholder("Daily State")} dim />
+              <MenuItem label="AI 비용 확인" onPress={() => placeholder("AI 비용")} dim />
+              <MenuItem label="프롬프트 뷰어" onPress={() => placeholder("프롬프트 뷰어")} dim />
+
+              {/* 시뮬레이션 */}
+              <PixelText variant="muted" style={styles.sectionTitle}>시뮬레이션</PixelText>
+              <MenuItem label="광고 완료 시뮬레이션" onPress={() => placeholder("광고 시뮬레이션")} dim />
+              <MenuItem label="구독 만료 시뮬레이션" onPress={() => placeholder("구독 시뮬레이션")} dim />
+              <MenuItem label="날짜 점프" onPress={() => placeholder("날짜 점프")} dim />
+
+              {/* 데이터 관리 */}
+              <PixelText variant="muted" style={styles.sectionTitle}>데이터 관리</PixelText>
+              <MenuItem label="금고 초기화" onPress={() => placeholder("금고 초기화")} dim />
+              <MenuItem label="전체 리셋" onPress={() => placeholder("전체 리셋")} dim />
 
               <View style={{ height: 8 }} />
             </ScrollView>
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: midnight.border.default,
     width: 220,
-    maxHeight: 420,
+    maxHeight: 500,
     overflow: "hidden",
   },
   scroll: {
