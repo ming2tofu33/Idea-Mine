@@ -79,6 +79,36 @@ tags:
 - [x] 닉네임 모달 (NicknameModal)
 - [x] Vault 반입 API (가방 용량 서버 검증)
 - [x] 코드 리뷰 수정 (PixelButton API, JSON.parse 가드, 로딩/빈 상태, user_id 방어)
+- [x] Pipeline v2 (Python 키워드 선택 + LLM 한/영 생성 분리)
+- [x] combo_builder (4군별 랜덤 조합)
+- [x] 프롬프트 영어 재작성 (조합별 지시 + 한/영 출력)
+- [x] idea_service 전면 재작성 (text-only 파싱)
+- [x] DB 마이그레이션 (title/summary → ko/en 분리)
+- [x] 픽셀 로딩 애니메이션 (LanternScan, RerollBlast, MiningLoader)
+- [x] Admin 기능 (PersonaSwitching, FAB, rate bypass)
+- [x] 보안 수정 (노출된 Supabase 토큰 제거 + revoke)
+
+**상태:** DONE
+
+---
+
+## Sprint 3 — The Vault + The Lab (진행 중)
+
+**기간:** 2026-03-23 ~
+**Phase:** 1 (Lean MVP)
+
+### The Vault (금고)
+
+- [ ] 금고 화면 UI (저장된 원석 목록)
+- [ ] 원석 상세 보기
+- [ ] 원석 삭제
+- [ ] 실험실로 보내기 버튼
+
+### The Lab (실험실)
+
+- [ ] 프로젝트 개요 생성 (OpenAI)
+- [ ] 기본 감정 (시장성/실행성 점수)
+- [ ] 개요 결과 화면
 
 ---
 
