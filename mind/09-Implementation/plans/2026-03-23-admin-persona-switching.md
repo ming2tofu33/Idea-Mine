@@ -45,7 +45,7 @@ Run: `cd "c:\Users\amy\Desktop\Idea Mine" && npx supabase db push`
 만약 로컬 CLI가 안 되면 Supabase Management API로 직접 실행:
 
 ```bash
-curl -s -X POST "https://api.supabase.com/v1/projects/fgetveyfzejrokjxrjkz/database/query" \
+curl -s -X POST "https://api.supabase.com/v1/projects/<PROJECT_REF>/database/query" \
   -H "Authorization: Bearer <SUPABASE_ACCESS_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{"query": "<SQL here>"}'
