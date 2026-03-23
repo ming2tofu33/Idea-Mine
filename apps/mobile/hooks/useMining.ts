@@ -89,9 +89,9 @@ export function useMining({ role, personaTier }: MiningOptions) {
     setState((s) => ({ ...s, isGenerating: true, error: null }));
     try {
       const res = await miningApi.mine(veinId);
+      // isGenerating은 true로 유지 — 화면 전환 후 홈에 돌아올 때 리셋
       setState((s) => ({
         ...s,
-        isGenerating: false,
         veins: s.veins.map((v) =>
           v.id === veinId ? { ...v, is_selected: true } : v
         ),
@@ -109,6 +109,10 @@ export function useMining({ role, personaTier }: MiningOptions) {
     }
   }, []);
 
+  const stopGenerating = useCallback(() => {
+    setState((s) => ({ ...s, isGenerating: false }));
+  }, []);
+
   const isUnlimited = role === "admin" && !personaTier;
   const isExhausted = isUnlimited ? false : state.dailyState.generations_used >= state.dailyState.generations_max;
   const rerollsLeft = isUnlimited ? 999 : state.dailyState.rerolls_max - state.dailyState.rerolls_used;
@@ -124,5 +128,6 @@ export function useMining({ role, personaTier }: MiningOptions) {
     selectVein,
     reroll,
     mine,
+    stopGenerating,
   };
 }
