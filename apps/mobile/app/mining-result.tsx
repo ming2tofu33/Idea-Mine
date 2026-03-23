@@ -109,7 +109,12 @@ export default function MiningResultScreen() {
             {isCart ? "🛒 " : "🎒 "}
             {selectedIds.size}/{effectiveBagMax}
           </PixelText>
-          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+          <TouchableOpacity
+            onPress={handleClose}
+            style={styles.closeButton}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            activeOpacity={0.6}
+          >
             <PixelText variant="subtitle" style={styles.closeText}>✕</PixelText>
           </TouchableOpacity>
         </View>
@@ -162,8 +167,8 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   closeButton: {
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: midnight.bg.surface,
