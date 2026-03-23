@@ -126,6 +126,6 @@ async def _log_ai_usage(supabase: Client, **fields) -> None:
         "total_cost_usd": fields["total_cost"],
         "response_time_ms": fields["response_time_ms"],
         "status": fields["status"],
-        "language": "both",
+        "language": "ko",
         "source": fields.get("source", "app"),
     }).execute()
