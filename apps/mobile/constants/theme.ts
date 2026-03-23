@@ -90,3 +90,37 @@ export const midnight = {
     danger: "#B85450",
   },
 } as const;
+
+/**
+ * Lab — 민트 블루 실험실
+ * 레퍼런스: lab-screen-direction.md + 민트 톤 픽셀 아트
+ */
+export const lab = {
+  // 배경
+  bg: {
+    wall: "#2A4A4A",
+    floor: "#3A5A5A",
+  },
+
+  // 작업대
+  bench: {
+    default: "#5BBFAA",
+    light: "#7AD4BC",
+    dark: "#4A9A8A",
+  },
+
+  // 패널/UI 영역
+  panel: {
+    default: "#A8E6CF",
+    border: "#7AC4A8",
+  },
+
+  // 소품/장비
+  equipment: {
+    default: "#3D6B6B",
+    light: "#4A7A7A",
+  },
+
+  // 발광
+  glow: "rgba(168,230,207,0.12)",
+} as const;
