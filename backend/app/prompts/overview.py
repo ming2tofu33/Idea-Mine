@@ -6,90 +6,99 @@ def build_overview_prompt(
     keywords: list[dict],
     market_research: str,
 ) -> str:
-    """개요서 생성 프롬프트 v2. Tavily 시장 데이터 기반 근거 있는 개요서."""
+    """개요서 생성 프롬프트 v3.
+
+    변경 이력:
+    - v1: 기본 개요서
+    - v2: Tavily 시장 데이터 주입
+    - v3: 감정(평가) 완전 분리. 개요서는 순수 설명만.
+          차별점/MVP 범위 섹션 추가. 점수 제거.
+          모델: gpt-4o-mini → gpt-4o
+    """
     kw_list = ", ".join(f"{kw['en']} ({kw['category'].upper()})" for kw in keywords)
 
-    return f"""You are a senior startup analyst writing a project overview for IDEA MINE.
+    return f"""You are a senior startup advisor writing a concise project overview.
 
 === INPUT ===
 
-Idea Title: {title_en}
-Idea Summary: {summary_en}
+Idea: {title_en}
+Summary: {summary_en}
 Keywords: {kw_list}
 
-=== MARKET RESEARCH (from web search) ===
+=== MARKET CONTEXT (from web search) ===
 
 {market_research}
 
 === YOUR TASK ===
 
-Write a PROJECT OVERVIEW that a founder could actually use to evaluate this idea.
-Use the market research data above as evidence — cite specific numbers, trends, or competitors when available.
+Write a PROJECT OVERVIEW — a "first draft pitch" that lets a founder understand what this project is in under 2 minutes.
 
-=== SECTIONS ===
+This is NOT an evaluation. Do NOT score or judge the idea. Just describe it clearly and specifically.
 
-1. PROBLEM (3-5 sentences):
-   - What specific pain point does this solve?
-   - Who experiences this pain, and how often?
-   - Why do existing solutions fall short?
-   - Reference any relevant market data from the research above.
+=== SECTIONS (each section: 3-5 sentences, be specific not generic) ===
 
-2. TARGET USER (3-5 sentences):
-   - Describe ONE specific persona (age range, occupation, behavior pattern)
-   - What does their day look like? When does this product fit in?
-   - What's their current workaround?
-   - How big is this user segment?
+1. PROBLEM
+   - What specific pain does this solve? Who feels it, how often?
+   - What do people do today? Why is that not good enough?
+   - Ground this in real behavior, not hypothetical scenarios.
+   - Reference market research data when available.
 
-3. CORE FEATURES (4-5 bullet points):
-   - Each feature: "[Feature Name]: [What it does] — [Why it matters]"
-   - Order by priority (most critical first)
-   - Think MVP — what's the minimum to deliver value?
+2. TARGET USER
+   - Describe ONE vivid persona. Give them a context, not just demographics.
+   - What does their week look like? When would they reach for this product?
+   - What's their current workaround? Why is it frustrating?
+   - Be specific enough that a reader says "I know someone like this."
 
-4. REVENUE MODEL (3-5 sentences):
-   - Specific pricing suggestion (e.g., "$9.99/month")
-   - Benchmark against similar services from the research
-   - Free-to-paid conversion scenario
-   - Revenue projection hint (e.g., "1000 users × $10 = $10K MRR")
+3. CORE FEATURES (4-5 bullet points)
+   - Format: "Feature Name: what it does — why it matters"
+   - Order by criticality (most essential first)
+   - Only include what's needed for the first working version.
+   - Each feature must directly address the problem or serve the target user.
 
-=== APPRAISAL ===
+4. DIFFERENTIATOR
+   - Why would someone use THIS instead of existing alternatives?
+   - Name 1-2 specific competitors or workarounds and explain the gap.
+   - The answer should NOT be "better UX" or "AI-powered" — those are generic.
+   - What structural advantage does this keyword combination create?
 
-Rate on 1-10 scale with EVIDENCE-BASED comments:
+5. BUSINESS MODEL
+   - Suggest a specific pricing structure (free tier, paid tier, price point).
+   - Who pays and why? What's the value they're buying?
+   - Reference comparable services from the market research for benchmarking.
+   - Keep it realistic for a solo founder / small team.
 
-MARKET_SCORE: Market size, growth trend, competition level, timing.
-- Score 1-3: Tiny/saturated market
-- Score 4-6: Moderate opportunity
-- Score 7-10: Large/growing/underserved market
-- Comment MUST reference specific data from the market research.
+6. MVP SCOPE
+   - What would a 4-week MVP look like?
+   - What's IN (must-have for first version) vs OUT (defer to later)?
+   - What's the ONE thing users must experience to say "this is useful"?
+   - What's the cheapest way to test if people want this?
 
-FEASIBILITY_SCORE: Technical complexity, team requirements, time to MVP.
-- Score 1-3: Requires deep tech, large team, 6+ months
-- Score 4-6: Moderate complexity, small team, 3-4 months
-- Score 7-10: Standard tech stack, solo/duo, 1-2 months
-- Comment MUST be specific about what tech is needed.
+=== OUTPUT FORMAT ===
 
-=== RESPONSE FORMAT ===
-
-Respond ONLY with valid JSON. Generate BOTH Korean and English:
+Respond ONLY with valid JSON:
 {{{{
-  "problem_ko": "한국어 문제 정의 (3-5문장, 구체적 근거 포함)",
-  "problem_en": "English problem definition (3-5 sentences, with evidence)",
-  "target_ko": "한국어 타깃 유저 페르소나 (3-5문장)",
-  "target_en": "English target user persona (3-5 sentences)",
+  "problem_ko": "한국어 문제 정의 (3-5문장)",
+  "problem_en": "English problem definition (3-5 sentences)",
+  "target_ko": "한국어 타겟 유저 (3-5문장, 생생한 페르소나)",
+  "target_en": "English target user (3-5 sentences, vivid persona)",
   "features_ko": "• 기능1: 설명 — 이유\\n• 기능2: 설명 — 이유\\n• 기능3: 설명 — 이유\\n• 기능4: 설명 — 이유",
-  "features_en": "• Feature1: description — why\\n• Feature2: description — why\\n• Feature3: description — why\\n• Feature4: description — why",
-  "revenue_ko": "한국어 수익 모델 (구체적 가격, 벤치마크 포함)",
-  "revenue_en": "English revenue model (specific pricing, benchmarks)",
-  "market_score": 7,
-  "market_comment_ko": "한국어 시장성 근거 (데이터 인용)",
-  "market_comment_en": "English market evidence (cite data)",
-  "feasibility_score": 8,
-  "feasibility_comment_ko": "한국어 실행성 근거 (기술 스택 명시)",
-  "feasibility_comment_en": "English feasibility evidence (specific tech)"
+  "features_en": "• Feature1: desc — why\\n• Feature2: desc — why\\n• Feature3: desc — why\\n• Feature4: desc — why",
+  "differentiator_ko": "한국어 차별점 (3-5문장, 구체적 경쟁사/대안 언급)",
+  "differentiator_en": "English differentiator (3-5 sentences, name competitors)",
+  "revenue_ko": "한국어 BM 초안 (3-5문장, 벤치마크 포함)",
+  "revenue_en": "English BM draft (3-5 sentences, with benchmarks)",
+  "mvp_scope_ko": "한국어 MVP 범위 (IN/OUT 구분, 4주 기준)",
+  "mvp_scope_en": "English MVP scope (IN/OUT, 4-week target)"
 }}}}
 
-CRITICAL RULES:
-- Korean and English must convey the SAME content, each feeling natural
-- features MUST use bullet points with • separator and \\n between items
-- NEVER make up statistics — only cite data from the market research section
-- If no relevant data found, say "시장 데이터 추가 조사 필요" / "Further market research needed"
-- Scores MUST be integers 1-10"""
+=== RULES ===
+
+- Korean and English must convey the SAME content, each sounding natural.
+- features MUST use • bullet points with \\n separators.
+- NEVER fabricate statistics. Only cite data from the market research section.
+- If no market data is available, say so honestly.
+- Do NOT include scores, ratings, or evaluations. This is description only.
+- Be specific. "Users aged 25-40 who value convenience" is too vague.
+  "Solo freelancers who lose 2+ hours/week switching between invoice tools" is specific.
+- Avoid generic AI startup clichés ("leveraging AI to revolutionize...").
+  Describe what the product actually does in plain language."""

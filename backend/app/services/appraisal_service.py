@@ -1,15 +1,17 @@
 import json
 import time
 import uuid
+from typing import Literal
+
 from openai import OpenAI
 from supabase import Client
+
 from app.config import settings
-from app.prompts.overview import build_overview_prompt
-from app.services.market_research import research_market
+from app.prompts.appraisal import build_appraisal_prompt
 
 _openai: OpenAI | None = None
 MODEL = "gpt-4o"
-PROMPT_VERSION = "overview-v3"
+PROMPT_VERSION = "appraisal-v1"
 COST_PER_1K_INPUT = 0.0025
 COST_PER_1K_OUTPUT = 0.01
 
@@ -21,30 +23,23 @@ def get_openai() -> OpenAI:
     return _openai
 
 
-async def generate_overview(
+async def generate_appraisal(
     supabase: Client,
     user_id: str,
     tier: str,
-    idea: dict,
+    overview: dict,
+    keywords: list[dict],
+    market_research: str,
+    depth: Literal["basic", "precise", "deep"] = "basic",
     source: str = "app",
 ) -> dict:
     session_id = str(uuid.uuid4())
 
-    # Step 1: Tavily로 시장 조사
-    market_data = await research_market(
-        title_en=idea["title_en"],
-        summary_en=idea["summary_en"],
-        keywords=idea["keyword_combo"],
-    )
-
-    # Step 2: 시장 데이터를 포함한 프롬프트 생성
-    prompt = build_overview_prompt(
-        title_ko=idea["title_ko"],
-        title_en=idea["title_en"],
-        summary_ko=idea["summary_ko"],
-        summary_en=idea["summary_en"],
-        keywords=idea["keyword_combo"],
-        market_research=market_data,
+    prompt = build_appraisal_prompt(
+        overview=overview,
+        keywords=keywords,
+        market_research=market_research,
+        depth=depth,
     )
 
     client = get_openai()
@@ -73,7 +68,7 @@ async def generate_overview(
             user_id=user_id,
             tier=tier,
             session_id=session_id,
-            feature_type="overview",
+            feature_type=f"appraisal-{depth}",
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             total_cost=total_cost,
@@ -89,7 +84,7 @@ async def generate_overview(
             user_id=user_id,
             tier=tier,
             session_id=session_id,
-            feature_type="overview",
+            feature_type=f"appraisal-{depth}",
             input_tokens=0,
             output_tokens=0,
             total_cost=0,
@@ -100,22 +95,23 @@ async def generate_overview(
         raise
 
     row = (
-        supabase.table("overviews")
+        supabase.table("appraisals")
         .insert({
             "user_id": user_id,
-            "idea_id": idea["id"],
-            "problem_ko": result.get("problem_ko", ""),
-            "problem_en": result.get("problem_en", ""),
-            "target_ko": result.get("target_ko", ""),
-            "target_en": result.get("target_en", ""),
-            "features_ko": result.get("features_ko", ""),
-            "features_en": result.get("features_en", ""),
-            "differentiator_ko": result.get("differentiator_ko", ""),
-            "differentiator_en": result.get("differentiator_en", ""),
-            "revenue_ko": result.get("revenue_ko", ""),
-            "revenue_en": result.get("revenue_en", ""),
-            "mvp_scope_ko": result.get("mvp_scope_ko", ""),
-            "mvp_scope_en": result.get("mvp_scope_en", ""),
+            "overview_id": overview["id"],
+            "depth": depth,
+            "market_fit_ko": result.get("market_fit_ko", ""),
+            "market_fit_en": result.get("market_fit_en", ""),
+            "problem_fit_ko": result.get("problem_fit_ko", ""),
+            "problem_fit_en": result.get("problem_fit_en", ""),
+            "feasibility_ko": result.get("feasibility_ko", ""),
+            "feasibility_en": result.get("feasibility_en", ""),
+            "differentiation_ko": result.get("differentiation_ko", ""),
+            "differentiation_en": result.get("differentiation_en", ""),
+            "scalability_ko": result.get("scalability_ko", ""),
+            "scalability_en": result.get("scalability_en", ""),
+            "risk_ko": result.get("risk_ko", ""),
+            "risk_en": result.get("risk_en", ""),
         })
         .execute()
     )
