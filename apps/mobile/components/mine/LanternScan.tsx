@@ -1,25 +1,25 @@
 import { useEffect, useRef } from "react";
-import { View, Animated, StyleSheet, Easing, Dimensions } from "react-native";
+import { View, Animated, StyleSheet, Easing, useWindowDimensions } from "react-native";
 import { midnight } from "../../constants/theme";
 import { PixelText } from "../PixelText";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const SCAN_WIDTH = SCREEN_WIDTH - 64;
-
 export function LanternScan() {
+  const { width } = useWindowDimensions();
+  const range = (Math.min(width, 430) - 64) * 0.25;
+
   const translateX = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const scan = Animated.loop(
       Animated.sequence([
         Animated.timing(translateX, {
-          toValue: SCAN_WIDTH - 80,
+          toValue: range,
           duration: 1500,
           easing: Easing.inOut(Easing.quad),
           useNativeDriver: true,
         }),
         Animated.timing(translateX, {
-          toValue: 0,
+          toValue: -range,
           duration: 1500,
           easing: Easing.inOut(Easing.quad),
           useNativeDriver: true,
@@ -28,7 +28,7 @@ export function LanternScan() {
     );
     scan.start();
     return () => scan.stop();
-  }, [translateX]);
+  }, [translateX, range]);
 
   return (
     <View style={styles.container}>
@@ -74,7 +74,8 @@ const styles = StyleSheet.create({
   lanternLight: {
     position: "absolute",
     top: 16,
-    left: 0,
+    left: "50%",
+    marginLeft: -40,
     alignItems: "center",
   },
   glow: {

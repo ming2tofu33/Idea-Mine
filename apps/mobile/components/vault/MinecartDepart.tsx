@@ -1,36 +1,35 @@
 import { useEffect, useRef } from "react";
-import { View, Animated, StyleSheet, Easing, Dimensions } from "react-native";
+import { View, Animated, StyleSheet, Easing, useWindowDimensions } from "react-native";
 import { midnight } from "../../constants/theme";
 import { PixelText } from "../PixelText";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 interface MinecartDepartProps {
   gemCount: number;
 }
 
 export function MinecartDepart({ gemCount }: MinecartDepartProps) {
+  const { width } = useWindowDimensions();
+  const targetX = Math.min(width, 430);
+
   const cartX = useRef(new Animated.Value(0)).current;
   const gemsOpacity = useRef(new Animated.Value(1)).current;
   const textOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.sequence([
-      // 텍스트 표시
       Animated.timing(textOpacity, {
         toValue: 1,
         duration: 200,
         useNativeDriver: true,
       }),
-      // 왼쪽 끝에서 오른쪽 끝까지 이동
       Animated.timing(cartX, {
-        toValue: SCREEN_WIDTH,
+        toValue: targetX,
         duration: 1200,
         easing: Easing.inOut(Easing.quad),
         useNativeDriver: true,
       }),
     ]).start();
-  }, [cartX, textOpacity]);
+  }, [cartX, textOpacity, targetX]);
 
   const wobble = useRef(new Animated.Value(0)).current;
   useEffect(() => {

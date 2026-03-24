@@ -5,37 +5,86 @@ import { PixelText } from "./PixelText";
 
 const CARD_HEIGHT = 180;
 
-export function IdCardScan() {
+interface IdCardScanProps {
+  /** "preparing" = 로그인 전 (출입증 준비), "scanning" = 로그인 후 (신원 확인) */
+  variant?: "preparing" | "scanning";
+}
+
+export function IdCardScan({ variant = "scanning" }: IdCardScanProps) {
   const scanY = useRef(new Animated.Value(0)).current;
+  const cardScale = useRef(new Animated.Value(variant === "preparing" ? 0.8 : 1)).current;
+  const cardOpacity = useRef(new Animated.Value(variant === "preparing" ? 0 : 1)).current;
+  const stampOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    const scan = Animated.loop(
+    if (variant === "preparing") {
+      // 카드가 만들어지는 연출: 페이드인 + 스케일업
       Animated.sequence([
-        Animated.timing(scanY, {
-          toValue: CARD_HEIGHT - 4,
-          duration: 800,
-          easing: Easing.linear,
+        Animated.parallel([
+          Animated.timing(cardOpacity, {
+            toValue: 1,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(cardScale, {
+            toValue: 1,
+            duration: 600,
+            easing: Easing.out(Easing.quad),
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.delay(400),
+        // 도장 찍히는 연출
+        Animated.timing(stampOpacity, {
+          toValue: 1,
+          duration: 300,
           useNativeDriver: true,
         }),
-        Animated.timing(scanY, {
-          toValue: 0,
-          duration: 800,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }),
-        Animated.delay(300),
-      ])
-    );
-    scan.start();
-    return () => scan.stop();
-  }, [scanY]);
+      ]).start();
+    } else {
+      // 스캔 라인 반복
+      const scan = Animated.loop(
+        Animated.sequence([
+          Animated.timing(scanY, {
+            toValue: CARD_HEIGHT - 4,
+            duration: 800,
+            easing: Easing.linear,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scanY, {
+            toValue: 0,
+            duration: 800,
+            easing: Easing.linear,
+            useNativeDriver: true,
+          }),
+          Animated.delay(300),
+        ])
+      );
+      scan.start();
+      return () => scan.stop();
+    }
+  }, [variant, scanY, cardOpacity, cardScale, stampOpacity]);
+
+  const isPreparing = variant === "preparing";
+  const borderColor = isPreparing ? midnight.text.muted : midnight.accent.gold;
+  const message = isPreparing ? "출입증 준비 중..." : "광부 신원 확인 중...";
+  const cardTitle = isPreparing ? "출입증 발급" : "광부 출입증";
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.card}>
+      <Animated.View
+        style={[
+          styles.card,
+          {
+            borderColor,
+            opacity: cardOpacity,
+            transform: [{ scale: cardScale }],
+          },
+        ]}
+      >
         <PixelText
           variant="caption"
-          color={midnight.accent.gold}
+          color={isPreparing ? midnight.text.muted : midnight.accent.gold}
           style={{ marginBottom: 12 }}
         >
           IDEA MINE
@@ -46,23 +95,35 @@ export function IdCardScan() {
         </PixelText>
 
         <PixelText variant="body" color={midnight.text.primary}>
-          광부 출입증
+          {cardTitle}
         </PixelText>
 
-        <Animated.View
-          style={[
-            styles.scanLine,
-            { transform: [{ translateY: scanY }] },
-          ]}
-        />
-      </View>
+        {/* preparing: 도장 연출 */}
+        {isPreparing && (
+          <Animated.View style={[styles.stamp, { opacity: stampOpacity }]}>
+            <PixelText variant="caption" color={midnight.accent.gold}>
+              APPROVED
+            </PixelText>
+          </Animated.View>
+        )}
+
+        {/* scanning: 스캔 라인 */}
+        {!isPreparing && (
+          <Animated.View
+            style={[
+              styles.scanLine,
+              { transform: [{ translateY: scanY }] },
+            ]}
+          />
+        )}
+      </Animated.View>
 
       <PixelText
         variant="caption"
         color={midnight.text.muted}
         style={{ marginTop: 16 }}
       >
-        광부 신원 확인 중...
+        {message}
       </PixelText>
     </View>
   );
@@ -78,7 +139,6 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
     backgroundColor: midnight.bg.elevated,
     borderWidth: 2,
-    borderColor: midnight.accent.gold,
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
@@ -96,5 +156,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 6,
     elevation: 4,
+  },
+  stamp: {
+    position: "absolute",
+    bottom: 12,
+    right: 12,
+    borderWidth: 2,
+    borderColor: midnight.accent.gold,
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    transform: [{ rotate: "-12deg" }],
   },
 });

@@ -1,5 +1,6 @@
 import { View, StyleSheet } from "react-native";
 import { PixelText } from "../PixelText";
+import { PixelImage } from "../PixelImage";
 import { midnight } from "../../constants/theme";
 import type { UserProfile, DailyState } from "../../types/api";
 
@@ -17,8 +18,14 @@ export function MineStatusBar({ profile, dailyState, bagCount, bagMax }: MineSta
   return (
     <View style={styles.container}>
       <View style={styles.row}>
-        <PixelText variant="body" emoji>
-          {"⛏ "}{profile?.nickname ?? "광부"}님
+        <PixelImage
+          source={require("../../assets/sprites/characters/miner-idle.png")}
+          size={32}
+          scale={1}
+          style={styles.minerIcon}
+        />
+        <PixelText variant="body">
+          {profile?.nickname ?? "광부"}님
         </PixelText>
         <PixelText variant="caption" style={styles.levelText}>
           Lv.{profile?.miner_level ?? 1}
@@ -57,6 +64,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 2,
+  },
+  minerIcon: {
+    marginRight: 6,
   },
   levelText: {
     color: midnight.accent.gold,
