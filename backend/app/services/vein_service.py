@@ -3,16 +3,17 @@ from datetime import date
 from supabase import Client
 
 
-RARITY_WEIGHTS = {"common": 0.7, "uncommon": 0.2, "rare": 0.1}
+RARITY_WEIGHTS = {"common": 0.55, "rare": 0.25, "golden": 0.15, "legend": 0.05}
 
 
 def pick_rarity() -> str:
-    """확률 기반 희귀도 배정."""
+    """확률 기반 희귀도 배정. common > rare > golden > legend."""
     roll = random.random()
-    if roll < RARITY_WEIGHTS["rare"]:
-        return "rare"
-    elif roll < RARITY_WEIGHTS["rare"] + RARITY_WEIGHTS["uncommon"]:
-        return "uncommon"
+    cumulative = 0.0
+    for rarity, weight in RARITY_WEIGHTS.items():
+        cumulative += weight
+        if roll < cumulative:
+            return rarity
     return "common"
 
 
@@ -67,16 +68,20 @@ async def _create_veins(
     if tier in ("lite", "pro"):
         categories.append("ai")
 
-    keywords_by_cat: dict[str, list[dict]] = {}
-    for cat in categories:
-        result = (
-            supabase.table("keywords")
-            .select("id, slug, category, ko, en, is_premium")
-            .eq("category", cat)
-            .eq("is_active", True)
-            .execute()
-        )
-        keywords_by_cat[cat] = result.data
+    # 단일 쿼리로 전체 active 키워드 조회 후 Python에서 분류
+    all_keywords = (
+        supabase.table("keywords")
+        .select("id, slug, category, ko, en, is_premium")
+        .eq("is_active", True)
+        .in_("category", categories)
+        .execute()
+    ).data
+
+    keywords_by_cat: dict[str, list[dict]] = {cat: [] for cat in categories}
+    for kw in all_keywords:
+        cat = kw["category"]
+        if cat in keywords_by_cat:
+            keywords_by_cat[cat].append(kw)
 
     # 기존 slot_index 최대값 조회 (리롤 히스토리 포함)
     existing_slots = (

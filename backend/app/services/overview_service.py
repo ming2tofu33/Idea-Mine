@@ -104,6 +104,8 @@ async def generate_overview(
         .insert({
             "user_id": user_id,
             "idea_id": idea["id"],
+            "concept_ko": result.get("concept_ko", ""),
+            "concept_en": result.get("concept_en", ""),
             "problem_ko": result.get("problem_ko", ""),
             "problem_en": result.get("problem_en", ""),
             "target_ko": result.get("target_ko", ""),

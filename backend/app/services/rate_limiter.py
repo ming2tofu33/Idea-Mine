@@ -113,21 +113,25 @@ async def increment_daily_count(
     supabase: Client,
     user_id: str,
     action: str,
+    current_state: dict | None = None,
 ) -> None:
-    """일일 사용량 +1."""
+    """일일 사용량 +1. current_state가 있으면 SELECT 생략."""
     today = date.today().isoformat()
     field = f"{action}s_used"
 
-    result = (
-        supabase.table("user_daily_state")
-        .select(field)
-        .eq("user_id", user_id)
-        .eq("date", today)
-        .single()
-        .execute()
-    )
+    if current_state:
+        new_count = current_state[field] + 1
+    else:
+        result = (
+            supabase.table("user_daily_state")
+            .select(field)
+            .eq("user_id", user_id)
+            .eq("date", today)
+            .single()
+            .execute()
+        )
+        new_count = result.data[field] + 1
 
-    new_count = result.data[field] + 1
     (
         supabase.table("user_daily_state")
         .update({field: new_count})

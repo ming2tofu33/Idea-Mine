@@ -101,30 +101,24 @@ async def generate_ideas(
 
     ideas_by_order = {idea["sort_order"]: idea for idea in ideas_raw}
 
-    saved_ideas = []
+    rows_to_insert = []
     for combo in combos:
         order = combo["sort_order"]
         idea_text = ideas_by_order.get(order, {})
+        rows_to_insert.append({
+            "user_id": user_id,
+            "vein_id": vein_id,
+            "title_ko": idea_text.get("title_ko", "제목 없음"),
+            "title_en": idea_text.get("title_en", "Untitled"),
+            "summary_ko": idea_text.get("summary_ko", "요약 없음"),
+            "summary_en": idea_text.get("summary_en", "No summary"),
+            "keyword_combo": combo["keywords"],
+            "tier_type": combo["tier_type"],
+            "sort_order": order,
+        })
 
-        row = (
-            supabase.table("ideas")
-            .insert({
-                "user_id": user_id,
-                "vein_id": vein_id,
-                "title_ko": idea_text.get("title_ko", "제목 없음"),
-                "title_en": idea_text.get("title_en", "Untitled"),
-                "summary_ko": idea_text.get("summary_ko", "요약 없음"),
-                "summary_en": idea_text.get("summary_en", "No summary"),
-                "keyword_combo": combo["keywords"],
-                "tier_type": combo["tier_type"],
-                "sort_order": order,
-            })
-            .execute()
-        )
-
-        saved_ideas.append(row.data[0])
-
-    return saved_ideas
+    result = supabase.table("ideas").insert(rows_to_insert).execute()
+    return result.data
 
 
 async def _log_ai_usage(supabase: Client, **fields) -> None:

@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 from app.dependencies import get_supabase, get_current_user, get_effective_tier, get_effective_role
@@ -17,12 +18,14 @@ async def get_today_veins(
     tier = get_effective_tier(user)
     role = get_effective_role(user)
 
-    veins = await vein_service.get_or_create_today_veins(supabase, user["id"], tier)
-    veins = await vein_service.resolve_vein_keywords(supabase, veins)
-
-    state = await rate_limiter.check_daily_limit_l2(
+    # 광맥 조회와 daily state 조회를 병렬 실행
+    veins_task = vein_service.get_or_create_today_veins(supabase, user["id"], tier)
+    state_task = rate_limiter.check_daily_limit_l2(
         supabase, user["id"], tier, action="none", role=role
     )
+    veins, state = await asyncio.gather(veins_task, state_task)
+
+    veins = await vein_service.resolve_vein_keywords(supabase, veins)
     limits = rate_limiter.TIER_LIMITS.get(tier, rate_limiter.TIER_LIMITS["free"])
 
     return TodayVeinsResponse(
@@ -44,21 +47,23 @@ async def reroll(
     role = get_effective_role(user)
 
     rate_limiter.check_rate_limit_l1(user["id"], role=role)
-    await rate_limiter.check_daily_limit_l2(supabase, user["id"], tier, action="reroll", role=role)
+    state = await rate_limiter.check_daily_limit_l2(supabase, user["id"], tier, action="reroll", role=role)
 
     veins = await vein_service.reroll_veins(supabase, user["id"], tier)
-    veins = await vein_service.resolve_vein_keywords(supabase, veins)
 
-    await rate_limiter.increment_daily_count(supabase, user["id"], "reroll")
+    # keyword resolve와 increment를 병렬 실행
+    resolve_task = vein_service.resolve_vein_keywords(supabase, veins)
+    increment_task = rate_limiter.increment_daily_count(
+        supabase, user["id"], "reroll", current_state=state
+    )
+    veins, _ = await asyncio.gather(resolve_task, increment_task)
 
     limits = rate_limiter.TIER_LIMITS.get(tier, rate_limiter.TIER_LIMITS["free"])
-    state = await rate_limiter.check_daily_limit_l2(
-        supabase, user["id"], tier, action="none", role=role
-    )
 
+    # state를 재사용 (중복 check_daily_limit_l2 호출 제거)
     return RerollResponse(
         veins=veins,
-        rerolls_used=state["rerolls_used"],
+        rerolls_used=state["rerolls_used"] + 1,
         rerolls_max=limits["rerolls"],
     )
 
@@ -76,14 +81,10 @@ async def mine_vein(
     role = get_effective_role(user)
 
     rate_limiter.check_rate_limit_l1(user["id"], role=role)
-    await rate_limiter.check_daily_limit_l2(supabase, user["id"], tier, action="generation", role=role)
+    state = await rate_limiter.check_daily_limit_l2(supabase, user["id"], tier, action="generation", role=role)
 
-    vein = (
-        supabase.table("veins")
-        .select("*")
-        .eq("id", vein_id)
-        .eq("user_id", user["id"])
-        .execute()
+    vein = await asyncio.to_thread(
+        lambda: supabase.table("veins").select("*").eq("id", vein_id).eq("user_id", user["id"]).execute()
     )
     vein_data = vein.data[0] if vein.data else None
 
@@ -96,21 +97,23 @@ async def mine_vein(
             detail={"error": "already_mined", "message": "이미 채굴한 광맥이에요"}
         )
 
-    keywords = (
-        supabase.table("keywords")
+    keywords = await asyncio.to_thread(
+        lambda: supabase.table("keywords")
         .select("id, slug, category, ko, en, is_premium")
         .in_("id", vein_data["keyword_ids"])
         .execute()
-    ).data
+    )
 
     ideas = await idea_service.generate_ideas(
         supabase=supabase,
         user_id=user["id"],
         tier=tier,
         vein_id=vein_id,
-        keywords=keywords,
+        keywords=keywords.data,
         language=user.get("language", "ko"),
     )
 
-    await rate_limiter.increment_daily_count(supabase, user["id"], "generation")
+    await rate_limiter.increment_daily_count(
+        supabase, user["id"], "generation", current_state=state
+    )
     return MineResponse(ideas=ideas, vein_id=vein_id)
