@@ -675,6 +675,7 @@ interface MiniVeinCardProps {
 }
 
 export function MiniVeinCard({ vein, isSelected, language, onPress }: MiniVeinCardProps) {
+  // rarity: "common" | "golden" | "legend"
   const rarity = RARITY_CONFIG[vein.rarity] ?? RARITY_CONFIG.common;
   const rarityLabel = rarity.label[language];
   const preview = vein.keywords.slice(0, 2).map((k) => k[language]).join(", ");
@@ -753,6 +754,7 @@ interface ExpandedVeinCardProps {
 }
 
 export function ExpandedVeinCard({ vein, language, isExhausted, onMine }: ExpandedVeinCardProps) {
+  // rarity: "common" | "golden" | "legend"
   const rarity = RARITY_CONFIG[vein.rarity] ?? RARITY_CONFIG.common;
 
   return (

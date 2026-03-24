@@ -83,9 +83,9 @@ apps/mobile/assets/sprites/
   characters/
     miner-idle.png           <- 광부 기본 자세
   items/
-    vein-common.png          <- 일반 광맥
-    vein-sparkle.png         <- 반짝 광맥
-    vein-rare.png            <- 희귀 광맥
+    vein-common.png          <- 일반 광맥 (Common)
+    vein-golden.png          <- 금빛 광맥 (Golden)
+    vein-legend.png          <- 전설 광맥 (Legend)
     gem-raw.png              <- 원석 (기본)
     lantern.png              <- 랜턴
     minecart.png             <- 광차
@@ -120,9 +120,9 @@ apps/mobile/assets/sprites/
 **오브젝트**
 | 에셋 | 파일명 | 크기 (원본) | 비고 |
 |------|--------|------------|------|
-| 일반 광맥 | vein-common.png | 32x32 | 회청 계열 |
-| 반짝 광맥 | vein-sparkle.png | 32x32 | 골드 계열 |
-| 희귀 광맥 | vein-rare.png | 32x32 | 보라/핑크-퍼플 계열 |
+| 일반 광맥 (Common) | vein-common.png | 32x32 | 회청 계열 |
+| 금빛 광맥 (Golden) | vein-golden.png | 32x32 | 골드 계열 + 발광 |
+| 전설 광맥 (Legend) | vein-legend.png | 32x32 | 보라/핑크-퍼플 계열 + 발광 |
 | 광부 (idle) | miner-idle.png | 32x32 | 가만히 서 있는 상태 |
 | 랜턴 | lantern.png | 16x16 | 소품, 2배 확대 |
 | 광차 | minecart.png | 32x16 | 가로형 소품 |
