@@ -3,6 +3,7 @@ import {
   View,
   StyleSheet,
   Pressable,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -60,7 +61,7 @@ function VeinObject({
   const pos = VEIN_POSITIONS[index] ?? VEIN_POSITIONS[0];
   const rarity = RARITY_CONFIG[vein.rarity] ?? RARITY_CONFIG.common;
   const rarityLabel = rarity.label[language];
-  const preview = vein.keywords.slice(0, 2).map((k) => k[language]).join(", ");
+  const preview = vein.keywords.map((k) => `· ${k[language]}`).join("\n");
   const dimmed = hasSelection && !isSelected;
 
   return (
@@ -88,7 +89,7 @@ function VeinObject({
         <PixelText variant="caption" style={{ color: rarity.color }}>
           {"icon" in rarity ? `${rarity.icon} ` : ""}{rarityLabel}
         </PixelText>
-        <PixelText variant="caption" style={styles.veinPreview} numberOfLines={1}>
+        <PixelText variant="caption" style={styles.veinPreview}>
           {preview}
         </PixelText>
       </View>
@@ -117,6 +118,11 @@ export default function MineScreen() {
 
   const handleMine = async () => {
     if (!selectedVeinId) return;
+    const targetVein = veins.find((v) => v.id === selectedVeinId);
+    if (targetVein?.is_selected) {
+      Alert.alert("이미 채굴한 광맥", "이미 채굴한 광맥이에요. 다른 광맥을 선택해주세요.");
+      return;
+    }
     const result = await mine(selectedVeinId);
     if (result) {
       router.push({
@@ -342,20 +348,20 @@ const styles = StyleSheet.create({
   // 소품
   propLantern: {
     position: "absolute",
-    top: "30%",
-    left: "48%",
+    bottom: "14%",
+    right: "8%",
     opacity: 0.6,
   },
   propMinecart: {
     position: "absolute",
-    bottom: "8%",
+    bottom: "6%",
     left: "5%",
     opacity: 0.4,
   },
   propMiner: {
     position: "absolute",
-    top: "32%",
-    left: "42%",
+    bottom: "10%",
+    left: "38%",
     opacity: 0.7,
   },
 
@@ -383,7 +389,7 @@ const styles = StyleSheet.create({
   veinObject: {
     position: "absolute",
     alignItems: "center",
-    width: 120,
+    width: 140,
     zIndex: 10,
   },
   veinDimmed: {
@@ -409,7 +415,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     alignItems: "center",
-    maxWidth: 110,
   },
   veinPreview: {
     color: midnight.text.secondary,
