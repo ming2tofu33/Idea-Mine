@@ -15,6 +15,7 @@ import type {
   ApiError,
 } from "../types/api";
 import type { Overview } from "../types/overview";
+import type { Appraisal } from "../types/appraisal";
 import { mockMiningApi, mockIdeasApi, mockAdminApi } from "./mock-data";
 
 // 런타임 mock 모드 토글. AdminFab에서 변경 가능.
@@ -205,6 +206,13 @@ export const labApi = {
     return apiFetch("/lab/overview", {
       method: "POST",
       body: JSON.stringify({ idea_id: ideaId }),
+    });
+  },
+
+  createAppraisal(overviewId: string, depth: string = "basic"): Promise<Appraisal> {
+    return apiFetch("/lab/appraisal", {
+      method: "POST",
+      body: JSON.stringify({ overview_id: overviewId, depth }),
     });
   },
 };
