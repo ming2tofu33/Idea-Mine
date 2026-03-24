@@ -3,7 +3,7 @@ import { View, StyleSheet, ScrollView } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { midnight } from "../constants/theme";
-import { supabase } from "../lib/supabase";
+import { vaultApi } from "../lib/api";
 import { PixelText } from "../components/PixelText";
 import { PixelButton } from "../components/PixelButton";
 import type { Overview } from "../types/overview";
@@ -16,8 +16,8 @@ export default function OverviewResultScreen() {
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase.from("overviews").select("*").eq("id", params.overviewId).single();
-      if (data) setOverview(data as Overview);
+      const data = await vaultApi.getOverview(params.overviewId!);
+      if (data) setOverview(data);
     }
     load();
   }, [params.overviewId]);
@@ -28,8 +28,8 @@ export default function OverviewResultScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <View style={styles.header}>
-        <PixelText variant="body" style={styles.back} onPress={() => router.back()}>
-          {"← "}돌아가기
+        <PixelText variant="body" style={styles.back} onPress={() => router.replace("/(tabs)/lab")}>
+          {"← "}실험실
         </PixelText>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
 });
 
 const sectionStyles = StyleSheet.create({
-  container: { backgroundColor: midnight.bg.elevated, borderRadius: 8, padding: 16, marginBottom: 12 },
+  container: { backgroundColor: midnight.bg.elevated, borderWidth: 2, borderColor: midnight.border.default, padding: 16, marginBottom: 12 },
   title: { color: midnight.accent.gold, marginBottom: 8 },
   content: { color: midnight.text.primary },
 });

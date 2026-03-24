@@ -44,8 +44,7 @@ export function IdeaCard({ idea, language, isInBag, bagFull, transportLabel, onT
 const styles = StyleSheet.create({
   card: {
     backgroundColor: midnight.bg.elevated,
-    borderRadius: 8,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: midnight.border.default,
     padding: 16,
     marginBottom: 12,

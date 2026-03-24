@@ -21,8 +21,8 @@ export function OverviewCard({ overview, language, onPress }: OverviewCardProps)
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: midnight.bg.elevated, borderRadius: 8,
-    borderWidth: 1, borderColor: midnight.border.default, padding: 14, marginBottom: 10,
+    backgroundColor: midnight.bg.elevated,
+    borderWidth: 2, borderColor: midnight.border.default, padding: 12, marginBottom: 12,
   },
   label: { color: midnight.accent.gold, marginBottom: 4 },
   problem: { color: midnight.text.primary },

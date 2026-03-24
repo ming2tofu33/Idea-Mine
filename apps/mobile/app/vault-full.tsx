@@ -79,6 +79,6 @@ const styles = StyleSheet.create({
   tabText: { color: midnight.text.muted },
   tabTextActive: { color: midnight.accent.gold },
   grid: { padding: 8 },
-  gridItem: { flex: 1, backgroundColor: midnight.bg.elevated, borderRadius: 6, padding: 12, margin: 4, minHeight: 60 },
+  gridItem: { flex: 1, backgroundColor: midnight.bg.elevated, borderWidth: 2, borderColor: midnight.border.default, padding: 12, margin: 4, minHeight: 60 },
   list: { padding: 16 },
 });

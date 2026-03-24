@@ -3,7 +3,6 @@ import { View, StyleSheet, ScrollView, Alert } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { midnight } from "../constants/theme";
-import { supabase } from "../lib/supabase";
 import { vaultApi } from "../lib/api";
 import { PixelText } from "../components/PixelText";
 import { PixelButton } from "../components/PixelButton";
@@ -19,8 +18,8 @@ export default function IdeaDetailScreen() {
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase.from("ideas").select("*").eq("id", params.ideaId).single();
-      if (data) setIdea(data as Idea);
+      const data = await vaultApi.getIdea(params.ideaId!);
+      if (data) setIdea(data);
       setLoading(false);
     }
     load();
@@ -44,7 +43,7 @@ export default function IdeaDetailScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <View style={styles.header}>
-        <PixelText variant="body" style={styles.back} onPress={() => router.back()}>{"← "}금고</PixelText>
+        <PixelText variant="body" style={styles.back} onPress={() => router.replace("/(tabs)/vault")}>{"← "}금고</PixelText>
       </View>
       <ScrollView contentContainerStyle={styles.content}>
         <PixelText variant="title">{title}</PixelText>
