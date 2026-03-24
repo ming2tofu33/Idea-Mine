@@ -45,10 +45,11 @@ async def vault_ideas(
     for idea_id in req.idea_ids:
         validate_uuid(idea_id, "idea_id")
 
+    role = user.get("role", "user")
     tier = user.get("tier", "free")
     level = user.get("miner_level", 1)
 
-    if tier in ("lite", "pro"):
+    if role == "admin" or tier in ("lite", "pro"):
         max_items = 10
     else:
         max_items = _get_bag_capacity(level)
