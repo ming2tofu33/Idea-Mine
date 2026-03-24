@@ -24,18 +24,29 @@ export function setMockMode(on: boolean): void { _mockMode = on; }
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL!;
 
-// --- Core fetch wrapper ---
+// --- Access Token 캐시 ---
+// onAuthStateChange로 자동 갱신, getSession() 매번 호출 방지
 
-async function getAccessToken(): Promise<string | null> {
-  const { data } = await supabase.auth.getSession();
-  return data.session?.access_token ?? null;
+let _cachedToken: string | null = null;
+
+supabase.auth.onAuthStateChange((_event, session) => {
+  _cachedToken = session?.access_token ?? null;
+});
+
+// 초기화: 앱 시작 시 기존 세션 토큰 로드
+supabase.auth.getSession().then(({ data }) => {
+  _cachedToken = data.session?.access_token ?? null;
+});
+
+function getAccessToken(): string | null {
+  return _cachedToken;
 }
 
 async function apiFetch<T>(
   path: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = await getAccessToken();
+  const token = getAccessToken();
 
   const res = await fetch(`${API_URL}${path}`, {
     ...options,
@@ -156,6 +167,26 @@ export const vaultApi = {
       .order("created_at", { ascending: false });
     if (error) throw error;
     return data ?? [];
+  },
+
+  async getIdea(ideaId: string): Promise<Idea | null> {
+    const { data, error } = await supabase
+      .from("ideas")
+      .select("*")
+      .eq("id", ideaId)
+      .single();
+    if (error) throw error;
+    return data as Idea | null;
+  },
+
+  async getOverview(overviewId: string): Promise<Overview | null> {
+    const { data, error } = await supabase
+      .from("overviews")
+      .select("*")
+      .eq("id", overviewId)
+      .single();
+    if (error) throw error;
+    return data as Overview | null;
   },
 
   async deleteIdea(ideaId: string): Promise<void> {

@@ -23,23 +23,34 @@ export const CATEGORY_LABELS: Record<string, { ko: string; en: string }> = {
   money: { ko: "수익", en: "Money" },
 };
 
-export const RARITY_CONFIG = {
+export const RARITY_CONFIG: Record<string, {
+  label: { ko: string; en: string };
+  icon?: string;
+  color: string;
+  borderColor: string;
+}> = {
   common: {
     label: { ko: "일반", en: "Common" },
     color: midnight.text.muted,
     borderColor: midnight.border.default,
   },
-  uncommon: {
-    label: { ko: "반짝", en: "Uncommon" },
+  rare: {
+    label: { ko: "희귀", en: "Rare" },
     icon: "✦",
+    color: midnight.purple.default,
+    borderColor: midnight.purple.default,
+  },
+  golden: {
+    label: { ko: "금빛", en: "Golden" },
+    icon: "★",
     color: midnight.accent.gold,
     borderColor: midnight.accent.gold,
   },
-  rare: {
-    label: { ko: "희귀", en: "Rare" },
-    icon: "★",
-    color: midnight.purple.default,
-    borderColor: midnight.purple.default,
+  legend: {
+    label: { ko: "전설", en: "Legend" },
+    icon: "◆",
+    color: "#E0E0E0",
+    borderColor: "#E0E0E0",
   },
 };
 

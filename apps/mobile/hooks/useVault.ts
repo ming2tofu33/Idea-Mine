@@ -1,37 +1,55 @@
-import { useState, useCallback } from "react";
+/**
+ * IDEA MINE — useVault Hook
+ * React Query로 금고 데이터를 캐시. Lab/Vault 탭 간 공유.
+ */
+
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { vaultApi } from "../lib/api";
 import type { Idea } from "../types/api";
 import type { Overview } from "../types/overview";
 
 export function useVault() {
-  const [ideas, setIdeas] = useState<Idea[]>([]);
-  const [overviews, setOverviews] = useState<Overview[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
-  const loadVault = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [ideasData, overviewsData] = await Promise.all([
-        vaultApi.getVaultedIdeas(),
-        vaultApi.getOverviews(),
-      ]);
-      setIdeas(ideasData);
-      setOverviews(overviewsData);
-    } catch (e) {
-      setError("금고 데이터를 불러오지 못했습니다");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const {
+    data: ideas = [],
+    isLoading: ideasLoading,
+    error: ideasError,
+  } = useQuery<Idea[]>({
+    queryKey: ["vault-ideas"],
+    queryFn: vaultApi.getVaultedIdeas,
+    staleTime: 30 * 1000, // 30초
+  });
+
+  const {
+    data: overviews = [],
+    isLoading: overviewsLoading,
+    error: overviewsError,
+  } = useQuery<Overview[]>({
+    queryKey: ["vault-overviews"],
+    queryFn: vaultApi.getOverviews,
+    staleTime: 30 * 1000,
+  });
+
+  const loading = ideasLoading || overviewsLoading;
+  const error = ideasError || overviewsError
+    ? "금고 데이터를 불러오지 못했습니다"
+    : null;
+
+  const loadVault = () => {
+    queryClient.invalidateQueries({ queryKey: ["vault-ideas"] });
+    queryClient.invalidateQueries({ queryKey: ["vault-overviews"] });
+  };
 
   const deleteIdea = async (ideaId: string) => {
     try {
       await vaultApi.deleteIdea(ideaId);
-      setIdeas((prev) => prev.filter((i) => i.id !== ideaId));
+      queryClient.setQueryData<Idea[]>(["vault-ideas"], (old) =>
+        old ? old.filter((i) => i.id !== ideaId) : []
+      );
     } catch {
-      setError("원석을 삭제하지 못했습니다");
+      // 에러 시 refetch로 복구
+      queryClient.invalidateQueries({ queryKey: ["vault-ideas"] });
     }
   };
 

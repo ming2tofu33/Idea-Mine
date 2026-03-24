@@ -1,21 +1,14 @@
 /**
  * IDEA MINE — useMining Hook
- * 광맥 조회, 리롤, 채굴 상태 관리
+ * 광맥 조회, 리롤, 채굴 상태 관리.
+ * React Query로 today-veins 캐시 + mutation.
  */
 
 import { useState, useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { miningApi, ApiClientError } from "../lib/api";
 import { withMinDelay } from "../lib/minDelay";
-import type { Vein, DailyState } from "../types/api";
-
-interface MiningState {
-  veins: Vein[];
-  dailyState: DailyState;
-  selectedVeinId: string | null;
-  isLoading: boolean;
-  isGenerating: boolean;
-  error: string | null;
-}
+import type { Vein, DailyState, TodayVeinsResponse } from "../types/api";
 
 const INITIAL_DAILY_STATE: DailyState = {
   rerolls_used: 0,
@@ -30,100 +23,116 @@ interface MiningOptions {
 }
 
 export function useMining({ role, personaTier }: MiningOptions) {
-  const [state, setState] = useState<MiningState>({
-    veins: [],
-    dailyState: INITIAL_DAILY_STATE,
-    selectedVeinId: null,
-    isLoading: true,
-    isGenerating: false,
-    error: null,
+  const queryClient = useQueryClient();
+  const [selectedVeinId, setSelectedVeinId] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { data, isLoading } = useQuery<TodayVeinsResponse>({
+    queryKey: ["today-veins"],
+    queryFn: () => withMinDelay(miningApi.getTodayVeins(), 1500),
+    staleTime: 0,
+    refetchOnMount: true,
   });
 
-  const loadTodayVeins = useCallback(async () => {
-    setState((s) => ({ ...s, isLoading: true, error: null }));
-    try {
-      const res = await withMinDelay(miningApi.getTodayVeins(), 1500);
-      setState((s) => ({
-        ...s,
-        veins: res.veins,
-        dailyState: {
-          rerolls_used: res.rerolls_used,
-          rerolls_max: res.rerolls_max,
-          generations_used: res.generations_used,
-          generations_max: res.generations_max,
-        },
-        isLoading: false,
-        selectedVeinId: res.veins.find((v) => !v.is_selected)?.id ?? res.veins[0]?.id ?? null,
-      }));
-    } catch (e) {
-      const msg = e instanceof ApiClientError ? e.message : "광맥을 불러오지 못했습니다";
-      setState((s) => ({ ...s, isLoading: false, error: msg }));
-    }
-  }, []);
+  const veins = data?.veins ?? [];
+  const dailyState: DailyState = data
+    ? {
+        rerolls_used: data.rerolls_used,
+        rerolls_max: data.rerolls_max,
+        generations_used: data.generations_used,
+        generations_max: data.generations_max,
+      }
+    : INITIAL_DAILY_STATE;
+
+  // veins 로드 후 첫 번째 미선택 광맥 자동 선택
+  const effectiveSelectedId =
+    selectedVeinId && veins.some((v) => v.id === selectedVeinId)
+      ? selectedVeinId
+      : veins.find((v) => !v.is_selected)?.id ?? veins[0]?.id ?? null;
+
+  const loadTodayVeins = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ["today-veins"] });
+  }, [queryClient]);
 
   const selectVein = (veinId: string) => {
-    setState((s) => ({ ...s, selectedVeinId: veinId }));
+    setSelectedVeinId(veinId);
   };
 
   const reroll = useCallback(async () => {
-    setState((s) => ({ ...s, error: null }));
+    setError(null);
     try {
       const res = await miningApi.reroll();
-      setState((s) => ({
-        ...s,
-        veins: res.veins,
-        dailyState: {
-          ...s.dailyState,
-          rerolls_used: res.rerolls_used,
-          rerolls_max: res.rerolls_max,
-        },
-        selectedVeinId: res.veins[0]?.id ?? null,
-      }));
+      // 캐시 직접 업데이트 (네트워크 재요청 없이)
+      queryClient.setQueryData<TodayVeinsResponse>(["today-veins"], (old) =>
+        old
+          ? {
+              ...old,
+              veins: res.veins,
+              rerolls_used: res.rerolls_used,
+              rerolls_max: res.rerolls_max,
+            }
+          : undefined
+      );
+      setSelectedVeinId(res.veins[0]?.id ?? null);
     } catch (e) {
       const msg = e instanceof ApiClientError ? e.message : "리롤에 실패했습니다";
-      setState((s) => ({ ...s, error: msg }));
+      setError(msg);
     }
-  }, []);
+  }, [queryClient]);
 
   const mine = useCallback(async (veinId: string) => {
-    setState((s) => ({ ...s, isGenerating: true, error: null }));
+    setIsGenerating(true);
+    setError(null);
     try {
       const res = await miningApi.mine(veinId);
-      // isGenerating은 true로 유지 — 화면 전환 후 홈에 돌아올 때 리셋
-      setState((s) => ({
-        ...s,
-        veins: s.veins.map((v) =>
-          v.id === veinId ? { ...v, is_selected: true } : v
-        ),
-        dailyState: {
-          ...s.dailyState,
-          generations_used: s.dailyState.generations_used + 1,
-        },
-        selectedVeinId: s.veins.find((v) => v.id !== veinId && !v.is_selected)?.id ?? null,
-      }));
+      // 캐시에서 해당 광맥 is_selected 업데이트
+      queryClient.setQueryData<TodayVeinsResponse>(["today-veins"], (old) =>
+        old
+          ? {
+              ...old,
+              veins: old.veins.map((v) =>
+                v.id === veinId ? { ...v, is_selected: true } : v
+              ),
+              generations_used: old.generations_used + 1,
+            }
+          : undefined
+      );
+      setSelectedVeinId(
+        veins.find((v) => v.id !== veinId && !v.is_selected)?.id ?? null
+      );
+      // 금고 데이터도 invalidate (새 아이디어 추가됨)
+      queryClient.invalidateQueries({ queryKey: ["vault-ideas"] });
       return res;
     } catch (e) {
+      console.error("[mine error]", e instanceof ApiClientError ? `${e.status}: ${e.message}` : e);
       const msg = e instanceof ApiClientError ? e.message : "채굴에 실패했습니다";
-      setState((s) => ({ ...s, isGenerating: false, error: msg }));
+      setIsGenerating(false);
+      setError(msg);
       return null;
     }
-  }, []);
+  }, [queryClient, veins]);
 
   const stopGenerating = useCallback(() => {
-    setState((s) => ({ ...s, isGenerating: false }));
+    setIsGenerating(false);
   }, []);
 
   const isUnlimited = role === "admin" && !personaTier;
-  const isExhausted = isUnlimited ? false : state.dailyState.generations_used >= state.dailyState.generations_max;
-  const rerollsLeft = isUnlimited ? 999 : state.dailyState.rerolls_max - state.dailyState.rerolls_used;
-  const selectedVein = state.veins.find((v) => v.id === state.selectedVeinId) ?? null;
+  const isExhausted = isUnlimited ? false : dailyState.generations_used >= dailyState.generations_max;
+  const rerollsLeft = isUnlimited ? 999 : dailyState.rerolls_max - dailyState.rerolls_used;
+  const selectedVein = veins.find((v) => v.id === effectiveSelectedId) ?? null;
 
   return {
-    ...state,
+    veins,
+    dailyState,
+    selectedVeinId: effectiveSelectedId,
+    selectedVein,
+    isLoading,
+    isGenerating,
     isExhausted,
     isUnlimited,
     rerollsLeft,
-    selectedVein,
+    error,
     loadTodayVeins,
     selectVein,
     reroll,
