@@ -118,6 +118,73 @@ tags:
 
 ---
 
+## 8. 확률 고지 (Probability Disclosure)
+
+### IDEA MINE의 확률 요소
+
+광맥 희귀도가 확률 기반으로 결정됨:
+
+| 조건 | 일반 광맥 | 금빛 광맥 | 전설 광맥 |
+|------|----------|----------|----------|
+| 비시즌 평일 | 97% | 3% | 0% |
+| 비시즌 주말 | 94% | 6% | 0% |
+| 시즌 평일 | 90% | 8% | 2% |
+| 시즌 주말 | 82% | 13% | 5% |
+
+*광맥 3개 각각에 독립 적용. 상세: `mind/10-Journal/QUICK-DECISIONS.md` "광맥 희귀도" 섹션.*
+
+### 법적 적용 여부 분석
+
+#### 한국 게임산업진흥법 (2024.3.22 시행)
+
+- **대상:** "게임물"에서 "직접적/간접적으로 유상으로 구매하는 확률형 아이템"
+- **IDEA MINE 해당 여부:** 낮음
+  - IDEA MINE은 아이디어 생성 도구이지 "게임물"이 아님
+  - 광맥은 Free 포함 전 유저에게 무상 제공
+  - 온전히 무상 아이템은 고지 대상에서 제외
+- **리스크:** 게이미피케이션 요소(레벨, 배지, 퀘스트 등 Phase 2)가 추가되면 "게임물" 해석 여지 확대
+- **"간접적 유상" 해석 주의:** Lite/Pro 구독자가 확률 기반 광맥에서 시즌 한정 키워드를 얻는 구조 — 무상 재화가 유료 구매 가능한 재화와 교환 가능하면 "간접적 유상"으로 본다는 해설서 기준에 비추어, 구독 경험의 일부로 확률이 작동하면 해석 논란 가능
+
+#### Apple App Store (Guidelines 3.1.1)
+
+- **원문:** "Apps offering 'loot boxes' or other mechanisms that provide randomized virtual items **for purchase** must disclose the odds"
+- **IDEA MINE 해당 여부:** 경계선
+  - 광맥 자체는 무상이지만, 구독(Lite/Pro)이 확률 결과의 품질에 영향 (AI 키워드 포함 여부)
+  - 심사 과정에서 게이미피케이션 UI + 확률 요소를 보면 고지 요구 가능성 있음
+
+#### Google Play (Developer Program Policy)
+
+- **원문:** "Apps and games offering mechanisms to receive randomized virtual items **from a purchase** must clearly disclose the odds"
+- **IDEA MINE 해당 여부:** Apple과 동일한 경계선 분석 적용
+
+### 결론: 자발적 준수 (권장)
+
+법적 의무가 확실하지 않더라도 **자발적 고지를 채택** (QUICK-DECISIONS 2026-03-23 결정):
+
+1. **법적 안전 마진** — 간접적 유상 해석, 게임물 분류 논란 사전 차단
+2. **앱스토어 심사 리스크 제거** — 확률 고지가 있으면 리젝 사유 제거
+3. **사용자 신뢰** — 투명한 확률 공개는 리텐션에 긍정적
+4. **구현 비용 낮음** — 정보 표시 UI만 추가하면 됨
+
+### 고지 방법 (계획)
+
+| 위치 | 방식 |
+|------|------|
+| 광산 화면 (The Mine) | 광맥 옆 물음표(?) 아이콘 → 확률표 바텀시트 |
+| 설정 (Camp) | "확률 정보" 메뉴 → 전체 확률표 페이지 |
+| 앱스토어 설명 | 앱 설명란에 확률 정보 명시 |
+| Privacy Policy / ToS | 확률 기반 콘텐츠 제공 사실 언급 |
+
+### 참고 법령 및 정책
+
+- [게임산업진흥법 확률정보공개 해설서 (법무법인)](https://www.draju.com/ko/sub/newsletters.html?type=view&bsNo=3840)
+- [3월부터 확률형 아이템 정보 공개 의무화 (정책브리핑)](https://www.korea.kr/news/policyNewsView.do?newsId=148926013)
+- [직/간접적 유상 구매 아이템 모두 대상 (한국경제)](https://www.hankyung.com/article/202402192237Y)
+- [Apple Loot Box Odds Disclosure (Fenwick)](https://www.fenwick.com/insights/publications/apple-now-requires-disclosure-of-loot-box-odds)
+- [Google Play Loot Box Odds Disclosure (Fenwick)](https://www.fenwick.com/insights/publications/google-play-now-requires-disclosure-of-loot-box-odds)
+
+---
+
 ## Related
 
 - [[Monetization-Strategy]] — 수익화 전략과 법적 요구사항 연동
