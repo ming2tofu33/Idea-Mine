@@ -38,7 +38,7 @@ export default function SignInScreen() {
 
         <View style={styles.buttons}>
           {loading ? (
-            <IdCardScan />
+            <IdCardScan variant="preparing" />
           ) : (
             <>
               <PixelButton

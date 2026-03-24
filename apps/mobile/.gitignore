@@ -39,3 +39,8 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# AI-generated pixel art sprites (PixelLab/SeaArt)
+# Regenerate via PixelLab MCP or scripts/
+assets/sprites/**
+!assets/sprites/**/.gitkeep
