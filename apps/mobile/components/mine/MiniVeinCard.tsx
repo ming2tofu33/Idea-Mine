@@ -47,9 +47,17 @@ export function MiniVeinCard({ vein, isSelected, language, onPress }: MiniVeinCa
           {"icon" in rarity ? `${rarity.icon} ` : ""}{rarityLabel}
         </PixelText>
       </View>
-      <PixelText variant="caption" style={styles.preview} numberOfLines={2}>
-        {isMined ? "채굴 완료" : preview}
-      </PixelText>
+      {isMined ? (
+        <View style={styles.minedOverlay}>
+          <PixelText variant="caption" emoji style={styles.minedText}>
+            {"✅ "}채굴 완료
+          </PixelText>
+        </View>
+      ) : (
+        <PixelText variant="caption" style={styles.preview} numberOfLines={2}>
+          {preview}
+        </PixelText>
+      )}
     </TouchableOpacity>
   );
 }
@@ -62,7 +70,7 @@ const styles = StyleSheet.create({
     borderColor: midnight.border.default,
     padding: 8,
     marginHorizontal: 4,
-    minHeight: 72,
+    minHeight: 80,
     justifyContent: "space-between",
   },
   headerRow: {
@@ -77,7 +85,16 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   minedCard: {
-    opacity: 0.4,
+    opacity: 0.5,
     borderColor: midnight.text.muted,
+    backgroundColor: midnight.bg.deep,
+  },
+  minedOverlay: {
+    marginTop: 4,
+    paddingVertical: 2,
+  },
+  minedText: {
+    color: midnight.text.muted,
+    textAlign: "center",
   },
 });
