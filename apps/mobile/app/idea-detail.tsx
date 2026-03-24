@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView, Alert } from "react-native";
+import { View, StyleSheet, ScrollView } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { midnight } from "../constants/theme";
@@ -7,12 +7,15 @@ import { vaultApi } from "../lib/api";
 import { PixelText } from "../components/PixelText";
 import { PixelButton } from "../components/PixelButton";
 import { KeywordChip } from "../components/shared/KeywordChip";
+import { PixelModal } from "../components/shared/PixelModal";
+import { usePixelModal } from "../hooks/usePixelModal";
 import type { Idea } from "../types/api";
 
 export default function IdeaDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ ideaId: string; language: string }>();
   const language = (params.language ?? "ko") as "ko" | "en";
+  const { modalState, showModal, hideModal } = usePixelModal();
   const [idea, setIdea] = useState<Idea | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -26,9 +29,9 @@ export default function IdeaDetailScreen() {
   }, [params.ideaId]);
 
   const handleDelete = () => {
-    Alert.alert("원석 삭제", "이 원석을 금고에서 삭제할까요?", [
-      { text: "취소", style: "cancel" },
-      { text: "삭제", style: "destructive", onPress: async () => { await vaultApi.deleteIdea(params.ideaId!); router.back(); } },
+    showModal("원석 삭제", "이 원석을 금고에서 삭제할까요?", [
+      { text: "취소", variant: "secondary", onPress: () => hideModal() },
+      { text: "삭제", variant: "danger", onPress: async () => { hideModal(); await vaultApi.deleteIdea(params.ideaId!); router.back(); } },
     ]);
   };
 
@@ -56,6 +59,14 @@ export default function IdeaDetailScreen() {
         <PixelButton title="실험실로 보내기" variant="primary" onPress={handleSendToLab} style={styles.ctaButton} />
         <PixelButton title="원석 삭제" variant="danger" onPress={handleDelete} style={styles.deleteButton} />
       </ScrollView>
+
+      <PixelModal
+        visible={modalState.visible}
+        title={modalState.title}
+        message={modalState.message}
+        buttons={modalState.buttons}
+        onClose={hideModal}
+      />
     </SafeAreaView>
   );
 }

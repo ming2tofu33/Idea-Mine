@@ -4,7 +4,6 @@ import {
   Pressable,
   Modal,
   StyleSheet,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabase";
@@ -14,6 +13,8 @@ import { midnight } from "../../constants/theme";
 import { PixelText } from "../../components/PixelText";
 import { PixelButton } from "../../components/PixelButton";
 import { PixelImage } from "../../components/PixelImage";
+import { PixelModal } from "../../components/shared/PixelModal";
+import { usePixelModal } from "../../hooks/usePixelModal";
 
 // --- 설정 바텀시트 ---
 
@@ -90,6 +91,7 @@ function SettingsSheet({
 export default function MyMineScreen() {
   const { session } = useSession();
   const { profile, updateLanguage } = useProfile();
+  const { modalState, showModal, hideModal } = usePixelModal();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const language = profile?.language ?? "ko";
@@ -104,7 +106,7 @@ export default function MyMineScreen() {
   async function handleSignOut() {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      Alert.alert("오류", error.message);
+      showModal("오류", error.message);
     }
     setSettingsOpen(false);
   }
@@ -248,6 +250,14 @@ export default function MyMineScreen() {
         onClose={() => setSettingsOpen(false)}
         onSignOut={handleSignOut}
         onToggleLanguage={handleToggleLanguage}
+      />
+
+      <PixelModal
+        visible={modalState.visible}
+        title={modalState.title}
+        message={modalState.message}
+        buttons={modalState.buttons}
+        onClose={hideModal}
       />
     </SafeAreaView>
   );

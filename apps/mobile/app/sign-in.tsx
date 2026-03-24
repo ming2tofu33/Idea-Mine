@@ -1,13 +1,16 @@
 import { useState } from "react";
-import { View, StyleSheet, Alert } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { signInWithOAuth } from "../lib/supabase";
 import { withMinDelay } from "../lib/minDelay";
 import { midnight } from "../constants/theme";
 import { PixelText } from "../components/PixelText";
 import { PixelButton } from "../components/PixelButton";
+import { PixelModal } from "../components/shared/PixelModal";
+import { usePixelModal } from "../hooks/usePixelModal";
 import { IdCardScan } from "../components/IdCardScan";
 
 export default function SignInScreen() {
+  const { modalState, showModal, hideModal } = usePixelModal();
   const [loading, setLoading] = useState<"google" | "github" | null>(null);
 
   async function handleOAuth(provider: "google" | "github") {
@@ -15,7 +18,7 @@ export default function SignInScreen() {
     try {
       await withMinDelay(signInWithOAuth(provider), 1500);
     } catch (error: any) {
-      Alert.alert("로그인 오류", error.message);
+      showModal("로그인 오류", error.message);
     }
     setLoading(null);
   }
@@ -67,6 +70,14 @@ export default function SignInScreen() {
           계속하면 이용약관에 동의하는 것으로 간주합니다
         </PixelText>
       </View>
+
+      <PixelModal
+        visible={modalState.visible}
+        title={modalState.title}
+        message={modalState.message}
+        buttons={modalState.buttons}
+        onClose={hideModal}
+      />
     </View>
   );
 }

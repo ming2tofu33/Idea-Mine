@@ -3,7 +3,6 @@ import {
   View,
   StyleSheet,
   Pressable,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -22,6 +21,8 @@ import { PixelButton } from "../../components/PixelButton";
 import { LanternScan } from "../../components/mine/LanternScan";
 import { RerollBlast } from "../../components/mine/RerollBlast";
 import { AdminFab } from "../../components/admin/AdminFab";
+import { PixelModal } from "../../components/shared/PixelModal";
+import { usePixelModal } from "../../hooks/usePixelModal";
 import { adminApi } from "../../lib/api";
 import type { Vein } from "../../types/api";
 import type { ImageSourcePropType } from "react-native";
@@ -110,6 +111,7 @@ export default function MineScreen() {
     personaTier: profile?.persona_tier ?? null,
   });
 
+  const { modalState, showModal, hideModal } = usePixelModal();
   const language = profile?.language ?? "ko";
   const bagMax = getBagCapacity(profile?.miner_level ?? 1);
   const [forceNicknameModal, setForceNicknameModal] = useState(false);
@@ -120,7 +122,7 @@ export default function MineScreen() {
     if (!selectedVeinId) return;
     const targetVein = veins.find((v) => v.id === selectedVeinId);
     if (targetVein?.is_selected) {
-      Alert.alert("이미 채굴한 광맥", "이미 채굴한 광맥이에요. 다른 광맥을 선택해주세요.");
+      showModal("이미 채굴한 광맥", "이미 채굴한 광맥이에요. 다른 광맥을 선택해주세요.");
       return;
     }
     const result = await mine(selectedVeinId);
@@ -312,6 +314,14 @@ export default function MineScreen() {
           onSimulateNewUser={handleSimulateNewUser}
         />
       )}
+
+      <PixelModal
+        visible={modalState.visible}
+        title={modalState.title}
+        message={modalState.message}
+        buttons={modalState.buttons}
+        onClose={hideModal}
+      />
     </SafeAreaView>
   );
 }
@@ -348,20 +358,20 @@ const styles = StyleSheet.create({
   // 소품
   propLantern: {
     position: "absolute",
-    bottom: "14%",
+    bottom: "2%",
     right: "8%",
     opacity: 0.6,
   },
   propMinecart: {
     position: "absolute",
-    bottom: "6%",
+    bottom: "2%",
     left: "5%",
     opacity: 0.4,
   },
   propMiner: {
     position: "absolute",
-    bottom: "10%",
-    left: "38%",
+    bottom: "2%",
+    left: "40%",
     opacity: 0.7,
   },
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, StyleSheet, FlatList, Alert, TouchableOpacity } from "react-native";
+import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { midnight } from "../constants/theme";
@@ -8,6 +8,8 @@ import { withMinDelay } from "../lib/minDelay";
 import { IdeaCard } from "../components/vault/IdeaCard";
 import { VaultButton } from "../components/vault/VaultButton";
 import { PixelText } from "../components/PixelText";
+import { PixelModal } from "../components/shared/PixelModal";
+import { usePixelModal } from "../hooks/usePixelModal";
 import type { Idea } from "../types/api";
 
 export default function MiningResultScreen() {
@@ -36,6 +38,7 @@ export default function MiningResultScreen() {
   const isCart = isAdmin || tier === "lite" || tier === "pro";
   const transportLabel = isCart ? "광차에 싣기" : "가방에 담기";
 
+  const { modalState, showModal, hideModal } = usePixelModal();
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isVaulting, setIsVaulting] = useState(false);
 
@@ -60,7 +63,7 @@ export default function MiningResultScreen() {
       router.back();
     } catch (e) {
       const msg = e instanceof ApiClientError ? e.message : "반입에 실패했습니다";
-      Alert.alert("반입 실패", msg);
+      showModal("반입 실패", msg);
     } finally {
       setIsVaulting(false);
     }
@@ -68,32 +71,33 @@ export default function MiningResultScreen() {
 
   const handleClose = () => {
     if (selectedIds.size > 0) {
-      Alert.alert(
+      showModal(
         "채굴 결과 나가기",
         `가방에 ${selectedIds.size}개를 담았어요. 어떻게 할까요?`,
         [
-          { text: "취소", style: "cancel" },
+          { text: "취소", variant: "secondary", onPress: () => hideModal() },
           {
             text: `${selectedIds.size}개 반입하고 나가기`,
-            onPress: handleVault,
+            variant: "primary",
+            onPress: () => { hideModal(); handleVault(); },
           },
           {
             text: "담지 않고 나가기",
-            style: "destructive",
-            onPress: () => router.back(),
+            variant: "danger",
+            onPress: () => { hideModal(); router.back(); },
           },
         ]
       );
     } else {
-      Alert.alert(
+      showModal(
         "채굴 결과 나가기",
         "가방에 담지 않은 원석은 사라집니다. 나가시겠어요?",
         [
-          { text: "계속 고르기", style: "cancel" },
+          { text: "계속 고르기", variant: "secondary", onPress: () => hideModal() },
           {
             text: "나가기",
-            style: "destructive",
-            onPress: () => router.back(),
+            variant: "danger",
+            onPress: () => { hideModal(); router.back(); },
           },
         ]
       );
@@ -143,6 +147,14 @@ export default function MiningResultScreen() {
         count={selectedIds.size}
         isLoading={isVaulting}
         onPress={handleVault}
+      />
+
+      <PixelModal
+        visible={modalState.visible}
+        title={modalState.title}
+        message={modalState.message}
+        buttons={modalState.buttons}
+        onClose={hideModal}
       />
     </SafeAreaView>
   );

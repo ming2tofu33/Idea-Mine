@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { View, StyleSheet, Pressable, ScrollView, Alert } from "react-native";
+import { View, StyleSheet, Pressable, ScrollView } from "react-native";
 import { PixelText } from "../PixelText";
+import { PixelModal } from "../shared/PixelModal";
+import { usePixelModal } from "../../hooks/usePixelModal";
 import { midnight } from "../../constants/theme";
 import { isMockMode, setMockMode } from "../../lib/api";
 import Constants from "expo-constants";
@@ -31,12 +33,6 @@ const PERSONAS: {
   { key: "pro", label: "PRO", color: midnight.purple.default, bgGlow: midnight.purple.glow },
 ];
 
-// --- Placeholder handler ---
-
-function placeholder(name: string) {
-  Alert.alert("준비 중", `${name} 기능은 아직 준비 중이에요`);
-}
-
 // --- Component ---
 
 export function AdminFab({
@@ -48,6 +44,11 @@ export function AdminFab({
 }: AdminFabProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [mockOn, setMockOn] = useState(isMockMode());
+  const { modalState, showModal, hideModal } = usePixelModal();
+
+  const placeholder = (name: string) => {
+    showModal("준비 중", `${name} 기능은 아직 준비 중이에요`);
+  };
   const current = PERSONAS.find((p) => p.key === currentPersona) ?? PERSONAS[0];
 
   const handlePersona = (mode: PersonaMode) => {
@@ -115,7 +116,7 @@ export function AdminFab({
                   const next = !mockOn;
                   setMockMode(next);
                   setMockOn(next);
-                  Alert.alert(
+                  showModal(
                     next ? "Mock 모드 ON" : "Mock 모드 OFF",
                     next
                       ? "API 없이 가짜 데이터로 동작합니다. 화면을 새로고침하세요."
@@ -175,6 +176,14 @@ export function AdminFab({
           {isOpen ? "×" : current.label.slice(0, 3)}
         </PixelText>
       </Pressable>
+
+      <PixelModal
+        visible={modalState.visible}
+        title={modalState.title}
+        message={modalState.message}
+        buttons={modalState.buttons}
+        onClose={hideModal}
+      />
     </View>
   );
 }
