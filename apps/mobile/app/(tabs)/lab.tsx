@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { View, StyleSheet, ScrollView, TouchableOpacity, FlatList } from "react-native";
+import { useState } from "react";
+import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { midnight, lab } from "../../constants/theme";
@@ -12,15 +12,14 @@ import { KeywordChip } from "../../components/shared/KeywordChip";
 import { OverviewCard } from "../../components/vault/OverviewCard";
 import type { Idea } from "../../types/api";
 
+type LabTab = "pending" | "completed";
+
 export default function LabScreen() {
   const router = useRouter();
   const { profile } = useProfile();
-  const { ideas, overviews, loading, loadVault } = useVault();
+  const { ideas, overviews, loading } = useVault();
   const language = (profile?.language ?? "ko") as "ko" | "en";
-
-  useEffect(() => {
-    loadVault();
-  }, [loadVault]);
+  const [activeTab, setActiveTab] = useState<LabTab>("pending");
 
   // 실험 대기 = vaulted + 개요서 없음
   const overviewIdeaIds = new Set(overviews.map((o) => o.idea_id));
@@ -60,68 +59,95 @@ export default function LabScreen() {
           </View>
         </View>
 
-        {/* 실험 대기 원석 */}
-        <PixelText variant="subtitle" style={styles.sectionTitle}>
-          실험 대기 중인 원석
-        </PixelText>
+        {/* 탭 바 */}
+        <View style={styles.tabBar}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === "pending" && styles.tabActive]}
+            onPress={() => setActiveTab("pending")}
+            activeOpacity={0.7}
+          >
+            <PixelText
+              variant="body"
+              color={activeTab === "pending" ? lab.panel.default : midnight.text.muted}
+            >
+              실험 대기 ({pendingIdeas.length})
+            </PixelText>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === "completed" && styles.tabActive]}
+            onPress={() => setActiveTab("completed")}
+            activeOpacity={0.7}
+          >
+            <PixelText
+              variant="body"
+              color={activeTab === "completed" ? lab.panel.default : midnight.text.muted}
+            >
+              완성된 개요서 ({overviews.length})
+            </PixelText>
+          </TouchableOpacity>
+        </View>
 
-        {pendingIdeas.length === 0 ? (
+        {/* 탭 콘텐츠 */}
+        {activeTab === "pending" ? (
+          pendingIdeas.length === 0 ? (
+            <PixelCard variant="default">
+              <PixelText variant="body" style={styles.emptyText}>
+                실험할 원석이 없어요
+              </PixelText>
+              <PixelText variant="caption" style={styles.emptyHint}>
+                광산에서 채굴하고, 금고에서 원석을 보내주세요
+              </PixelText>
+            </PixelCard>
+          ) : (
+            pendingIdeas.map((idea) => {
+              const title = language === "ko" ? idea.title_ko : idea.title_en;
+              const summary = language === "ko" ? idea.summary_ko : idea.summary_en;
+              return (
+                <TouchableOpacity
+                  key={idea.id}
+                  style={styles.ideaCard}
+                  onPress={() => handleSelectIdea(idea)}
+                  activeOpacity={0.7}
+                >
+                  <PixelText variant="subtitle">{title}</PixelText>
+                  <PixelText variant="body" numberOfLines={2} style={styles.ideaSummary}>
+                    {summary}
+                  </PixelText>
+                  <View style={styles.chips}>
+                    {idea.keyword_combo.slice(0, 3).map((kc, i) => (
+                      <KeywordChip key={i} category={kc.category} label={kc[language]} size="small" />
+                    ))}
+                  </View>
+                  <PixelText variant="caption" style={styles.tapHint}>
+                    탭하여 개요서 만들기
+                  </PixelText>
+                </TouchableOpacity>
+              );
+            })
+          )
+        ) : overviews.length === 0 ? (
           <PixelCard variant="default">
             <PixelText variant="body" style={styles.emptyText}>
-              실험할 원석이 없어요
+              완성된 개요서가 없어요
             </PixelText>
             <PixelText variant="caption" style={styles.emptyHint}>
-              광산에서 채굴하고, 금고에서 원석을 보내주세요
+              실험 대기 원석을 선택해 개요서를 만들어보세요
             </PixelText>
           </PixelCard>
         ) : (
-          pendingIdeas.map((idea) => {
-            const title = language === "ko" ? idea.title_ko : idea.title_en;
-            const summary = language === "ko" ? idea.summary_ko : idea.summary_en;
-            return (
-              <TouchableOpacity
-                key={idea.id}
-                style={styles.ideaCard}
-                onPress={() => handleSelectIdea(idea)}
-                activeOpacity={0.7}
-              >
-                <PixelText variant="subtitle">{title}</PixelText>
-                <PixelText variant="body" numberOfLines={2} style={styles.ideaSummary}>
-                  {summary}
-                </PixelText>
-                <View style={styles.chips}>
-                  {idea.keyword_combo.slice(0, 3).map((kc, i) => (
-                    <KeywordChip key={i} category={kc.category} label={kc[language]} size="small" />
-                  ))}
-                </View>
-                <PixelText variant="caption" style={styles.tapHint}>
-                  탭하여 개요서 만들기
-                </PixelText>
-              </TouchableOpacity>
-            );
-          })
-        )}
-
-        {/* 완성된 개요서 */}
-        {overviews.length > 0 && (
-          <>
-            <PixelText variant="subtitle" style={styles.sectionTitle}>
-              완성된 개요서
-            </PixelText>
-            {overviews.map((overview) => (
-              <OverviewCard
-                key={overview.id}
-                overview={overview}
-                language={language}
-                onPress={() =>
-                  router.push({
-                    pathname: "/overview-result",
-                    params: { overviewId: overview.id, language },
-                  })
-                }
-              />
-            ))}
-          </>
+          overviews.map((overview) => (
+            <OverviewCard
+              key={overview.id}
+              overview={overview}
+              language={language}
+              onPress={() =>
+                router.push({
+                  pathname: "/overview-result",
+                  params: { overviewId: overview.id, language },
+                })
+              }
+            />
+          ))
         )}
       </ScrollView>
     </SafeAreaView>
@@ -139,14 +165,30 @@ const styles = StyleSheet.create({
   statBox: {
     flex: 1,
     backgroundColor: lab.bg.floor,
-    borderRadius: 8,
     padding: 16,
     alignItems: "center",
     marginHorizontal: 4,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: lab.equipment.default,
   },
   statLabel: { color: midnight.text.muted, marginTop: 4 },
+
+  tabBar: {
+    flexDirection: "row",
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: lab.equipment.default,
+  },
+  tab: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
+  },
+  tabActive: {
+    borderBottomColor: lab.panel.default,
+  },
 
   sectionTitle: { color: lab.panel.default, marginBottom: 12, marginTop: 8 },
 
@@ -155,8 +197,7 @@ const styles = StyleSheet.create({
 
   ideaCard: {
     backgroundColor: lab.bg.floor,
-    borderRadius: 8,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: lab.equipment.default,
     padding: 16,
     marginBottom: 12,

@@ -3,8 +3,7 @@ import { View, StyleSheet, ScrollView } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { midnight, lab } from "../constants/theme";
-import { supabase } from "../lib/supabase";
-import { labApi, ApiClientError } from "../lib/api";
+import { labApi, vaultApi, ApiClientError } from "../lib/api";
 import { PixelText } from "../components/PixelText";
 import { PixelButton } from "../components/PixelButton";
 import { KeywordChip } from "../components/shared/KeywordChip";
@@ -21,8 +20,8 @@ export default function LabEntryScreen() {
 
   useEffect(() => {
     async function load() {
-      const { data } = await supabase.from("ideas").select("*").eq("id", params.ideaId).single();
-      if (data) setIdea(data as Idea);
+      const data = await vaultApi.getIdea(params.ideaId!);
+      if (data) setIdea(data);
     }
     load();
   }, [params.ideaId]);
@@ -48,7 +47,7 @@ export default function LabEntryScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
       <View style={styles.header}>
-        <PixelText variant="body" style={styles.back} onPress={() => router.back()}>
+        <PixelText variant="body" style={styles.back} onPress={() => router.replace("/(tabs)/lab")}>
           {"← "}실험실
         </PixelText>
       </View>
@@ -93,8 +92,7 @@ const styles = StyleSheet.create({
   heading: { marginBottom: 20 },
   workbench: {
     backgroundColor: lab.bg.floor,
-    borderRadius: 8,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: lab.equipment.default,
     padding: 16,
     marginBottom: 20,
