@@ -42,6 +42,7 @@ async def get_or_create_today_veins(
     supabase: Client,
     user_id: str,
     tier: str,
+    role: str = "user",
 ) -> list[dict]:
     """오늘의 활성 광맥 3개를 조회하거나 새로 생성."""
     today = date.today().isoformat()
@@ -59,13 +60,14 @@ async def get_or_create_today_veins(
     if existing.data and len(existing.data) == 3:
         return existing.data
 
-    return await _create_veins(supabase, user_id, tier, today)
+    return await _create_veins(supabase, user_id, tier, today, role=role)
 
 
 async def reroll_veins(
     supabase: Client,
     user_id: str,
     tier: str,
+    role: str = "user",
 ) -> list[dict]:
     """광맥 3개를 새로 뽑기. 기존 광맥은 비활성화 (히스토리 보존)."""
     today = date.today().isoformat()
@@ -75,7 +77,7 @@ async def reroll_veins(
         {"is_active": False}
     ).eq("user_id", user_id).eq("date", today).eq("is_active", True).execute()
 
-    return await _create_veins(supabase, user_id, tier, today)
+    return await _create_veins(supabase, user_id, tier, today, role=role)
 
 
 async def _create_veins(
@@ -83,21 +85,26 @@ async def _create_veins(
     user_id: str,
     tier: str,
     today: str,
+    role: str = "user",
 ) -> list[dict]:
     """광맥 3개 생성. slot_index는 기존 max+1부터 시작."""
-    # 시즌 활성 여부 확인 (Phase 2에서 active_seasons 테이블 추가 예정)
-    try:
-        season_check = (
-            supabase.table("active_seasons")
-            .select("id")
-            .lte("start_date", today)
-            .gte("end_date", today)
-            .limit(1)
-            .execute()
-        )
-        is_season = bool(season_check.data)
-    except Exception:
-        is_season = False
+    # admin은 항상 시즌 활성화 (모든 희귀도 확인 가능)
+    if role == "admin":
+        is_season = True
+    else:
+        # Phase 2에서 active_seasons 테이블 추가 예정
+        try:
+            season_check = (
+                supabase.table("active_seasons")
+                .select("id")
+                .lte("start_date", today)
+                .gte("end_date", today)
+                .limit(1)
+                .execute()
+            )
+            is_season = bool(season_check.data)
+        except Exception:
+            is_season = False
 
     categories = ["who", "domain", "tech", "value", "money"]
     if tier in ("lite", "pro"):

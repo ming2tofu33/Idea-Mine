@@ -19,7 +19,7 @@ async def get_today_veins(
     role = get_effective_role(user)
 
     # 광맥 조회와 daily state 조회를 병렬 실행
-    veins_task = vein_service.get_or_create_today_veins(supabase, user["id"], tier)
+    veins_task = vein_service.get_or_create_today_veins(supabase, user["id"], tier, role=role)
     state_task = rate_limiter.check_daily_limit_l2(
         supabase, user["id"], tier, action="none", role=role
     )
@@ -49,7 +49,7 @@ async def reroll(
     rate_limiter.check_rate_limit_l1(user["id"], role=role)
     state = await rate_limiter.check_daily_limit_l2(supabase, user["id"], tier, action="reroll", role=role)
 
-    veins = await vein_service.reroll_veins(supabase, user["id"], tier)
+    veins = await vein_service.reroll_veins(supabase, user["id"], tier, role=role)
 
     # keyword resolve와 increment를 병렬 실행
     resolve_task = vein_service.resolve_vein_keywords(supabase, veins)
