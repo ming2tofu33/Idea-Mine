@@ -85,16 +85,19 @@ async def _create_veins(
     today: str,
 ) -> list[dict]:
     """광맥 3개 생성. slot_index는 기존 max+1부터 시작."""
-    # 시즌 활성 여부 확인 (active_seasons 테이블에 현재 날짜가 포함된 레코드가 있으면 시즌)
-    season_check = (
-        supabase.table("active_seasons")
-        .select("id")
-        .lte("start_date", today)
-        .gte("end_date", today)
-        .limit(1)
-        .execute()
-    )
-    is_season = bool(season_check.data)
+    # 시즌 활성 여부 확인 (Phase 2에서 active_seasons 테이블 추가 예정)
+    try:
+        season_check = (
+            supabase.table("active_seasons")
+            .select("id")
+            .lte("start_date", today)
+            .gte("end_date", today)
+            .limit(1)
+            .execute()
+        )
+        is_season = bool(season_check.data)
+    except Exception:
+        is_season = False
 
     categories = ["who", "domain", "tech", "value", "money"]
     if tier in ("lite", "pro"):
