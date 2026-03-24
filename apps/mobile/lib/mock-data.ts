@@ -53,7 +53,7 @@ function pickRandom<T>(arr: T[], n: number): T[] {
 
 function makeVein(slot: number): Vein {
   const kws = pickRandom(KEYWORDS, 5);
-  const rarities: Array<"common" | "uncommon" | "rare"> = ["common", "uncommon", "rare"];
+  const rarities: Array<"common" | "rare" | "golden" | "legend"> = ["common", "rare", "golden", "legend"];
   const rarity = rarities[Math.floor(Math.random() * rarities.length)];
   return {
     id: `vein-${randomId()}`,

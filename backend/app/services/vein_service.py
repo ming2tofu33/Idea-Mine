@@ -1,19 +1,40 @@
 import random
-from datetime import date
+from datetime import date, datetime
 from supabase import Client
 
 
-RARITY_WEIGHTS = {"common": 0.55, "rare": 0.25, "golden": 0.15, "legend": 0.05}
+# 4단계 희귀도: common → rare → golden → legend
+# 조건: 비시즌/시즌 × 평일/주말
+RARITY_TABLE = {
+    #                  common  rare   golden  legend
+    "offseason_weekday": (0.88, 0.09, 0.03, 0.00),
+    "offseason_weekend": (0.82, 0.12, 0.06, 0.00),
+    "season_weekday":    (0.78, 0.10, 0.08, 0.04),
+    "season_weekend":    (0.68, 0.10, 0.14, 0.08),
+}
+
+RARITY_ORDER = ["common", "rare", "golden", "legend"]
 
 
-def pick_rarity() -> str:
-    """확률 기반 희귀도 배정. common > rare > golden > legend."""
+def _get_rarity_condition(is_season: bool) -> str:
+    """현재 요일로 확률 조건 키를 결정."""
+    is_weekend = datetime.now().weekday() >= 5  # 토(5), 일(6)
+    season = "season" if is_season else "offseason"
+    day = "weekend" if is_weekend else "weekday"
+    return f"{season}_{day}"
+
+
+def pick_rarity(is_season: bool = False) -> str:
+    """조건별 확률 기반 희귀도 배정. common > rare > golden > legend."""
+    condition = _get_rarity_condition(is_season)
+    weights = RARITY_TABLE[condition]
     roll = random.random()
+
     cumulative = 0.0
-    for rarity, weight in RARITY_WEIGHTS.items():
+    for i, weight in enumerate(weights):
         cumulative += weight
         if roll < cumulative:
-            return rarity
+            return RARITY_ORDER[i]
     return "common"
 
 
@@ -64,6 +85,17 @@ async def _create_veins(
     today: str,
 ) -> list[dict]:
     """광맥 3개 생성. slot_index는 기존 max+1부터 시작."""
+    # 시즌 활성 여부 확인 (active_seasons 테이블에 현재 날짜가 포함된 레코드가 있으면 시즌)
+    season_check = (
+        supabase.table("active_seasons")
+        .select("id")
+        .lte("start_date", today)
+        .gte("end_date", today)
+        .limit(1)
+        .execute()
+    )
+    is_season = bool(season_check.data)
+
     categories = ["who", "domain", "tech", "value", "money"]
     if tier in ("lite", "pro"):
         categories.append("ai")
@@ -108,7 +140,7 @@ async def _create_veins(
                 chosen = random.choice(keywords_by_cat[cat])
                 keyword_ids.append(chosen["id"])
 
-        rarity = pick_rarity()
+        rarity = pick_rarity(is_season=is_season)
 
         vein = (
             supabase.table("veins")
