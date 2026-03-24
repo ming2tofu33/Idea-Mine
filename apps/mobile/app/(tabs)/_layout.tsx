@@ -7,10 +7,10 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: midnight.bg.secondary,
+          backgroundColor: midnight.bg.primary,
           borderTopColor: midnight.border.subtle,
         },
-        tabBarActiveTintColor: midnight.accent.active,
+        tabBarActiveTintColor: midnight.accent.gold,
         tabBarInactiveTintColor: midnight.accent.inactive,
         tabBarLabelStyle: {
           fontFamily: "Galmuri11",

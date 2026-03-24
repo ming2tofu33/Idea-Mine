@@ -11,10 +11,6 @@ export const midnight = {
     primary: "#101218",
     elevated: "#1A1C25",
     surface: "#222433",
-    // 하위 호환
-    secondary: "#101218",
-    tertiary: "#1A1C25",
-    card: "#101218",
   },
 
   // 텍스트 — 은빛
@@ -43,12 +39,6 @@ export const midnight = {
     goldDark: "#8A7A50",
     goldGlow: "rgba(196,176,122,0.15)",
     goldSubtle: "rgba(196,176,122,0.08)",
-    // 하위 호환
-    primary: "#C4B07A",
-    hover: "#D4C08A",
-    glow: "rgba(196,176,122,0.15)",
-    subtle: "rgba(196,176,122,0.08)",
-    active: "#C4B07A",
     inactive: "#4A5170",
   },
 
@@ -81,13 +71,6 @@ export const midnight = {
     success: "#4E9A6B",
     warning: "#C9A044",
     error: "#B85450",
-  },
-
-  // 하위 호환
-  semantic: {
-    success: "#4E9A6B",
-    warning: "#C9A044",
-    danger: "#B85450",
   },
 } as const;
 
