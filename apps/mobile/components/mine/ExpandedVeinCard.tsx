@@ -43,8 +43,7 @@ export function ExpandedVeinCard({ vein, language, isExhausted, onMine }: Expand
 const styles = StyleSheet.create({
   card: {
     backgroundColor: midnight.bg.elevated,
-    borderRadius: 8,
-    borderWidth: 1,
+    borderWidth: 2,
     padding: 16,
     marginTop: 12,
   },

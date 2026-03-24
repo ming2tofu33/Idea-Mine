@@ -175,8 +175,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: midnight.bg.surface,
-    borderRadius: 6,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: midnight.border.default,
   },
   closeText: {

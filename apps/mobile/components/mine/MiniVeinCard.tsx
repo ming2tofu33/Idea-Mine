@@ -6,9 +6,10 @@ import { RARITY_CONFIG } from "../../constants/mining";
 import type { Vein } from "../../types/api";
 
 const VEIN_SPRITES: Record<string, ImageSourcePropType> = {
-  common: require("../../assets/sprites/items/vein-common.png"),
-  uncommon: require("../../assets/sprites/items/vein-golden.png"),
-  rare: require("../../assets/sprites/items/vein-legend.png"),
+  common: require("../../assets/sprites/items/32/vein-common.png"),
+  rare: require("../../assets/sprites/items/32/vein-rare.png"),
+  golden: require("../../assets/sprites/items/32/vein-golden.png"),
+  legend: require("../../assets/sprites/items/32/vein-legend.png"),
 };
 
 interface MiniVeinCardProps {
@@ -57,10 +58,9 @@ const styles = StyleSheet.create({
   card: {
     flex: 1,
     backgroundColor: midnight.bg.elevated,
-    borderRadius: 6,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: midnight.border.default,
-    padding: 10,
+    padding: 8,
     marginHorizontal: 4,
     minHeight: 72,
     justifyContent: "space-between",
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   veinSprite: {
-    marginRight: 6,
+    marginRight: 8,
   },
   preview: {
     color: midnight.text.secondary,

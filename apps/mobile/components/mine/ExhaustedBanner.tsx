@@ -26,8 +26,9 @@ export function ExhaustedBanner() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: midnight.bg.surface,
-    borderRadius: 8,
-    padding: 20,
+    borderWidth: 2,
+    borderColor: midnight.border.default,
+    padding: 24,
     marginTop: 16,
     alignItems: "center",
   },

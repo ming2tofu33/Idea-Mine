@@ -64,11 +64,10 @@ const styles = StyleSheet.create({
   },
   modal: {
     backgroundColor: midnight.bg.elevated,
-    borderRadius: 12,
     padding: 24,
     width: "100%",
     maxWidth: 340,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: midnight.border.default,
   },
   title: {
@@ -86,8 +85,7 @@ const styles = StyleSheet.create({
     fontFamily: "Galmuri11",
     fontSize: 16,
     padding: 12,
-    borderRadius: 6,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: midnight.border.default,
     marginBottom: 16,
   },
