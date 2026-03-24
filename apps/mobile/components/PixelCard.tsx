@@ -1,5 +1,6 @@
 import { View, ViewProps, StyleSheet } from "react-native";
 import { midnight } from "../constants/theme";
+import { pixel } from "../constants/pixel";
 import { PixelText } from "./PixelText";
 
 type Variant = "default" | "gold" | "purple" | "pink";
@@ -68,7 +69,7 @@ export function PixelCard({
               shadowRadius: v.glowRadius,
               elevation: v.glowRadius,
             }
-          : undefined,
+          : pixel.shadow.hard,
         style,
       ]}
       {...rest}

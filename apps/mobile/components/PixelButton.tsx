@@ -1,5 +1,6 @@
 import { Pressable, View, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
 import { midnight } from "../constants/theme";
+import { pixel } from "../constants/pixel";
 import { PixelText } from "./PixelText";
 
 type Variant = "primary" | "secondary" | "danger" | "pink";
@@ -43,9 +44,9 @@ const variantColors = {
 } as const;
 
 const sizeStyles = {
-  sm: { paddingVertical: 6, paddingHorizontal: 12, fontSize: 12 },
-  md: { paddingVertical: 10, paddingHorizontal: 20, fontSize: 14 },
-  lg: { paddingVertical: 14, paddingHorizontal: 28, fontSize: 16 },
+  sm: { paddingVertical: pixel.space.xs, paddingHorizontal: pixel.space.md, fontSize: 12 },
+  md: { paddingVertical: pixel.space.sm, paddingHorizontal: pixel.space.xl, fontSize: 14 },
+  lg: { paddingVertical: pixel.space.md, paddingHorizontal: pixel.space.xxl, fontSize: 16 },
 } as const;
 
 export function PixelButton({
@@ -106,6 +107,7 @@ const styles = StyleSheet.create({
   outer: {
     borderWidth: 2,
     alignSelf: "flex-start",
+    ...pixel.shadow.hard,
   },
   inner: {
     alignItems: "center",

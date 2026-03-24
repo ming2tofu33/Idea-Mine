@@ -2,6 +2,7 @@ import { View, StyleSheet } from "react-native";
 import { PixelText } from "../PixelText";
 import { CATEGORY_COLORS } from "../../constants/mining";
 import { midnight } from "../../constants/theme";
+import { pixel, pixelBorder } from "../../constants/pixel";
 
 interface KeywordChipProps {
   category: string;
@@ -27,28 +28,26 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: pixel.space.sm,
+    paddingVertical: pixel.space.xs,
     backgroundColor: midnight.bg.elevated,
-    borderRadius: 4,
-    marginRight: 6,
-    marginBottom: 4,
+    ...pixelBorder("#3A3E52", "#1A1C28"),
+    marginRight: pixel.space.sm,
+    marginBottom: pixel.space.xs,
   },
   chipSmall: {
-    paddingHorizontal: 6,
+    paddingHorizontal: pixel.space.xs,
     paddingVertical: 2,
   },
   dot: {
     width: 8,
     height: 8,
-    borderRadius: 4,
-    marginRight: 6,
+    marginRight: pixel.space.sm,
   },
   dotSmall: {
     width: 6,
     height: 6,
-    borderRadius: 3,
-    marginRight: 4,
+    marginRight: pixel.space.xs,
   },
   label: {
     color: midnight.text.primary,
