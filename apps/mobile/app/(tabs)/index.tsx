@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   View,
   StyleSheet,
@@ -28,9 +28,10 @@ import type { ImageSourcePropType } from "react-native";
 
 // --- 광맥 스프라이트 매핑 ---
 const VEIN_SPRITES: Record<string, ImageSourcePropType> = {
-  common: require("../../assets/sprites/items/vein-common.png"),
-  uncommon: require("../../assets/sprites/items/vein-golden.png"),
-  rare: require("../../assets/sprites/items/vein-legend.png"),
+  common: require("../../assets/sprites/items/32/vein-common.png"),
+  rare: require("../../assets/sprites/items/32/vein-rare.png"),
+  golden: require("../../assets/sprites/items/32/vein-golden.png"),
+  legend: require("../../assets/sprites/items/32/vein-legend.png"),
 };
 
 // --- 삼각형 배치: 상단 중앙 / 중하단 좌 / 중하단 우 ---
@@ -113,11 +114,6 @@ export default function MineScreen() {
   const [forceNicknameModal, setForceNicknameModal] = useState(false);
   const [isRerolling, setIsRerolling] = useState(false);
   const showNicknameModal = forceNicknameModal || (!profileLoading && profile && (!profile.nickname || profile.nickname.trim() === ""));
-
-  useEffect(() => {
-    loadTodayVeins();
-  }, [loadTodayVeins]);
-
 
   const handleMine = async () => {
     if (!selectedVeinId) return;
@@ -406,7 +402,7 @@ const styles = StyleSheet.create({
     transform: [{ scale: 1.1 }],
   },
   veinCaption: {
-    marginTop: 6,
+    marginTop: 8,
     backgroundColor: midnight.bg.elevated + "E0",
     borderWidth: 1,
     borderColor: midnight.border.default,

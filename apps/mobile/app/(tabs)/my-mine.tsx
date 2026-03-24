@@ -5,7 +5,6 @@ import {
   Modal,
   StyleSheet,
   Alert,
-  Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "../../lib/supabase";
@@ -14,8 +13,7 @@ import { useProfile } from "../../hooks/useProfile";
 import { midnight } from "../../constants/theme";
 import { PixelText } from "../../components/PixelText";
 import { PixelButton } from "../../components/PixelButton";
-
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+import { PixelImage } from "../../components/PixelImage";
 
 // --- 설정 바텀시트 ---
 
@@ -87,50 +85,6 @@ function SettingsSheet({
   );
 }
 
-// --- placeholder 오브젝트 ---
-
-function SceneObject({
-  label,
-  color,
-  width,
-  height,
-  top,
-  left,
-  emoji,
-}: {
-  label: string;
-  color: string;
-  width: number;
-  height: number;
-  top: number;
-  left: number;
-  emoji?: string;
-}) {
-  return (
-    <View
-      style={[
-        styles.sceneObject,
-        {
-          backgroundColor: color,
-          width,
-          height,
-          top,
-          left,
-        },
-      ]}
-    >
-      {emoji && (
-        <PixelText variant="body" emoji style={{ fontSize: 20 }}>
-          {emoji}
-        </PixelText>
-      )}
-      <PixelText variant="muted" style={{ fontSize: 8, marginTop: 2 }}>
-        {label}
-      </PixelText>
-    </View>
-  );
-}
-
 // --- 메인 화면 ---
 
 export default function MyMineScreen() {
@@ -139,6 +93,8 @@ export default function MyMineScreen() {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const language = profile?.language ?? "ko";
+  const nickname = profile?.nickname ?? "광부";
+  const level = profile?.miner_level ?? 1;
 
   async function handleToggleLanguage() {
     const next = language === "ko" ? "en" : "ko";
@@ -171,100 +127,105 @@ export default function MyMineScreen() {
         </Pressable>
       </View>
 
-      {/* 씬 영역 */}
-      <View style={styles.sceneContainer}>
-        {/* 배경: camp-night.png placeholder */}
-        <View style={styles.skyBackground} />
-        <View style={styles.groundBackground} />
+      {/* === 씬 영역 === */}
+      <View style={styles.scene}>
+        {/* 배경 */}
+        <View style={styles.skyBg} />
+        <View style={styles.groundBg} />
 
-        {/* 별빛 placeholder */}
+        {/* 별빛 */}
         {[
-          { top: 20, left: 40 },
-          { top: 35, left: 120 },
-          { top: 15, left: 200 },
-          { top: 45, left: 280 },
-          { top: 28, left: 320 },
+          { top: 15, left: "10%" },
+          { top: 30, left: "30%" },
+          { top: 10, left: "55%" },
+          { top: 40, left: "75%" },
+          { top: 22, left: "88%" },
+          { top: 50, left: "20%" },
+          { top: 8, left: "65%" },
         ].map((star, i) => (
           <View
             key={i}
             style={[
               styles.star,
-              { top: star.top, left: star.left % (SCREEN_WIDTH - 20) },
+              { top: star.top, left: star.left as any },
             ]}
           />
         ))}
 
-        {/* 광산 입구 실루엣: mine-entrance.png */}
-        <View style={styles.mineEntrance}>
-          <PixelText variant="muted" style={{ fontSize: 8 }}>
-            광산 입구
-          </PixelText>
-        </View>
-
-        {/* 나무 표지판: sign-wood.png */}
-        <View style={styles.woodSign}>
-          <PixelText variant="caption" color={midnight.accent.gold}>
-            광부
-          </PixelText>
-          <PixelText variant="muted" style={{ fontSize: 10 }}>
-            Lv.1
-          </PixelText>
-        </View>
-
-        {/* 랜턴: lantern.png */}
-        <SceneObject
-          label="랜턴"
-          color="#3D3520"
-          width={24}
-          height={32}
-          top={170}
-          left={SCREEN_WIDTH * 0.55}
-          emoji="🏮"
+        {/* 광산 입구 실루엣 — 배경 원경 */}
+        <PixelImage
+          source={require("../../assets/sprites/items/mine-entrance.png")}
+          size={48}
+          scale={2}
+          style={styles.mineEntrance}
         />
 
-        {/* 텐트: tent.png */}
-        <View style={styles.tent}>
-          <PixelText variant="muted" style={{ fontSize: 8 }}>
-            텐트
-          </PixelText>
+        {/* 나무 표지판 — 닉네임 + 레벨 */}
+        <View style={styles.signArea}>
+          <PixelImage
+            source={require("../../assets/sprites/items/sign-wood.png")}
+            size={32}
+            scale={2}
+          />
+          <View style={styles.signLabel}>
+            <PixelText variant="caption" color={midnight.accent.gold}>
+              {nickname}
+            </PixelText>
+            <PixelText variant="muted" style={{ fontSize: 10 }}>
+              Lv.{level}
+            </PixelText>
+          </View>
         </View>
 
-        {/* 상자 + 배지: crate.png */}
-        <SceneObject
-          label="상자"
-          color="#4A3728"
-          width={36}
-          height={28}
-          top={250}
-          left={SCREEN_WIDTH * 0.7}
-          emoji="📦"
+        {/* 랜턴 */}
+        <PixelImage
+          source={require("../../assets/sprites/items/lantern.png")}
+          size={32}
+          scale={2}
+          style={styles.lantern}
         />
 
-        {/* 광부 캐릭터: miner-idle.png */}
-        <View style={styles.minerCharacter}>
-          <PixelText variant="body" emoji style={{ fontSize: 32 }}>
-            ⛏
-          </PixelText>
-        </View>
+        {/* 텐트 — 우측 뒤 */}
+        <PixelImage
+          source={require("../../assets/sprites/items/tent.png")}
+          size={48}
+          scale={2}
+          style={styles.tent}
+        />
 
-        {/* 캠프파이어: campfire.png — 화면에서 가장 밝은 포인트 */}
-        <View style={styles.campfire}>
+        {/* 상자 — 우측 하단 전경 */}
+        <PixelImage
+          source={require("../../assets/sprites/items/crate.png")}
+          size={32}
+          scale={2}
+          style={styles.crate}
+        />
+
+        {/* 광부 캐릭터 — 캠프파이어 왼쪽 */}
+        <PixelImage
+          source={require("../../assets/sprites/characters/miner-idle.png")}
+          size={32}
+          scale={2}
+          style={styles.miner}
+        />
+
+        {/* 캠프파이어 — 화면 중심, 가장 밝은 포인트 */}
+        <View style={styles.campfireArea}>
           <View style={styles.campfireGlow} />
-          <PixelText variant="body" emoji style={{ fontSize: 28 }}>
-            🔥
-          </PixelText>
-          <PixelText variant="muted" style={{ fontSize: 8 }}>
-            캠프파이어
-          </PixelText>
+          <PixelImage
+            source={require("../../assets/sprites/items/campfire.png")}
+            size={32}
+            scale={3}
+          />
         </View>
       </View>
 
-      {/* 하단: 상태 문구 + 액션 */}
-      <View style={styles.bottomArea}>
+      {/* === 하단 도크 === */}
+      <View style={styles.dock}>
         <PixelText
           variant="body"
           color={midnight.text.secondary}
-          style={{ textAlign: "center", marginBottom: 16 }}
+          style={{ textAlign: "center", marginBottom: 12 }}
         >
           오늘도 원석 하나를 가져왔어요
         </PixelText>
@@ -315,26 +276,26 @@ const styles = StyleSheet.create({
     borderColor: midnight.border.default,
   },
 
-  // 씬
-  sceneContainer: {
+  // === 씬 ===
+  scene: {
     flex: 1,
     position: "relative",
     overflow: "hidden",
   },
-  skyBackground: {
+  skyBg: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
-    height: "60%",
+    height: "58%",
     backgroundColor: "#0A0C14",
   },
-  groundBackground: {
+  groundBg: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    height: "40%",
+    height: "42%",
     backgroundColor: "#1A1510",
   },
   star: {
@@ -342,100 +303,83 @@ const styles = StyleSheet.create({
     width: 3,
     height: 3,
     backgroundColor: "#C8CDD8",
-    opacity: 0.4,
+    opacity: 0.5,
   },
 
-  // 오브젝트 공통
-  sceneObject: {
-    position: "absolute",
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: midnight.border.default,
-  },
-
-  // 광산 입구 실루엣
+  // 오브젝트 배치 — 플랜 와이어프레임 기준
+  // 광산 입구: 배경 상단 중앙, 실루엣
   mineEntrance: {
     position: "absolute",
-    top: 60,
-    left: SCREEN_WIDTH * 0.35,
-    width: 80,
-    height: 50,
-    backgroundColor: "#0D0E14",
-    borderWidth: 1,
-    borderColor: "#1A1C25",
-    alignItems: "center",
-    justifyContent: "center",
+    top: "8%",
+    left: "32%",
+    opacity: 0.3,
   },
 
-  // 나무 표지판
-  woodSign: {
+  // 나무 표지판: 좌측 전경
+  signArea: {
     position: "absolute",
-    top: 160,
-    left: SCREEN_WIDTH * 0.1,
-    width: 64,
-    height: 52,
-    backgroundColor: "#3D2E1A",
-    borderWidth: 2,
-    borderTopColor: "#5A4530",
-    borderLeftColor: "#5A4530",
-    borderBottomColor: "#2A1F10",
-    borderRightColor: "#2A1F10",
+    top: "30%",
+    left: "6%",
     alignItems: "center",
-    justifyContent: "center",
+  },
+  signLabel: {
+    marginTop: 4,
+    backgroundColor: midnight.bg.elevated + "D0",
+    borderWidth: 1,
+    borderColor: midnight.border.default,
+    paddingHorizontal: 8,
     paddingVertical: 4,
+    alignItems: "center",
   },
 
-  // 텐트
+  // 랜턴: 표지판과 텐트 사이
+  lantern: {
+    position: "absolute",
+    top: "32%",
+    left: "42%",
+  },
+
+  // 텐트: 우측 뒤
   tent: {
     position: "absolute",
-    top: 140,
-    right: SCREEN_WIDTH * 0.08,
-    width: 72,
-    height: 64,
-    backgroundColor: "#2A2A3A",
-    borderWidth: 1,
-    borderColor: "#3A3A4A",
-    alignItems: "center",
-    justifyContent: "center",
+    top: "24%",
+    right: "6%",
   },
 
-  // 광부 캐릭터
-  minerCharacter: {
+  // 상자: 우측 하단 전경
+  crate: {
     position: "absolute",
-    top: 210,
-    left: SCREEN_WIDTH * 0.35,
-    width: 64,
-    height: 64,
-    backgroundColor: midnight.bg.surface,
-    borderWidth: 2,
-    borderColor: midnight.border.default,
-    alignItems: "center",
-    justifyContent: "center",
+    top: "52%",
+    right: "10%",
   },
 
-  // 캠프파이어
-  campfire: {
+  // 광부: 캠프파이어 왼쪽
+  miner: {
     position: "absolute",
-    top: 280,
-    left: SCREEN_WIDTH * 0.38,
-    width: 56,
-    height: 48,
+    top: "50%",
+    left: "25%",
+  },
+
+  // 캠프파이어: 화면 중심 하단
+  campfireArea: {
+    position: "absolute",
+    top: "58%",
+    left: "38%",
     alignItems: "center",
     justifyContent: "center",
   },
   campfireGlow: {
     position: "absolute",
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: "rgba(196,176,122,0.08)",
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: "rgba(196,160,80,0.10)",
   },
 
-  // 하단 영역
-  bottomArea: {
+  // === 하단 도크 ===
+  dock: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: midnight.border.default,
     backgroundColor: midnight.bg.elevated,
@@ -457,7 +401,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 2,
     borderTopColor: midnight.border.default,
     paddingHorizontal: 24,
-    paddingBottom: 48,
+    paddingBottom: 32,
     paddingTop: 12,
   },
   sheetHandle: {
