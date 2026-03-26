@@ -11,7 +11,7 @@ from app.prompts.appraisal import build_appraisal_prompt
 
 _openai: OpenAI | None = None
 MODEL = "gpt-4o"
-PROMPT_VERSION = "appraisal-v1"
+PROMPT_VERSION = "appraisal-v2"
 COST_PER_1K_INPUT = 0.0025
 COST_PER_1K_OUTPUT = 0.01
 
@@ -30,7 +30,7 @@ async def generate_appraisal(
     overview: dict,
     keywords: list[dict],
     market_research: str,
-    depth: Literal["basic", "precise", "deep"] = "basic",
+    depth: Literal["basic_free", "basic", "precise_lite", "precise_pro"] = "basic",
     source: str = "app",
 ) -> dict:
     session_id = str(uuid.uuid4())
@@ -94,27 +94,31 @@ async def generate_appraisal(
         )
         raise
 
-    row = (
-        supabase.table("appraisals")
-        .insert({
-            "user_id": user_id,
-            "overview_id": overview["id"],
-            "depth": depth,
-            "market_fit_ko": result.get("market_fit_ko", ""),
-            "market_fit_en": result.get("market_fit_en", ""),
+    # basic_free는 3축만 (market_fit, feasibility, risk)
+    # 나머지 depth는 6축 전부
+    row_data = {
+        "user_id": user_id,
+        "overview_id": overview["id"],
+        "depth": depth,
+        "market_fit_ko": result.get("market_fit_ko", ""),
+        "market_fit_en": result.get("market_fit_en", ""),
+        "feasibility_ko": result.get("feasibility_ko", ""),
+        "feasibility_en": result.get("feasibility_en", ""),
+        "risk_ko": result.get("risk_ko", ""),
+        "risk_en": result.get("risk_en", ""),
+    }
+
+    if depth != "basic_free":
+        row_data.update({
             "problem_fit_ko": result.get("problem_fit_ko", ""),
             "problem_fit_en": result.get("problem_fit_en", ""),
-            "feasibility_ko": result.get("feasibility_ko", ""),
-            "feasibility_en": result.get("feasibility_en", ""),
             "differentiation_ko": result.get("differentiation_ko", ""),
             "differentiation_en": result.get("differentiation_en", ""),
             "scalability_ko": result.get("scalability_ko", ""),
             "scalability_en": result.get("scalability_en", ""),
-            "risk_ko": result.get("risk_ko", ""),
-            "risk_en": result.get("risk_en", ""),
         })
-        .execute()
-    )
+
+    row = supabase.table("appraisals").insert(row_data).execute()
     return row.data[0]
 
 

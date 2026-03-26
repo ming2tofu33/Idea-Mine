@@ -9,9 +9,12 @@ from app.utils import validate_uuid
 router = APIRouter(prefix="/lab", tags=["lab"])
 
 
+from typing import Literal
+
+
 class AppraisalRequest(BaseModel):
     overview_id: str
-    depth: str = "basic"
+    depth: Literal["basic_free", "basic", "precise_lite", "precise_pro"] = "basic"
 
 
 @router.post("/appraisal")
@@ -22,6 +25,22 @@ async def create_appraisal(
 ):
     """개요서 → 감정 생성."""
     validate_uuid(req.overview_id, "overview_id")
+
+    # 티어별 depth 접근 제한
+    tier = user.get("tier", "free")
+    role = user.get("role")
+    if role != "admin":
+        tier_access = {
+            "free": {"basic_free"},
+            "lite": {"basic_free", "basic", "precise_lite"},
+            "pro": {"basic_free", "basic", "precise_lite", "precise_pro"},
+        }
+        allowed = tier_access.get(tier, {"basic_free"})
+        if req.depth not in allowed:
+            raise HTTPException(
+                status_code=403,
+                detail=f"{req.depth} requires a higher tier"
+            )
 
     # 개요서 조회 + 소유권 확인
     overview_result = (

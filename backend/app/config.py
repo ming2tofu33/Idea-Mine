@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     supabase_url: str = ""
     supabase_service_key: str = ""
+    supabase_db_url: str = ""
     tavily_api_key: str = ""
     port: int = 8000
 

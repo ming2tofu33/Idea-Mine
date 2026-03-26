@@ -54,20 +54,38 @@ class RerollResponse(BaseModel):
 class OverviewOut(BaseModel):
     id: str
     idea_id: str
+    concept_ko: str
+    concept_en: str
     problem_ko: str
     problem_en: str
     target_ko: str
     target_en: str
     features_ko: str
     features_en: str
+    differentiator_ko: str
+    differentiator_en: str
     revenue_ko: str
     revenue_en: str
-    market_score: int
-    feasibility_score: int
-    market_comment_ko: str
-    market_comment_en: str
-    feasibility_comment_ko: str
-    feasibility_comment_en: str
+    mvp_scope_ko: str
+    mvp_scope_en: str
+
+
+class AppraisalOut(BaseModel):
+    id: str
+    overview_id: str
+    depth: str  # basic_free, basic, precise_lite, precise_pro
+    market_fit_ko: str
+    market_fit_en: str
+    problem_fit_ko: Optional[str] = None
+    problem_fit_en: Optional[str] = None
+    feasibility_ko: str
+    feasibility_en: str
+    differentiation_ko: Optional[str] = None
+    differentiation_en: Optional[str] = None
+    scalability_ko: Optional[str] = None
+    scalability_en: Optional[str] = None
+    risk_ko: str
+    risk_en: str
 
 
 class ErrorResponse(BaseModel):
