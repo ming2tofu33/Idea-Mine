@@ -1,39 +1,41 @@
 import { useState } from "react";
 import {
   View,
+  ImageBackground,
   StyleSheet,
   Pressable,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { midnight } from "../../constants/theme";
-import { getBagCapacity, RARITY_CONFIG } from "../../constants/mining";
-import { useProfile } from "../../hooks/useProfile";
-import { useMining } from "../../hooks/useMining";
-import { MineStatusBar } from "../../components/mine/MineStatusBar";
-import { RerollButton } from "../../components/mine/RerollButton";
-import { ExhaustedBanner } from "../../components/mine/ExhaustedBanner";
-import { MiningLoader } from "../../components/mine/MiningLoader";
-import { NicknameModal } from "../../components/mine/NicknameModal";
-import { PixelText } from "../../components/PixelText";
-import { PixelImage } from "../../components/PixelImage";
-import { PixelButton } from "../../components/PixelButton";
-import { LanternScan } from "../../components/mine/LanternScan";
-import { RerollBlast } from "../../components/mine/RerollBlast";
-import { AdminFab } from "../../components/admin/AdminFab";
-import { PixelModal } from "../../components/shared/PixelModal";
-import { usePixelModal } from "../../hooks/usePixelModal";
-import { adminApi } from "../../lib/api";
-import type { Vein } from "../../types/api";
+import { midnight } from "../../../constants/theme";
+import { getBagCapacity, RARITY_CONFIG } from "../../../constants/mining";
+import { useProfile } from "../../../hooks/useProfile";
+import { useMining } from "../../../hooks/useMining";
+import { MineStatusBar } from "../../../components/mine/MineStatusBar";
+import { RerollButton } from "../../../components/mine/RerollButton";
+import { ExhaustedBanner } from "../../../components/mine/ExhaustedBanner";
+import { MiningLoader } from "../../../components/mine/MiningLoader";
+import { NicknameModal } from "../../../components/mine/NicknameModal";
+import { PixelText } from "../../../components/PixelText";
+import { pixel } from "../../../constants/pixel";
+import { PixelButton } from "../../../components/PixelButton";
+import { LanternScan } from "../../../components/mine/LanternScan";
+import { RerollBlast } from "../../../components/mine/RerollBlast";
+import { AdminFab } from "../../../components/admin/AdminFab";
+import { ActionDock } from "../../../components/shared/ActionDock";
+import { PixelModal } from "../../../components/shared/PixelModal";
+import { usePixelModal } from "../../../hooks/usePixelModal";
+import { adminApi } from "../../../lib/api";
+import type { Vein } from "../../../types/api";
 import type { ImageSourcePropType } from "react-native";
 
 
-// --- 광맥 스프라이트 매핑 ---
-const VEIN_SPRITES: Record<string, ImageSourcePropType> = {
-  common: require("../../assets/sprites/items/32/vein-common.png"),
-  rare: require("../../assets/sprites/items/32/vein-rare.png"),
-  golden: require("../../assets/sprites/items/32/vein-golden.png"),
-  legend: require("../../assets/sprites/items/32/vein-legend.png"),
+// --- 광맥 이모지 매핑 ---
+const VEIN_SPRITES: Record<string, string> = {
+  common: "🪨",
+  rare: "💎",
+  golden: "💰",
+  legend: "🌟",
 };
 
 // --- 삼각형 배치: 상단 중앙 / 중하단 좌 / 중하단 우 ---
@@ -71,19 +73,17 @@ function VeinObject({
       style={[
         styles.veinObject,
         { top: pos.top as any, left: pos.left as any },
-        dimmed && styles.veinDimmed,
       ]}
     >
       {/* 선택 시 광맥 주변 은은한 발광 */}
       {isSelected && <View style={[styles.veinGlow, { backgroundColor: rarity.color + "20" }]} />}
 
-      {/* 광맥 스프라이트 */}
-      <PixelImage
-        source={VEIN_SPRITES[vein.rarity] ?? VEIN_SPRITES.common}
-        size={32}
-        scale={3}
-        style={isSelected ? styles.veinSpriteSelected : undefined}
-      />
+      {/* 광맥 이모지 */}
+      <View style={isSelected ? styles.veinSpriteSelected : undefined}>
+        <PixelText emoji style={{ fontSize: pixel.emoji.scene, textAlign: 'center' }}>
+          {VEIN_SPRITES[vein.rarity] ?? VEIN_SPRITES.common}
+        </PixelText>
+      </View>
 
       {/* 캡션 박스 */}
       <View style={[styles.veinCaption, isSelected && { borderColor: rarity.color }]}>
@@ -128,7 +128,7 @@ export default function MineScreen() {
     const result = await mine(selectedVeinId);
     if (result) {
       router.push({
-        pathname: "/mining-result",
+        pathname: "/mine/result",
         params: {
           ideas: JSON.stringify(result.ideas),
           veinId: result.vein_id,
@@ -192,7 +192,7 @@ export default function MineScreen() {
     : "광맥을 선택하세요";
 
   if (isGenerating) {
-    return <MiningLoader language={language} />;
+    return <MiningLoader language={language} rarity={selectedVein?.rarity ?? "common"} />;
   }
 
   return (
@@ -205,33 +205,12 @@ export default function MineScreen() {
       />
 
       {/* === 광산 씬 === */}
-      <View style={styles.scene}>
-        {/* 배경 레이어 */}
-        <View style={styles.bgTop} />
-        <View style={styles.bgBottom} />
-
-        {/* 소품: 랜턴 */}
-        <PixelImage
-          source={require("../../assets/sprites/items/lantern.png")}
-          size={32}
-          scale={2}
-          style={styles.propLantern}
-        />
-        {/* 소품: 광차 */}
-        <PixelImage
-          source={require("../../assets/sprites/items/minecart.png")}
-          width={48}
-          height={32}
-          scale={2}
-          style={styles.propMinecart}
-        />
-        {/* 소품: 광부 캐릭터 */}
-        <PixelImage
-          source={require("../../assets/sprites/characters/miner-idle.png")}
-          size={32}
-          scale={2}
-          style={styles.propMiner}
-        />
+      <ImageBackground
+        source={require("../../../assets/sprites/backgrounds/mine-bg.png")}
+        style={styles.scene}
+        resizeMode="cover"
+        imageStyle={{ width: "100%", height: "100%" }}
+      >
 
         {/* 헤더 텍스트 */}
         <View style={styles.sceneHeader}>
@@ -275,30 +254,33 @@ export default function MineScreen() {
             )}
           </>
         )}
-      </View>
+      </ImageBackground>
 
       {/* === 하단 고정 CTA 도크 === */}
-      <View style={styles.ctaDock}>
-        {!isLoading && veins.length > 0 && (
-          <>
-            <RerollButton
-              rerollsLeft={rerollsLeft}
-              rerollsMax={dailyState.rerolls_max}
-              onPress={handleReroll}
-            />
-            <PixelButton
-              variant={selectedVeinId && !isExhausted ? "primary" : "secondary"}
-              size="lg"
-              disabled={!selectedVeinId || isExhausted}
-              onPress={handleMine}
-              style={styles.ctaButton}
-            >
-              {isExhausted ? "오늘의 채굴을 모두 사용했어요" : ctaLabel}
-            </PixelButton>
-          </>
+      <ActionDock>
+        {isExhausted ? (
+          <ExhaustedBanner />
+        ) : (
+          !isLoading && veins.length > 0 && (
+            <>
+              <RerollButton
+                rerollsLeft={rerollsLeft}
+                rerollsMax={dailyState.rerolls_max}
+                onPress={handleReroll}
+              />
+              <PixelButton
+                variant={selectedVeinId ? "primary" : "secondary"}
+                size="lg"
+                disabled={!selectedVeinId}
+                onPress={handleMine}
+                style={styles.ctaButton}
+              >
+                {ctaLabel}
+              </PixelButton>
+            </>
+          )
         )}
-        {isExhausted && <ExhaustedBanner />}
-      </View>
+      </ActionDock>
 
       <NicknameModal
         visible={!!showNicknameModal}
@@ -338,43 +320,6 @@ const styles = StyleSheet.create({
     position: "relative",
     overflow: "hidden",
   },
-  bgTop: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: "55%",
-    backgroundColor: midnight.bg.deep,
-  },
-  bgBottom: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: "45%",
-    backgroundColor: midnight.bg.primary,
-  },
-
-  // 소품
-  propLantern: {
-    position: "absolute",
-    bottom: "2%",
-    right: "8%",
-    opacity: 0.6,
-  },
-  propMinecart: {
-    position: "absolute",
-    bottom: "2%",
-    left: "5%",
-    opacity: 0.4,
-  },
-  propMiner: {
-    position: "absolute",
-    bottom: "2%",
-    left: "40%",
-    opacity: 0.7,
-  },
-
   // 헤더
   sceneHeader: {
     position: "absolute",
@@ -402,9 +347,6 @@ const styles = StyleSheet.create({
     width: 140,
     zIndex: 10,
   },
-  veinDimmed: {
-    opacity: 0.4,
-  },
   veinGlow: {
     position: "absolute",
     width: 120,
@@ -420,7 +362,7 @@ const styles = StyleSheet.create({
   veinCaption: {
     marginTop: 8,
     backgroundColor: midnight.bg.elevated + "E0",
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: midnight.border.default,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -432,16 +374,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
 
-  // === 하단 CTA 도크 ===
-  ctaDock: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: midnight.border.default,
-    backgroundColor: midnight.bg.elevated,
-    alignItems: "center",
-    gap: 8,
-  },
   ctaButton: {
     alignSelf: "stretch",
   },

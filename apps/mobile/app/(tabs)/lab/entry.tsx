@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
-import { View, StyleSheet, ScrollView } from "react-native";
+import { View, ImageBackground, StyleSheet, ScrollView } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { midnight, lab } from "../constants/theme";
-import { labApi, vaultApi, ApiClientError } from "../lib/api";
-import { PixelText } from "../components/PixelText";
-import { PixelButton } from "../components/PixelButton";
-import { KeywordChip } from "../components/shared/KeywordChip";
-import { LabLoader } from "../components/lab/LabLoader";
-import type { Idea } from "../types/api";
+import { midnight, lab } from "../../../constants/theme";
+import { labApi, vaultApi, ApiClientError } from "../../../lib/api";
+import { PixelText } from "../../../components/PixelText";
+import { PixelButton } from "../../../components/PixelButton";
+import { KeywordChip } from "../../../components/shared/KeywordChip";
+import { ScreenHeader } from "../../../components/shared/ScreenHeader";
+import { LabLoader } from "../../../components/lab/LabLoader";
+import type { Idea } from "../../../types/api";
 
 export default function LabEntryScreen() {
   const router = useRouter();
@@ -31,7 +32,7 @@ export default function LabEntryScreen() {
     setError(null);
     try {
       const overview = await labApi.createOverview(params.ideaId!);
-      router.replace({ pathname: "/overview-result", params: { overviewId: overview.id, language } });
+      router.replace({ pathname: "/lab/overview", params: { overviewId: overview.id, language } });
     } catch (e) {
       setIsGenerating(false);
       const msg = e instanceof ApiClientError ? e.message : "개요서 생성에 실패했습니다";
@@ -45,12 +46,14 @@ export default function LabEntryScreen() {
   const summary = language === "ko" ? idea.summary_ko : idea.summary_en;
 
   return (
+    <ImageBackground
+      source={require("../../../assets/sprites/backgrounds/lab-bg.png")}
+      style={styles.bg}
+      resizeMode="cover"
+      imageStyle={{ width: "100%", height: "100%" }}
+    >
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <PixelText variant="body" style={styles.back} onPress={() => router.replace("/(tabs)/lab")}>
-          {"← "}실험실
-        </PixelText>
-      </View>
+      <ScreenHeader backLabel="실험실" backTo="back" colorScheme="lab" />
       <ScrollView contentContainerStyle={styles.content}>
         <PixelText variant="title" color={lab.panel.default} style={styles.heading}>
           이 원석을 프로젝트 개요로 다듬어볼까요?
@@ -70,24 +73,20 @@ export default function LabEntryScreen() {
 
         <PixelButton
           title="이 원석으로 개요서 만들기"
-          variant="primary"
+          variant="lab"
+          size="lg"
           onPress={handleGenerate}
           style={styles.cta}
         />
       </ScrollView>
     </SafeAreaView>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: lab.bg.wall },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: lab.equipment.default,
-  },
-  back: { color: lab.panel.default },
+  bg: { flex: 1, backgroundColor: lab.bg.wall },
+  safe: { flex: 1 },
   content: { padding: 16 },
   heading: { marginBottom: 20 },
   workbench: {

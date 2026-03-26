@@ -2,15 +2,15 @@ import { useState } from "react";
 import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { midnight } from "../constants/theme";
-import { ideasApi, ApiClientError } from "../lib/api";
-import { withMinDelay } from "../lib/minDelay";
-import { IdeaCard } from "../components/vault/IdeaCard";
-import { VaultButton } from "../components/vault/VaultButton";
-import { PixelText } from "../components/PixelText";
-import { PixelModal } from "../components/shared/PixelModal";
-import { usePixelModal } from "../hooks/usePixelModal";
-import type { Idea } from "../types/api";
+import { midnight } from "../../../constants/theme";
+import { ideasApi, ApiClientError } from "../../../lib/api";
+import { withMinDelay } from "../../../lib/minDelay";
+import { IdeaCard } from "../../../components/vault/IdeaCard";
+import { VaultButton } from "../../../components/vault/VaultButton";
+import { PixelText } from "../../../components/PixelText";
+import { PixelModal } from "../../../components/shared/PixelModal";
+import { usePixelModal } from "../../../hooks/usePixelModal";
+import type { Idea } from "../../../types/api";
 
 export default function MiningResultScreen() {
   const router = useRouter();
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 1,
+    borderBottomWidth: 2,
     borderBottomColor: midnight.border.subtle,
   },
   headerRight: {

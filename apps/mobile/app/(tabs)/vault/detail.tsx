@@ -2,14 +2,15 @@ import { useState, useEffect } from "react";
 import { View, StyleSheet, ScrollView } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { midnight } from "../constants/theme";
-import { vaultApi } from "../lib/api";
-import { PixelText } from "../components/PixelText";
-import { PixelButton } from "../components/PixelButton";
-import { KeywordChip } from "../components/shared/KeywordChip";
-import { PixelModal } from "../components/shared/PixelModal";
-import { usePixelModal } from "../hooks/usePixelModal";
-import type { Idea } from "../types/api";
+import { midnight } from "../../../constants/theme";
+import { vaultApi } from "../../../lib/api";
+import { PixelText } from "../../../components/PixelText";
+import { PixelButton } from "../../../components/PixelButton";
+import { KeywordChip } from "../../../components/shared/KeywordChip";
+import { ScreenHeader } from "../../../components/shared/ScreenHeader";
+import { PixelModal } from "../../../components/shared/PixelModal";
+import { usePixelModal } from "../../../hooks/usePixelModal";
+import type { Idea } from "../../../types/api";
 
 export default function IdeaDetailScreen() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function IdeaDetailScreen() {
   };
 
   const handleSendToLab = () => {
-    router.push({ pathname: "/lab-entry", params: { ideaId: params.ideaId, language } });
+    router.push({ pathname: "/lab/entry", params: { ideaId: params.ideaId, language } });
   };
 
   if (loading || !idea) return null;
@@ -45,19 +46,17 @@ export default function IdeaDetailScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <PixelText variant="body" style={styles.back} onPress={() => router.replace("/(tabs)/vault")}>{"← "}금고</PixelText>
-      </View>
+      <ScreenHeader backLabel="금고" backTo="back" colorScheme="vault" />
       <ScrollView contentContainerStyle={styles.content}>
         <PixelText variant="title">{title}</PixelText>
-        <PixelText variant="body" style={styles.summary}>{summary}</PixelText>
+        <PixelText variant="prose" style={styles.summary}>{summary}</PixelText>
         <View style={styles.chips}>
           {idea.keyword_combo.map((kc, i) => (
             <KeywordChip key={i} category={kc.category} label={kc[language]} />
           ))}
         </View>
-        <PixelButton title="실험실로 보내기" variant="primary" onPress={handleSendToLab} style={styles.ctaButton} />
-        <PixelButton title="원석 삭제" variant="danger" onPress={handleDelete} style={styles.deleteButton} />
+        <PixelButton title="실험실로 보내기" variant="primary" size="lg" onPress={handleSendToLab} style={styles.ctaButton} />
+        <PixelButton title="원석 삭제" variant="danger" size="lg" onPress={handleDelete} style={styles.deleteButton} />
       </ScrollView>
 
       <PixelModal
@@ -73,8 +72,6 @@ export default function IdeaDetailScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: midnight.bg.primary },
-  header: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: midnight.border.subtle },
-  back: { color: midnight.accent.gold },
   content: { padding: 16 },
   summary: { color: midnight.text.secondary, marginTop: 8, marginBottom: 16 },
   chips: { flexDirection: "row", flexWrap: "wrap", marginBottom: 24 },

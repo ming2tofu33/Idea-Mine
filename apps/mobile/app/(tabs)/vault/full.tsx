@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { View, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { midnight } from "../constants/theme";
-import { useVault } from "../hooks/useVault";
-import { OverviewCard } from "../components/vault/OverviewCard";
-import { PixelText } from "../components/PixelText";
+import { midnight } from "../../../constants/theme";
+import { useVault } from "../../../hooks/useVault";
+import { OverviewCard } from "../../../components/vault/OverviewCard";
+import { VaultGemCard } from "../../../components/vault/VaultGemCard";
+import { PixelText } from "../../../components/PixelText";
+import { ScreenHeader } from "../../../components/shared/ScreenHeader";
 
 type Tab = "ideas" | "overviews";
 
@@ -20,10 +22,7 @@ export default function VaultFullScreen() {
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
-      <View style={styles.header}>
-        <PixelText variant="body" style={styles.back} onPress={() => router.replace("/(tabs)/vault")}>{"← "}금고</PixelText>
-        <PixelText variant="subtitle">전체 보기</PixelText>
-      </View>
+      <ScreenHeader backLabel="금고" backTo="back" title="전체 보기" colorScheme="vault" />
       <View style={styles.tabs}>
         <TouchableOpacity style={[styles.tab, tab === "ideas" && styles.tabActive]} onPress={() => setTab("ideas")}>
           <PixelText variant="body" style={tab === "ideas" ? styles.tabTextActive : styles.tabText}>원석 ({ideas.length})</PixelText>
@@ -40,14 +39,11 @@ export default function VaultFullScreen() {
           numColumns={2}
           contentContainerStyle={styles.grid}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.gridItem}
-              onPress={() => router.push({ pathname: "/idea-detail", params: { ideaId: item.id, language } })}
-            >
-              <PixelText variant="caption" numberOfLines={2}>
-                {language === "ko" ? item.title_ko : item.title_en}
-              </PixelText>
-            </TouchableOpacity>
+            <VaultGemCard
+              idea={item}
+              language={language}
+              onPress={() => router.push({ pathname: "/vault/detail", params: { ideaId: item.id, language } })}
+            />
           )}
         />
       ) : (
@@ -60,7 +56,7 @@ export default function VaultFullScreen() {
             <OverviewCard
               overview={item}
               language={language}
-              onPress={() => router.push({ pathname: "/overview-result", params: { overviewId: item.id, language } })}
+              onPress={() => router.push({ pathname: "/lab/overview", params: { overviewId: item.id, language } })}
             />
           )}
         />
@@ -71,14 +67,11 @@ export default function VaultFullScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: midnight.bg.primary },
-  header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: midnight.border.subtle, gap: 12 },
-  back: { color: midnight.accent.gold },
-  tabs: { flexDirection: "row", borderBottomWidth: 1, borderBottomColor: midnight.border.subtle },
+  tabs: { flexDirection: "row", borderBottomWidth: 2, borderBottomColor: midnight.border.subtle },
   tab: { flex: 1, paddingVertical: 12, alignItems: "center" },
   tabActive: { borderBottomWidth: 2, borderBottomColor: midnight.accent.gold },
   tabText: { color: midnight.text.muted },
   tabTextActive: { color: midnight.accent.gold },
-  grid: { padding: 8 },
-  gridItem: { flex: 1, backgroundColor: midnight.bg.elevated, borderWidth: 2, borderColor: midnight.border.default, padding: 12, margin: 4, minHeight: 60 },
+  grid: { padding: 4 },
   list: { padding: 16 },
 });
