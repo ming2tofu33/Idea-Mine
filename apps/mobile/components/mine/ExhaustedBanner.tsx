@@ -1,24 +1,30 @@
 import { View, StyleSheet } from "react-native";
+import { useRouter } from "expo-router";
 import { PixelText } from "../PixelText";
 import { PixelButton } from "../PixelButton";
 import { midnight } from "../../constants/theme";
+import { pixel } from "../../constants/pixel";
 
 export function ExhaustedBanner() {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
+      <PixelText emoji style={{ fontSize: pixel.emoji.scene }}>⛏</PixelText>
       <PixelText variant="body" style={styles.text}>
-        오늘의 채굴을 모두 사용했어요
+        오늘의 채굴이 끝났어요
       </PixelText>
       <PixelText variant="caption" style={styles.subtext}>
-        내일 새로운 광맥이 기다리고 있어요
+        내일 새로운 광맥이 열려요
       </PixelText>
       <PixelButton
-        title="광고로 1회 추가 (준비 중)"
-        variant="secondary"
-        disabled
-        onPress={() => {}}
-        style={styles.adButton}
-      />
+        variant="primary"
+        size="md"
+        onPress={() => router.replace("/vault")}
+        style={styles.ctaButton}
+      >
+        금고 둘러보기
+      </PixelButton>
     </View>
   );
 }
@@ -26,21 +32,22 @@ export function ExhaustedBanner() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: midnight.bg.surface,
-    borderWidth: 2,
+    borderWidth: pixel.border.width,
     borderColor: midnight.border.default,
-    padding: 24,
-    marginTop: 16,
+    padding: pixel.space.xxl,
     alignItems: "center",
+    alignSelf: "stretch",
   },
   text: {
     color: midnight.text.primary,
-    marginBottom: 4,
+    marginTop: pixel.space.sm,
+    marginBottom: pixel.space.xs,
   },
   subtext: {
     color: midnight.text.muted,
-    marginBottom: 16,
+    marginBottom: pixel.space.lg,
   },
-  adButton: {
-    opacity: 0.5,
+  ctaButton: {
+    alignSelf: "stretch",
   },
 });

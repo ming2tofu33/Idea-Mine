@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     backgroundColor: midnight.bg.primary,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderTopWidth: 1,
+    borderTopWidth: 2,
     borderTopColor: midnight.border.subtle,
   },
 });

@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import { Animated, StyleSheet, Easing } from "react-native";
 import { midnight } from "../../constants/theme";
+import { pixel } from "../../constants/pixel";
+import { PixelText } from "../PixelText";
 
 interface RerollBlastProps {
   onComplete: () => void;
@@ -92,7 +94,11 @@ export function RerollBlast({ onComplete }: RerollBlastProps) {
             transform: [{ scale: blastScale }],
           },
         ]}
-      />
+      >
+        <PixelText emoji style={{ fontSize: pixel.emoji.scene, textAlign: 'center' }}>
+          💥
+        </PixelText>
+      </Animated.View>
 
       {particles.map((p, i) => (
         <Animated.View

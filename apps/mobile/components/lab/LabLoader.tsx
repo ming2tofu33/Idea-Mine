@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { View, Animated, StyleSheet, Easing } from "react-native";
 import { midnight, lab } from "../../constants/theme";
+import { pixel } from "../../constants/pixel";
 import { PixelText } from "../PixelText";
 
 interface LabLoaderProps {
@@ -36,13 +37,8 @@ const WAITING_MESSAGES: { ko: string; en: string }[] = [
 
 const SECTIONS = ["문제 정의", "타깃 사용자", "핵심 기능", "수익 구조"];
 
-// Gem stages: rough → polished1 → polished2 → complete
-const GEM_STAGES = [
-  { borderRadius: 0, rotation: 0, scale: 1.0, color: "#4A4E62", glow: 0 },
-  { borderRadius: 8, rotation: 0, scale: 0.95, color: "#5A5E72", glow: 0 },
-  { borderRadius: 4, rotation: 45, scale: 0.7, color: "#A8E6CF", glow: 0.3 },
-  { borderRadius: 4, rotation: 45, scale: 0.7, color: "#C4B07A", glow: 0.6 },
-];
+// Gem stages: rough → polished1 → polished2 → complete using emoji swapping
+const GEM_EMOJIS = ["🪨", "💎", "💎", "💎"];
 
 export function LabLoader({ language }: LabLoaderProps) {
   const [phase, setPhase] = useState<"A" | "B" | "C">("A");
@@ -54,8 +50,6 @@ export function LabLoader({ language }: LabLoaderProps) {
   const [dots, setDots] = useState("");
 
   // Phase A gem animations
-  const gemRadius = useRef(new Animated.Value(0)).current;
-  const gemRotation = useRef(new Animated.Value(0)).current;
   const gemScale = useRef(new Animated.Value(1)).current;
   const glowOpacity = useRef(new Animated.Value(0)).current;
 
@@ -179,36 +173,22 @@ export function LabLoader({ language }: LabLoaderProps) {
 
   function animateGemStage(stage: number) {
     setGemStage(stage);
-    const target = GEM_STAGES[stage];
+    const targetScale = stage === 0 ? 1 : stage === 1 ? 0.95 : 0.8;
+    const targetGlow = stage >= 2 ? (stage === 3 ? 0.6 : 0.3) : 0;
+
     Animated.parallel([
-      Animated.timing(gemRadius, {
-        toValue: target.borderRadius,
-        duration: 600,
-        useNativeDriver: false,
-      }),
-      Animated.timing(gemRotation, {
-        toValue: target.rotation,
-        duration: 600,
-        easing: Easing.inOut(Easing.quad),
-        useNativeDriver: true,
-      }),
       Animated.timing(gemScale, {
-        toValue: target.scale,
+        toValue: targetScale,
         duration: 600,
         useNativeDriver: true,
       }),
       Animated.timing(glowOpacity, {
-        toValue: target.glow,
+        toValue: targetGlow,
         duration: 600,
         useNativeDriver: true,
       }),
     ]).start();
   }
-
-  const rotateStr = gemRotation.interpolate({
-    inputRange: [0, 360],
-    outputRange: ["0deg", "360deg"],
-  });
 
   const shimmerOpacity = shimmer.interpolate({
     inputRange: [0, 1],
@@ -234,12 +214,6 @@ export function LabLoader({ language }: LabLoaderProps) {
             },
           ]}
         >
-          {/* Bench */}
-          <View style={styles.bench}>
-            <View style={styles.benchTop} />
-            <View style={styles.benchLeg} />
-          </View>
-
           {/* Glow behind gem */}
           <Animated.View
             style={[
@@ -248,24 +222,25 @@ export function LabLoader({ language }: LabLoaderProps) {
             ]}
           />
 
-          {/* Gem */}
+          {/* Gem using Emoji */}
           <Animated.View
             style={[
               styles.gem,
               {
-                backgroundColor: GEM_STAGES[gemStage].color,
-                borderRadius: GEM_STAGES[gemStage].borderRadius,
                 transform: [
-                  { rotate: rotateStr },
                   { scale: gemScale },
                 ],
               },
             ]}
           >
+            <PixelText emoji style={{ fontSize: pixel.emoji.hero, textAlign: 'center' }}>
+              {GEM_EMOJIS[gemStage]}
+            </PixelText>
+
             {/* Sparkle on gem */}
             {gemStage >= 2 && (
               <Animated.View style={[styles.gemSparkle, { opacity: sparkle }]}>
-                <PixelText variant="body" emoji style={{ fontSize: 16 }}>
+                <PixelText variant="body" emoji style={{ fontSize: pixel.emoji.icon, textShadowColor: '#FFF', textShadowRadius: 4 }}>
                   ✨
                 </PixelText>
               </Animated.View>
@@ -274,14 +249,10 @@ export function LabLoader({ language }: LabLoaderProps) {
 
           {/* Side equipment */}
           <View style={styles.equipRow}>
-            <View style={styles.flask}>
-              <View style={styles.flaskBody} />
-              <View style={styles.flaskNeck} />
-            </View>
-            <View style={styles.lamp}>
-              <View style={[styles.lampLight, gemStage > 0 && styles.lampOn]} />
-              <View style={styles.lampBase} />
-            </View>
+            <PixelText emoji style={{ fontSize: pixel.emoji.scene, opacity: 0.8 }}>🧪</PixelText>
+            <Animated.View style={{ opacity: gemStage > 0 ? 1 : 0.4 }}>
+              <PixelText emoji style={{ fontSize: pixel.emoji.scene }}>💡</PixelText>
+            </Animated.View>
           </View>
         </Animated.View>
       )}
@@ -291,9 +262,7 @@ export function LabLoader({ language }: LabLoaderProps) {
         <Animated.View style={[styles.phaseC, { opacity: phaseCOpacity }]}>
           <View style={styles.overviewCard}>
             <View style={styles.overviewHeader}>
-              <PixelText variant="body" emoji style={{ fontSize: 14 }}>
-                💎
-              </PixelText>
+              <PixelText emoji style={{ fontSize: pixel.emoji.scene }}>📄</PixelText>
               <PixelText variant="subtitle" style={styles.overviewTitle}>
                 프로젝트 개요서
               </PixelText>
@@ -349,92 +318,35 @@ const styles = StyleSheet.create({
   phaseA: {
     alignItems: "center",
     justifyContent: "center",
-  },
-  bench: {
-    alignItems: "center",
-    marginTop: 20,
-  },
-  benchTop: {
-    width: 120,
-    height: 8,
-    backgroundColor: lab.bench.default,
-    borderWidth: 1,
-    borderTopColor: lab.bench.light,
-    borderLeftColor: lab.bench.light,
-    borderBottomColor: lab.bench.dark,
-    borderRightColor: lab.bench.dark,
-  },
-  benchLeg: {
-    width: 60,
-    height: 20,
-    backgroundColor: lab.bench.dark,
-    borderWidth: 1,
-    borderColor: lab.equipment.default,
+    marginTop: 40,
   },
   gem: {
-    width: 64,
-    height: 64,
-    position: "absolute",
-    top: -50,
+    width: 100,
+    height: 100,
     alignItems: "center",
     justifyContent: "center",
+    marginBottom: 24,
   },
   gemGlow: {
     position: "absolute",
-    top: -80,
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: "rgba(168,230,207,0.25)",
+    top: 0,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: "rgba(168,230,207,0.3)",
+    zIndex: -1,
   },
   gemSparkle: {
     position: "absolute",
-    top: -8,
-    right: -8,
+    top: -10,
+    right: -10,
+    zIndex: 10,
   },
   equipRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     width: 200,
-    marginTop: 16,
-  },
-  flask: {
-    alignItems: "center",
-  },
-  flaskBody: {
-    width: 16,
-    height: 24,
-    backgroundColor: lab.equipment.light,
-    borderWidth: 1,
-    borderColor: lab.equipment.default,
-    borderRadius: 2,
-  },
-  flaskNeck: {
-    width: 8,
-    height: 12,
-    backgroundColor: lab.equipment.light,
-    borderWidth: 1,
-    borderColor: lab.equipment.default,
-    marginTop: -1,
-  },
-  lamp: {
-    alignItems: "center",
-  },
-  lampLight: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: lab.equipment.default,
-    marginBottom: 2,
-  },
-  lampOn: {
-    backgroundColor: "#F5E6B8",
-  },
-  lampBase: {
-    width: 16,
-    height: 8,
-    backgroundColor: lab.equipment.default,
-    borderRadius: 1,
+    marginTop: 32,
   },
 
   // Phase C
@@ -443,46 +355,43 @@ const styles = StyleSheet.create({
   },
   overviewCard: {
     backgroundColor: lab.bg.floor,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: lab.equipment.default,
-    borderRadius: 8,
     padding: 16,
   },
   overviewHeader: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
-    gap: 8,
+    gap: 12,
   },
   overviewTitle: {
     color: lab.panel.default,
   },
   sectionRow: {
     paddingVertical: 12,
-    borderTopWidth: 1,
+    borderTopWidth: 2,
     borderTopColor: lab.equipment.default,
   },
   sectionHidden: {
     opacity: 0,
   },
   shimmerBar: {
-    height: 10,
+    height: 8,
     backgroundColor: lab.equipment.default,
-    borderRadius: 2,
     marginTop: 8,
     width: "80%",
   },
   shimmerBarShort: {
-    height: 10,
+    height: 8,
     backgroundColor: lab.equipment.default,
-    borderRadius: 2,
-    marginTop: 6,
+    marginTop: 8,
     width: "55%",
   },
 
   // Message
   message: {
-    marginTop: 32,
+    marginTop: 48,
     textAlign: "center",
   },
 });

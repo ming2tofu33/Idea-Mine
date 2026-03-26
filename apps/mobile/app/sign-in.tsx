@@ -48,6 +48,7 @@ export default function SignInScreen() {
                 variant="secondary"
                 size="lg"
                 onPress={() => handleOAuth("google")}
+                style={{ alignSelf: "stretch" }}
               >
                 구글로 시작하기
               </PixelButton>
@@ -56,6 +57,7 @@ export default function SignInScreen() {
                 variant="secondary"
                 size="lg"
                 onPress={() => handleOAuth("github")}
+                style={{ alignSelf: "stretch" }}
               >
                 깃허브로 시작하기
               </PixelButton>

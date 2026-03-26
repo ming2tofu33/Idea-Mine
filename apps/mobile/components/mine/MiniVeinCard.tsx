@@ -1,15 +1,15 @@
-import { TouchableOpacity, View, StyleSheet, ImageSourcePropType } from "react-native";
+import { TouchableOpacity, View, StyleSheet } from "react-native";
 import { PixelText } from "../PixelText";
-import { PixelImage } from "../PixelImage";
 import { midnight } from "../../constants/theme";
+import { pixel } from "../../constants/pixel";
 import { RARITY_CONFIG } from "../../constants/mining";
 import type { Vein } from "../../types/api";
 
-const VEIN_SPRITES: Record<string, ImageSourcePropType> = {
-  common: require("../../assets/sprites/items/32/vein-common.png"),
-  rare: require("../../assets/sprites/items/32/vein-rare.png"),
-  golden: require("../../assets/sprites/items/32/vein-golden.png"),
-  legend: require("../../assets/sprites/items/32/vein-legend.png"),
+const VEIN_EMOJI: Record<string, string> = {
+  common: "🪨",
+  rare: "💎",
+  golden: "💰",
+  legend: "🌟",
 };
 
 interface MiniVeinCardProps {
@@ -22,7 +22,7 @@ interface MiniVeinCardProps {
 export function MiniVeinCard({ vein, isSelected, language, onPress }: MiniVeinCardProps) {
   const rarity = RARITY_CONFIG[vein.rarity] ?? RARITY_CONFIG.common;
   const rarityLabel = rarity.label[language];
-  const preview = vein.keywords.slice(0, 2).map((k) => k[language]).join(", ");
+  const preview = vein.keywords.map((k) => `· ${k[language]}`).join("\n");
   const isMined = vein.is_selected;
 
   return (
@@ -37,12 +37,9 @@ export function MiniVeinCard({ vein, isSelected, language, onPress }: MiniVeinCa
       disabled={isMined}
     >
       <View style={styles.headerRow}>
-        <PixelImage
-          source={VEIN_SPRITES[vein.rarity] ?? VEIN_SPRITES.common}
-          size={32}
-          scale={1}
-          style={styles.veinSprite}
-        />
+        <PixelText emoji style={{ fontSize: pixel.emoji.icon, marginRight: 8 }}>
+          {VEIN_EMOJI[vein.rarity] ?? VEIN_EMOJI.common}
+        </PixelText>
         <PixelText variant="caption" style={{ color: rarity.color, flex: 1 }}>
           {"icon" in rarity ? `${rarity.icon} ` : ""}{rarityLabel}
         </PixelText>
@@ -54,7 +51,7 @@ export function MiniVeinCard({ vein, isSelected, language, onPress }: MiniVeinCa
           </PixelText>
         </View>
       ) : (
-        <PixelText variant="caption" style={styles.preview} numberOfLines={2}>
+        <PixelText variant="caption" style={styles.preview}>
           {preview}
         </PixelText>
       )}
@@ -70,15 +67,12 @@ const styles = StyleSheet.create({
     borderColor: midnight.border.default,
     padding: 8,
     marginHorizontal: 4,
-    minHeight: 80,
+    minHeight: 100,
     justifyContent: "space-between",
   },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
-  },
-  veinSprite: {
-    marginRight: 8,
   },
   preview: {
     color: midnight.text.secondary,

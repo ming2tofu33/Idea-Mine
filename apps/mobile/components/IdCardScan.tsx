@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { View, Animated, StyleSheet, Easing } from "react-native";
 import { midnight } from "../constants/theme";
+import { pixel, pixelGlow } from "../constants/pixel";
 import { PixelText } from "./PixelText";
 
 const CARD_HEIGHT = 180;
@@ -90,8 +91,8 @@ export function IdCardScan({ variant = "scanning" }: IdCardScanProps) {
           IDEA MINE
         </PixelText>
 
-        <PixelText variant="body" emoji style={{ fontSize: 40, marginBottom: 8 }}>
-          ⛏
+        <PixelText emoji style={{ fontSize: pixel.emoji.scene, marginBottom: 8 }}>
+          🪪
         </PixelText>
 
         <PixelText variant="body" color={midnight.text.primary}>
@@ -151,11 +152,7 @@ const styles = StyleSheet.create({
     right: 4,
     height: 2,
     backgroundColor: midnight.accent.gold,
-    shadowColor: midnight.accent.gold,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 6,
-    elevation: 4,
+    ...pixelGlow(midnight.accent.gold, 6),
   },
   stamp: {
     position: "absolute",
@@ -163,8 +160,7 @@ const styles = StyleSheet.create({
     right: 12,
     borderWidth: 2,
     borderColor: midnight.accent.gold,
-    borderRadius: 4,
-    paddingHorizontal: 6,
+    paddingHorizontal: 8,
     paddingVertical: 2,
     transform: [{ rotate: "-12deg" }],
   },

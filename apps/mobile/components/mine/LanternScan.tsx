@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { View, Animated, StyleSheet, Easing, useWindowDimensions } from "react-native";
 import { midnight } from "../../constants/theme";
 import { PixelText } from "../PixelText";
+import { pixel } from "../../constants/pixel";
 
 export function LanternScan() {
   const { width } = useWindowDimensions();
@@ -41,8 +42,8 @@ export function LanternScan() {
         ]}
       >
         <View style={styles.glow} />
-        <PixelText variant="body" emoji style={{ fontSize: 20 }}>
-          🏮
+        <PixelText emoji style={{ fontSize: pixel.emoji.scene }}>
+          🕯
         </PixelText>
       </Animated.View>
 
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 24,
     backgroundColor: midnight.bg.surface,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: midnight.border.default,
   },
   lanternLight: {

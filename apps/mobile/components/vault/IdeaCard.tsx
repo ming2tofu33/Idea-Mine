@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
   },
   summary: {
     color: midnight.text.secondary,
-    marginTop: 6,
+    marginTop: 8,
     marginBottom: 12,
   },
   chips: {

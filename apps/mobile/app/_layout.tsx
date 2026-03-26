@@ -75,6 +75,8 @@ export default function RootLayout() {
     Mona12: require("../assets/fonts/Mona12.ttf"),
     "Mona12-Bold": require("../assets/fonts/Mona12-Bold.ttf"),
     Mona12ColorEmoji: require("../assets/fonts/Mona12ColorEmoji.ttf"),
+    Pretendard: require("../assets/fonts/Pretendard-Regular.ttf"),
+    "Pretendard-Bold": require("../assets/fonts/Pretendard-Bold.ttf"),
   });
 
   const onLayoutRootView = useCallback(async () => {

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { View, Animated, StyleSheet, Easing } from "react-native";
 import { midnight } from "../constants/theme";
+import { pixel } from "../constants/pixel";
 import { PixelText } from "./PixelText";
 
 export function LanternEntry() {
@@ -49,8 +50,8 @@ export function LanternEntry() {
       />
 
       <Animated.View style={{ opacity: lanternOpacity }}>
-        <PixelText variant="body" emoji style={{ fontSize: 48 }}>
-          🏮
+        <PixelText emoji style={{ fontSize: pixel.emoji.hero }}>
+          🕯
         </PixelText>
       </Animated.View>
 
@@ -76,7 +77,7 @@ export function LanternEntry() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000000",
+    backgroundColor: midnight.bg.deep,
     alignItems: "center",
     justifyContent: "center",
   },

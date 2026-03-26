@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { View, Animated, StyleSheet, Easing, useWindowDimensions } from "react-native";
 import { midnight } from "../../constants/theme";
+import { pixel } from "../../constants/pixel";
 import { PixelText } from "../PixelText";
 
 interface MinecartDepartProps {
@@ -68,18 +69,19 @@ export function MinecartDepart({ gemCount }: MinecartDepartProps) {
       >
         <Animated.View style={[styles.gems, { opacity: gemsOpacity }]}>
           {Array.from({ length: Math.min(gemCount, 5) }).map((_, i) => (
-            <PixelText key={i} variant="body" emoji style={{ fontSize: 12, marginHorizontal: -1 }}>
+            <PixelText
+              key={i}
+              emoji
+              style={{ fontSize: 20, marginHorizontal: -2 }}
+            >
               💎
             </PixelText>
           ))}
         </Animated.View>
 
-        <View style={styles.cartBody} />
-
-        <View style={styles.wheels}>
-          <View style={styles.wheel} />
-          <View style={styles.wheel} />
-        </View>
+        <PixelText emoji style={{ fontSize: pixel.emoji.scene, marginTop: -8 }}>
+          🛒
+        </PixelText>
       </Animated.View>
 
       <Animated.View style={{ opacity: textOpacity }}>

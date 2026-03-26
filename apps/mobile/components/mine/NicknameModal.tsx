@@ -3,6 +3,7 @@ import { View, Modal, TextInput, StyleSheet } from "react-native";
 import { PixelText } from "../PixelText";
 import { PixelButton } from "../PixelButton";
 import { midnight } from "../../constants/theme";
+import { pixel } from "../../constants/pixel";
 
 interface NicknameModalProps {
   visible: boolean;
@@ -57,7 +58,7 @@ export function NicknameModal({ visible, onSubmit }: NicknameModalProps) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.7)",
+    backgroundColor: pixel.overlay.modal,
     justifyContent: "center",
     alignItems: "center",
     padding: 24,

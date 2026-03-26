@@ -17,6 +17,9 @@ const INITIAL_DAILY_STATE: DailyState = {
   generations_max: 1,
 };
 
+// 첫 로드에만 랜턴 연출(1.5s), 이후 탭 전환은 즉시 표시
+let _firstLoadDone = false;
+
 interface MiningOptions {
   role: "user" | "admin";
   personaTier: "free" | "lite" | "pro" | null;
@@ -30,9 +33,15 @@ export function useMining({ role, personaTier }: MiningOptions) {
 
   const { data, isLoading } = useQuery<TodayVeinsResponse>({
     queryKey: ["today-veins"],
-    queryFn: () => withMinDelay(miningApi.getTodayVeins(), 1500),
-    staleTime: 0,
-    refetchOnMount: true,
+    queryFn: async () => {
+      const promise = miningApi.getTodayVeins();
+      if (!_firstLoadDone) {
+        _firstLoadDone = true;
+        return withMinDelay(promise, 1500);
+      }
+      return promise;
+    },
+    staleTime: 30 * 1000, // 30초 — 탭 전환 시 캐시 즉시 반환
   });
 
   const veins = data?.veins ?? [];
@@ -62,7 +71,7 @@ export function useMining({ role, personaTier }: MiningOptions) {
   const reroll = useCallback(async () => {
     setError(null);
     try {
-      const res = await miningApi.reroll();
+      const res = await withMinDelay(miningApi.reroll(), 1000);
       // 캐시 직접 업데이트 (네트워크 재요청 없이)
       queryClient.setQueryData<TodayVeinsResponse>(["today-veins"], (old) =>
         old
