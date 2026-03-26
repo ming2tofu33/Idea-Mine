@@ -1,6 +1,6 @@
 import { View, ViewProps, StyleSheet } from "react-native";
 import { midnight } from "../constants/theme";
-import { pixel } from "../constants/pixel";
+import { pixel, pixelGlow } from "../constants/pixel";
 import { PixelText } from "./PixelText";
 
 type Variant = "default" | "gold" | "purple" | "pink";
@@ -62,13 +62,7 @@ export function PixelCard({
           borderRightColor: v.shadowColor,
         },
         v.glowColor
-          ? {
-              shadowColor: v.glowColor,
-              shadowOffset: { width: 0, height: 0 },
-              shadowOpacity: 0.4,
-              shadowRadius: v.glowRadius,
-              elevation: v.glowRadius,
-            }
+          ? pixelGlow(v.glowColor, v.glowRadius)
           : pixel.shadow.hard,
         style,
       ]}

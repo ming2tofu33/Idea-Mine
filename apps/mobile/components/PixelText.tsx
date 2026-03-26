@@ -1,7 +1,7 @@
 import { Text, TextProps, StyleSheet } from "react-native";
 import { midnight } from "../constants/theme";
 
-type Variant = "title" | "subtitle" | "body" | "caption" | "muted";
+type Variant = "title" | "subtitle" | "body" | "caption" | "muted" | "prose";
 
 interface PixelTextProps extends TextProps {
   variant?: Variant;
@@ -34,6 +34,12 @@ const variantStyles = {
     fontFamily: "Galmuri11",
     fontSize: 12,
     color: midnight.text.muted,
+  },
+  prose: {
+    fontFamily: "Pretendard",
+    fontSize: 15,
+    lineHeight: 24,
+    color: midnight.text.primary,
   },
 } as const;
 

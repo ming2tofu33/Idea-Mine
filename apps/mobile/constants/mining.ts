@@ -54,6 +54,25 @@ export const RARITY_CONFIG: Record<string, {
   },
 };
 
+/** tier_type → rarity 변환. 아이디어(tier_type)와 광맥(rarity) 용어 매핑. */
+export function tierToRarity(tierType: string): string {
+  const map: Record<string, string> = {
+    stable: "common",
+    expanded: "rare",
+    pivot: "golden",
+    rare: "legend",
+  };
+  return map[tierType] ?? "common";
+}
+
+/** rarity에 대응하는 gem 스프라이트 require */
+export const GEM_SPRITES: Record<string, ReturnType<typeof require>> = {
+  common: require("../assets/sprites/items/32/gem-vaulted-common.png"),
+  rare: require("../assets/sprites/items/32/gem-vaulted-rare.png"),
+  golden: require("../assets/sprites/items/32/gem-vaulted-golden.png"),
+  legend: require("../assets/sprites/items/32/gem-vaulted-legend.png"),
+};
+
 export const BAG_CAPACITY_BY_LEVEL: Record<number, number> = {
   1: 2, 2: 2, 3: 3, 4: 3, 5: 4, 6: 4, 7: 5, 8: 5, 9: 5, 10: 5,
 };
@@ -68,4 +87,8 @@ export const MINING_LOADER_MESSAGES = [
   { ko: "광맥을 스캔하는 중...", en: "Scanning the vein..." },
   { ko: "결정 구조를 분석하는 중...", en: "Analyzing crystal structure..." },
   { ko: "아이디어 결정을 추출하는 중...", en: "Extracting idea crystals..." },
+  { ko: "원석의 순도를 측정하는 중...", en: "Measuring gem purity..." },
+  { ko: "아이디어를 결정화하는 중...", en: "Crystallizing ideas..." },
+  { ko: "거의 다 캤어요...", en: "Almost done mining..." },
+  { ko: "마지막 결정을 다듬는 중...", en: "Polishing the final crystal..." },
 ];

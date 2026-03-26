@@ -13,6 +13,9 @@ import type {
   Idea,
   UserProfile,
 } from "../types/api";
+import type { Overview } from "../types/overview";
+import type { Appraisal, AppraisalDepth } from "../types/appraisal";
+import type { FullOverview } from "../types/full_overview";
 
 // --- 딜레이 유틸 ---
 
@@ -116,6 +119,7 @@ function makeIdeas(veinId: string): Idea[] {
 let mockRerollCount = 0;
 let mockGenerationCount = 0;
 let currentVeins = makeVeins();
+let lastMinedIdeas: Idea[] = [];
 
 // --- Mock API exports ---
 
@@ -145,8 +149,10 @@ export const mockMiningApi = {
   async mine(veinId: string): Promise<MineResponse> {
     await delay(2000);
     mockGenerationCount++;
+    const ideas = makeIdeas(veinId);
+    lastMinedIdeas = ideas;
     return {
-      ideas: makeIdeas(veinId),
+      ideas,
       vein_id: veinId,
     };
   },
@@ -155,6 +161,14 @@ export const mockMiningApi = {
 export const mockIdeasApi = {
   async vaultIdeas(ideaIds: string[], veinId: string): Promise<VaultResponse> {
     await delay(300);
+    // Mock: 마지막 채굴 결과에서 해당 아이디어를 금고에 추가
+    const lastMined = lastMinedIdeas.filter((i) => ideaIds.includes(i.id));
+    for (const idea of lastMined) {
+      idea.is_vaulted = true;
+      if (!mockVaultedIdeas.find((v) => v.id === idea.id)) {
+        mockVaultedIdeas.push(idea);
+      }
+    }
     return {
       vaulted_count: ideaIds.length,
       idea_ids: ideaIds,
@@ -187,6 +201,145 @@ export const mockAdminApi = {
     };
   },
 };
+
+// --- Mock Vault state ---
+
+let mockVaultedIdeas: Idea[] = [];
+let mockOverviews: Overview[] = [];
+
+export const mockVaultApi = {
+  async getVaultedIdeas(): Promise<Idea[]> {
+    await delay(200);
+    return mockVaultedIdeas;
+  },
+
+  async getOverviews(): Promise<Overview[]> {
+    await delay(200);
+    return mockOverviews;
+  },
+
+  async getIdea(ideaId: string): Promise<Idea | null> {
+    await delay(150);
+    return mockVaultedIdeas.find((i) => i.id === ideaId) ?? null;
+  },
+
+  async getOverview(overviewId: string): Promise<Overview | null> {
+    await delay(150);
+    return mockOverviews.find((o) => o.id === overviewId) ?? null;
+  },
+
+  async deleteIdea(ideaId: string): Promise<void> {
+    await delay(150);
+    mockVaultedIdeas = mockVaultedIdeas.filter((i) => i.id !== ideaId);
+  },
+
+  async getAppraisal(appraisalId: string): Promise<Appraisal | null> {
+    await delay(150);
+    return mockAppraisals.find((a) => a.id === appraisalId) ?? null;
+  },
+};
+
+// --- Mock Lab ---
+
+let mockAppraisals: Appraisal[] = [];
+
+function makeMockOverview(ideaId: string): Overview {
+  const idea = mockVaultedIdeas.find((i) => i.id === ideaId);
+  const title = idea?.title_ko ?? "Mock 아이디어";
+  return {
+    id: `overview-${randomId()}`,
+    idea_id: ideaId,
+    concept_ko: `${title}의 핵심 컨셉입니다. AI 기술을 활용해 사용자 문제를 해결합니다.`,
+    concept_en: `Core concept for ${title}. Uses AI to solve user problems.`,
+    problem_ko: "기존 솔루션은 사용자 맞춤이 부족하고, 수동 작업이 많아 비효율적입니다.",
+    problem_en: "Existing solutions lack personalization and require too much manual work.",
+    target_ko: "25-35세 직장인 중 업무 효율화에 관심 있는 얼리어답터",
+    target_en: "Working professionals aged 25-35 interested in productivity optimization",
+    features_ko: "1. AI 맞춤 추천\n2. 자동 분석 대시보드\n3. 실시간 알림 시스템",
+    features_en: "1. AI personalized recommendations\n2. Auto-analysis dashboard\n3. Real-time notification system",
+    differentiator_ko: "경쟁사 대비 AI 정확도와 UX 간결성에서 차별화됩니다.",
+    differentiator_en: "Differentiated by AI accuracy and UX simplicity vs competitors.",
+    revenue_ko: "프리미엄 구독 모델 ($9.99/월). 무료 체험 후 전환.",
+    revenue_en: "Premium subscription ($9.99/mo). Free trial conversion.",
+    mvp_scope_ko: "핵심 기능 3개 + 온보딩 + 기본 분석. 4주 내 출시 목표.",
+    mvp_scope_en: "3 core features + onboarding + basic analytics. 4-week launch target.",
+    created_at: new Date().toISOString(),
+  };
+}
+
+function makeMockAppraisal(overviewId: string, depth: AppraisalDepth): Appraisal {
+  const base: Appraisal = {
+    id: `appraisal-${randomId()}`,
+    overview_id: overviewId,
+    depth,
+    market_fit_ko: "헬스케어 AI 시장이 연 23% 성장 중. 타이밍이 좋지만 경쟁 진입이 빠른 영역.",
+    market_fit_en: "Healthcare AI market growing 23% YoY. Good timing but fast-moving competition.",
+    feasibility_ko: "기술적으로 현재 API 생태계로 MVP 구현 가능. 데이터 수집이 관건.",
+    feasibility_en: "Technically feasible with current API ecosystem. Data collection is key challenge.",
+    risk_ko: "규제 리스크가 가장 큼. 개인정보 처리 방침 및 의료법 검토 필요.",
+    risk_en: "Regulatory risk is highest. Privacy policy and health law review needed.",
+    created_at: new Date().toISOString(),
+  };
+
+  if (depth !== "basic_free") {
+    base.problem_fit_ko = "타겟 유저의 페인포인트와 솔루션 방향이 잘 맞음. 다만 '얼마나 자주' 겪는 문제인지 검증 필요.";
+    base.problem_fit_en = "Good alignment between pain point and solution direction. Frequency validation needed.";
+    base.differentiation_ko = "AI 정확도 자체보다 UX 간결성이 진짜 차별점. 경쟁사들은 기능 과잉 경향.";
+    base.differentiation_en = "UX simplicity over AI accuracy is the real differentiator. Competitors tend to over-feature.";
+    base.scalability_ko = "B2C에서 시작해 B2B로 확장 가능. 단, 초기 PMF 확보가 선행 조건.";
+    base.scalability_en = "Can expand from B2C to B2B. But initial PMF is prerequisite.";
+  }
+
+  return base;
+}
+
+function makeMockFullOverview(overviewId: string): FullOverview {
+  return {
+    id: `full-overview-${randomId()}`,
+    overview_id: overviewId,
+    concept: "AI 기반 개인 건강 코치 — 음성 입력으로 매일 건강 상태를 기록하고 맞춤 조언을 제공",
+    problem: "건강 관리 앱이 너무 많지만 '꾸준히 쓰는 앱'은 없음. 입력이 번거롭고 조언이 일반적.",
+    target_user: "25-35세 직장인, 건강에 관심은 있지만 시간이 없는 사람. 특히 재택근무 증가로 활동량 감소를 체감하는 층.",
+    features_must: ["음성 건강 체크인 (1분)", "AI 맞춤 운동/식단 추천", "주간 건강 리포트"],
+    features_should: ["감정 상태 트래킹", "수면 패턴 분석", "운동 루틴 자동 생성"],
+    features_later: ["전문가 연결", "웨어러블 연동", "가족 건강 대시보드"],
+    user_flow: ["앱 진입", "음성으로 오늘 상태 기록 (1분)", "AI 분석 결과 확인", "오늘의 추천 행동 확인", "실행 체크 + 기록"],
+    screens: ["온보딩 (3단계)", "홈 (오늘의 체크인)", "기록 상세", "주간 리포트", "설정/프로필"],
+    business_model: "프리미엄 구독 $9.99/월. 무료: 기본 체크인 + 주간 리포트. 유료: AI 맞춤 추천 + 심층 분석 + 전문가.",
+    business_rules: ["무료 체크인 1일 1회", "유료 체크인 무제한", "데이터 30일 보관 (무료) / 무제한 (유료)"],
+    mvp_scope: "음성 체크인 + AI 추천 + 주간 리포트. 4주 개발, 2주 테스트.",
+    tech_stack: { frontend: "React Native (Expo)", backend: "Supabase + Python", ai: "OpenAI Whisper + GPT-4o", push: "Expo Notifications" },
+    data_model_sql: "users, health_records, recommendations, weekly_reports",
+    api_endpoints: ["POST /checkin", "GET /recommendations", "GET /reports/weekly", "POST /auth/signup"],
+    file_structure: "app/(tabs)/ — 홈, 기록, 리포트, 설정\nlib/ — api, supabase\ncomponents/ — 체크인, 추천카드, 리포트",
+    external_services: ["OpenAI API (Whisper + GPT-4o)", "Supabase Auth + DB", "Expo Notifications"],
+    auth_flow: ["이메일/소셜 가입", "Supabase Auth 토큰 발급", "프로필 생성", "온보딩 완료"],
+    created_at: new Date().toISOString(),
+  };
+}
+
+export const mockLabApi = {
+  async createOverview(ideaId: string): Promise<Overview> {
+    await delay(2500);
+    const overview = makeMockOverview(ideaId);
+    mockOverviews.push(overview);
+    return overview;
+  },
+
+  async createAppraisal(overviewId: string, depth: AppraisalDepth = "basic"): Promise<Appraisal> {
+    await delay(2000);
+    const appraisal = makeMockAppraisal(overviewId, depth);
+    mockAppraisals.push(appraisal);
+    return appraisal;
+  },
+
+  async createFullOverview(overviewId: string): Promise<FullOverview> {
+    await delay(3000);
+    return makeMockFullOverview(overviewId);
+  },
+};
+
+// --- Mock Profile ---
 
 export const MOCK_PROFILE: UserProfile = {
   id: "mock-user-001",

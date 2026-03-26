@@ -2,6 +2,7 @@ import { View, Modal, StyleSheet } from "react-native";
 import { PixelText } from "../PixelText";
 import { PixelButton } from "../PixelButton";
 import { midnight } from "../../constants/theme";
+import { pixel } from "../../constants/pixel";
 
 export interface PixelModalButton {
   text: string;
@@ -46,7 +47,7 @@ export function PixelModal({ visible, title, message, buttons, onClose }: PixelM
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.7)",
+    backgroundColor: pixel.overlay.modal,
     justifyContent: "center",
     alignItems: "center",
     padding: 24,
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
   title: {
     color: midnight.accent.gold,
     textAlign: "center",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   message: {
     color: midnight.text.primary,

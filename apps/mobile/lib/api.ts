@@ -15,8 +15,9 @@ import type {
   ApiError,
 } from "../types/api";
 import type { Overview } from "../types/overview";
-import type { Appraisal } from "../types/appraisal";
-import { mockMiningApi, mockIdeasApi, mockAdminApi } from "./mock-data";
+import type { Appraisal, AppraisalDepth } from "../types/appraisal";
+import type { FullOverview } from "../types/full_overview";
+import { mockMiningApi, mockIdeasApi, mockAdminApi, mockVaultApi, mockLabApi } from "./mock-data";
 
 // 런타임 mock 모드 토글. AdminFab에서 변경 가능.
 let _mockMode = process.env.EXPO_PUBLIC_MOCK === "true";
@@ -150,7 +151,7 @@ export const adminApi = proxy(realAdminApi, mockAdminApi);
 
 // --- Vault API (Supabase direct) ---
 
-export const vaultApi = {
+const realVaultApi = {
   async getVaultedIdeas(): Promise<Idea[]> {
     const { data, error } = await supabase
       .from("ideas")
@@ -197,11 +198,33 @@ export const vaultApi = {
       .eq("id", ideaId);
     if (error) throw error;
   },
+
+  async getAppraisal(appraisalId: string): Promise<Appraisal | null> {
+    const { data, error } = await supabase
+      .from("appraisals")
+      .select("*")
+      .eq("id", appraisalId)
+      .single();
+    if (error) throw error;
+    return data as Appraisal | null;
+  },
+
+  async getAppraisalsByOverview(overviewId: string): Promise<Appraisal[]> {
+    const { data, error } = await supabase
+      .from("appraisals")
+      .select("*")
+      .eq("overview_id", overviewId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as Appraisal[];
+  },
 };
+
+export const vaultApi = proxy(realVaultApi, mockVaultApi);
 
 // --- Lab API (backend) ---
 
-export const labApi = {
+const realLabApi = {
   createOverview(ideaId: string): Promise<Overview> {
     return apiFetch("/lab/overview", {
       method: "POST",
@@ -209,10 +232,19 @@ export const labApi = {
     });
   },
 
-  createAppraisal(overviewId: string, depth: string = "basic"): Promise<Appraisal> {
+  createAppraisal(overviewId: string, depth: AppraisalDepth = "basic"): Promise<Appraisal> {
     return apiFetch("/lab/appraisal", {
       method: "POST",
       body: JSON.stringify({ overview_id: overviewId, depth }),
     });
   },
+
+  createFullOverview(overviewId: string): Promise<FullOverview> {
+    return apiFetch("/lab/overview/full", {
+      method: "POST",
+      body: JSON.stringify({ overview_id: overviewId }),
+    });
+  },
 };
+
+export const labApi = proxy(realLabApi, mockLabApi);

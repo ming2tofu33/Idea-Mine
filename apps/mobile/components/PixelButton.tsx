@@ -1,9 +1,9 @@
 import { Pressable, View, StyleSheet, type StyleProp, type ViewStyle } from "react-native";
-import { midnight } from "../constants/theme";
+import { midnight, lab } from "../constants/theme";
 import { pixel } from "../constants/pixel";
 import { PixelText } from "./PixelText";
 
-type Variant = "primary" | "secondary" | "danger" | "pink";
+type Variant = "primary" | "secondary" | "danger" | "pink" | "lab";
 type Size = "sm" | "md" | "lg";
 
 interface PixelButtonProps {
@@ -40,6 +40,12 @@ const variantColors = {
     highlight: midnight.pink.hover,
     shadow: midnight.pink.dark,
     text: "#FFFFFF",
+  },
+  lab: {
+    bg: lab.bench.default,
+    highlight: lab.bench.light,
+    shadow: lab.bench.dark,
+    text: midnight.bg.deep,
   },
 } as const;
 

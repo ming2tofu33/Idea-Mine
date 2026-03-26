@@ -83,6 +83,10 @@ export const lab = {
   bg: {
     wall: "#2A4A4A",
     floor: "#3A5A5A",
+    wallTranslucent: "rgba(42,74,74,0.7)",
+    wallSolid: "rgba(42,74,74,0.85)",
+    itemBg: "rgba(58,90,90,0.6)",
+    hudBadge: "rgba(16,18,24,0.6)",
   },
 
   // 작업대

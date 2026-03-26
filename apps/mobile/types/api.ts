@@ -16,7 +16,7 @@ export interface Keyword {
 
 // --- Veins ---
 
-export type VeinRarity = "common" | "uncommon" | "rare";
+export type VeinRarity = "common" | "rare" | "golden" | "legend";
 
 export interface Vein {
   id: string;
