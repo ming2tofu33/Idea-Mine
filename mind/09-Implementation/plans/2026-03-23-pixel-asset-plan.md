@@ -121,8 +121,9 @@ apps/mobile/assets/sprites/
 | 에셋 | 파일명 | 크기 (원본) | 비고 |
 |------|--------|------------|------|
 | 일반 광맥 (Common) | vein-common.png | 32x32 | 회청 계열 |
+| 레어 광맥 (Rare) | vein-rare.png | 32x32 | 보라 계열 + 발광 |
 | 금빛 광맥 (Golden) | vein-golden.png | 32x32 | 골드 계열 + 발광 |
-| 전설 광맥 (Legend) | vein-legend.png | 32x32 | 보라/핑크-퍼플 계열 + 발광 |
+| 전설 광맥 (Legend) | vein-legend.png | 32x32 | 다이아(시안/화이트) 계열 + 발광 |
 | 광부 (idle) | miner-idle.png | 32x32 | 가만히 서 있는 상태 |
 | 랜턴 | lantern.png | 16x16 | 소품, 2배 확대 |
 | 광차 | minecart.png | 32x16 | 가로형 소품 |

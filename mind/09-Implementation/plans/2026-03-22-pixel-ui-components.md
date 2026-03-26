@@ -144,9 +144,10 @@ status.error: #B85450
 
 | variant | 배경 | 테두리 | 용도 |
 |---------|------|--------|------|
-| default | bg.elevated | border.default | 일반 카드 |
+| default | bg.elevated | border.default | 일반 광맥 (Common) |
+| rare | bg.elevated | accent.purple + purpleGlow | 레어 광맥 (Rare) |
 | gold | bg.elevated | accent.gold + goldGlow | 금빛 광맥 (Golden) |
-| purple | bg.elevated | accent.purple + purpleGlow | 전설 광맥 (Legend) |
+| diamond | bg.elevated | accent.diamond + diamondGlow (시안/화이트) | 전설 광맥 (Legend) |
 | pink | bg.elevated | accent.pink + pinkGlow | 핑크 결정 관련 |
 
 glow: shadowColor + shadowRadius로 은은한 발광.

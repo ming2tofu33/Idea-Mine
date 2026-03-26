@@ -275,6 +275,42 @@ $$ LANGUAGE plpgsql;
 
 ---
 
+## Mock 모드 규칙
+
+### 원칙
+
+**모든 새 기능은 Mock 모드에서도 작동해야 한다.**
+
+- 새 API 엔드포인트를 추가하면, 동시에 `mock-data.ts`에 Mock 구현도 추가할 것
+- 새 화면이 API를 호출하면, 반드시 `api.ts`의 Proxy를 거쳐야 함 (Supabase 직접 호출 금지)
+- Mock 모드는 AdminFab에서 런타임 토글 가능. 앱 재시작 불필요
+
+### 아키텍처
+
+```
+모든 API 호출
+├── api.ts의 Proxy 함수를 거침
+│   ├── _mockMode === false → realApi (Backend / Supabase)
+│   └── _mockMode === true  → mockApi (mock-data.ts)
+└── Supabase 직접 호출 금지 (화면에서 supabase import 하지 않음)
+```
+
+### 체크리스트 (새 기능 추가 시)
+
+- [ ] `types/` 에 타입 정의
+- [ ] `api.ts`에 realApi 함수 추가
+- [ ] `mock-data.ts`에 mockApi 함수 추가 (가짜 데이터 + 적절한 딜레이)
+- [ ] `api.ts`에서 `proxy(real, mock)` 적용
+- [ ] Mock 모드 ON 상태에서 해당 화면 동작 확인
+
+### 이유
+
+- API 없이 UI/UX 검증 가능 (애니메이션, 레이아웃, 플로우)
+- 백엔드 장애 시에도 프론트엔드 개발 가능
+- 데모/스크린샷 촬영 시 안정적인 가짜 데이터 사용
+
+---
+
 ## Related
 
 - [[Admin-Dashboard]] -- admin 모니터링 대시보드 전체 스펙

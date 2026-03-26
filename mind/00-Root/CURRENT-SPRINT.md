@@ -104,11 +104,32 @@ tags:
 - [ ] 원석 삭제
 - [ ] 실험실로 보내기 버튼
 
-### The Lab (실험실)
+### The Lab (실험실) — 개요서 품질이 최우선
 
-- [ ] 프로젝트 개요 생성 (OpenAI)
-- [ ] 기본 감정 (시장성/실행성 점수)
-- [ ] 개요 결과 화면
+**목표:** AI 코딩 도구에 복붙하면 바로 프로젝트 시작할 수 있는 수준의 개요서
+
+#### 개요서 파이프라인 (2단계)
+- [x] Step 1 Concept 프롬프트 (`concept.py`, gpt-4o-mini)
+- [x] Step 2 Overview 프롬프트 (`overview.py` v4, gpt-4o)
+- [x] 2단계 파이프라인 서비스 (`overview_service.py`)
+- [ ] 라이트 개요서 품질 테스트 + 프롬프트 튜닝
+- [ ] 풀 개요서 프롬프트 설계 (Pro 전용, 4블록 13섹션)
+- [ ] 풀 개요서 서비스 구현 (`full_overview_service.py`)
+
+#### 풀 개요서 품질 강화 기술
+- [ ] Web Search 강화 — 경쟁사 구조화 검색 (이름, 가격, 기능)
+- [ ] Template DB — 프레임워크별 파일 구조 템플릿 (Expo Router, Next.js 등)
+- [ ] Schema Validation — 데이터 모델 ↔ API 엔드포인트 교차 검증
+
+#### 감정 (개요서와 분리)
+- [x] 감정 프롬프트 (`appraisal.py`, depth 3단계)
+- [x] 감정 서비스 (`appraisal_service.py`)
+- [ ] 감정 API 라우터 연결 (인증/티어/rate limiting)
+- [ ] 감정 UI — 6축 코멘트 카드 (점수 없음)
+
+#### 개요서 결과 화면
+- [ ] 라이트 개요서 UI (6섹션)
+- [ ] 풀 개요서 내보내기 UI (Pro 전용, 4블록 13섹션 + 신뢰도 라벨)
 
 ---
 

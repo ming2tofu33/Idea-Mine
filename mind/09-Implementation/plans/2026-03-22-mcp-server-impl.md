@@ -127,7 +127,7 @@ def test_get_today_veins():
     assert data["rerolls_remaining"] == 2
     for vein in data["veins"]:
         assert len(vein["keywords"]) == 5
-        assert vein["rarity"] in ["common", "golden", "legend"]
+        assert vein["rarity"] in ["common", "rare", "golden", "legend"]
 
 def test_reroll():
     response = client.post("/api/veins/reroll")
@@ -635,7 +635,7 @@ async def show_veins() -> str:
 
     for i, vein in enumerate(data["veins"], 1):
         kw_tags = " · ".join(k["label_ko"] for k in vein["keywords"])
-        rarity_label = {"common": "", "golden": " [금빛]", "legend": " [전설]"}
+        rarity_label = {"common": "", "rare": " [레어]", "golden": " [금빛]", "legend": " [전설]"}
         lines.append(f"{i}번 광맥 — {vein['name']}{rarity_label.get(vein['rarity'], '')}")
         lines.append(f"  [{kw_tags}]")
         lines.append("")
