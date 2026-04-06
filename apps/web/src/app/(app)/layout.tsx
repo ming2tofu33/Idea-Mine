@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "./app-shell";
+import { QueryProvider } from "@/lib/query-provider";
 
 export default async function AppLayout({
   children,
@@ -14,5 +15,9 @@ export default async function AppLayout({
     redirect("/auth/sign-in");
   }
 
-  return <AppShell user={user}>{children}</AppShell>;
+  return (
+    <QueryProvider>
+      <AppShell user={user}>{children}</AppShell>
+    </QueryProvider>
+  );
 }
