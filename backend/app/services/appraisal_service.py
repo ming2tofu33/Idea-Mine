@@ -10,10 +10,10 @@ from app.config import settings
 from app.prompts.appraisal import build_appraisal_prompt
 
 _openai: OpenAI | None = None
-MODEL = "gpt-4o"
+MODEL = "gpt-5-mini"
 PROMPT_VERSION = "appraisal-v2"
-COST_PER_1K_INPUT = 0.0025
-COST_PER_1K_OUTPUT = 0.01
+COST_PER_1K_INPUT = 0.00075
+COST_PER_1K_OUTPUT = 0.0045
 
 
 def get_openai() -> OpenAI:

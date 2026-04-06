@@ -30,7 +30,7 @@ AI 기술 조합 기반 아이디어 탐사 플랫폼. 웹 우선 + 프리미엄
 - **Motion:** Framer Motion
 - **Graphics:** CSS + Canvas (선택적으로 React Three Fiber)
 - **Backend:** Supabase (Auth + DB + Storage) + Python (FastAPI)
-- **AI:** OpenAI API
+- **AI:** OpenAI API — gpt-5-nano(채굴/컨셉), gpt-5-mini(개요/감정), gpt-5(풀 개요)
 - **결제:** Polar.sh (웹), RevenueCat (모바일, 나중에)
 - **개발 환경:** Windows 11, Claude Code
 

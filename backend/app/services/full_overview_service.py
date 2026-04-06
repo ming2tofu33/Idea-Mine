@@ -12,8 +12,8 @@ from app.services.market_research import research_market
 
 _openai: OpenAI | None = None
 
-MODEL = "gpt-4o"
-COST_PER_1K_INPUT = 0.0025
+MODEL = "gpt-5"
+COST_PER_1K_INPUT = 0.00125
 COST_PER_1K_OUTPUT = 0.01
 PROMPT_VERSION = "full-overview-v1"
 

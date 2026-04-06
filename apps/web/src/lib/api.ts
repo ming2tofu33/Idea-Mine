@@ -130,7 +130,7 @@ export const labApi = {
       body: JSON.stringify({ idea_id: ideaId }),
     }),
 
-  createAppraisal: (overviewId: string, depth: AppraisalDepth = "basic") =>
+  createAppraisal: (overviewId: string, depth: AppraisalDepth = "basic_free") =>
     apiFetch<Appraisal>("/lab/appraisal", {
       method: "POST",
       body: JSON.stringify({ overview_id: overviewId, depth }),

@@ -11,14 +11,14 @@ from app.services.market_research import research_market
 _openai: OpenAI | None = None
 
 # Step 1 (concept): 가벼운 모델로 방향 잡기
-CONCEPT_MODEL = "gpt-4o-mini"
-CONCEPT_COST_INPUT = 0.00015
-CONCEPT_COST_OUTPUT = 0.0006
+CONCEPT_MODEL = "gpt-5-nano"
+CONCEPT_COST_INPUT = 0.00005
+CONCEPT_COST_OUTPUT = 0.0004
 
 # Step 2 (overview): 품질 모델로 본문 작성
-OVERVIEW_MODEL = "gpt-4o"
-OVERVIEW_COST_INPUT = 0.0025
-OVERVIEW_COST_OUTPUT = 0.01
+OVERVIEW_MODEL = "gpt-5-mini"
+OVERVIEW_COST_INPUT = 0.00075
+OVERVIEW_COST_OUTPUT = 0.0045
 
 PROMPT_VERSION = "overview-v4-pipeline"
 
@@ -47,7 +47,7 @@ async def generate_overview(
         keywords=idea["keyword_combo"],
     )
 
-    # ── Step 1: Concept 생성 (gpt-4o-mini) ──
+    # ── Step 1: Concept 생성 (gpt-5-nano) ──
     concept_prompt = build_concept_prompt(
         title_en=idea["title_en"],
         summary_en=idea["summary_en"],
@@ -87,7 +87,7 @@ async def generate_overview(
         source=source,
     )
 
-    # ── Step 2: Full Overview (gpt-4o) ──
+    # ── Step 2: Full Overview (gpt-5-mini) ──
     overview_prompt = build_overview_prompt(
         title_en=idea["title_en"],
         summary_en=idea["summary_en"],

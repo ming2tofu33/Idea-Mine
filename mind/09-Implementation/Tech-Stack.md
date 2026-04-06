@@ -21,7 +21,7 @@ tags:
 | Graphics | CSS + Canvas | 기본. 선택적으로 React Three Fiber |
 | Backend | Supabase | Auth, PostgreSQL DB, Storage |
 | Backend 로직 | Python (FastAPI) | 비즈니스 로직, AI 파이프라인 |
-| AI Engine | OpenAI API | 아이디어 원석 생성, 프로젝트 개요 생성 |
+| AI Engine | OpenAI API (GPT-5 계열) | gpt-5-nano(채굴/컨셉), gpt-5-mini(개요/감정), gpt-5(풀 개요) |
 | 웹 결제 | Polar.sh | MoR(Merchant of Record), 세금/VAT 대행 |
 | Domain | ideamineai.com | 웹 배포 + 랜딩 |
 

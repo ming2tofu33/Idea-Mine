@@ -9,11 +9,11 @@ from app.services.combo_builder import build_keyword_combos
 
 _openai: OpenAI | None = None
 
-MODEL = "gpt-4o-mini"
+MODEL = "gpt-5-nano"
 PROMPT_VERSION = "v2"
 
-COST_PER_1K_INPUT = 0.00015
-COST_PER_1K_OUTPUT = 0.0006
+COST_PER_1K_INPUT = 0.00005
+COST_PER_1K_OUTPUT = 0.0004
 
 
 def get_openai() -> OpenAI:
