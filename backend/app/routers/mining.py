@@ -1,4 +1,5 @@
 import asyncio
+from datetime import date
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
 from app.dependencies import get_supabase, get_current_user, get_effective_tier, get_effective_role
@@ -84,7 +85,13 @@ async def mine_vein(
     state = await rate_limiter.check_daily_limit_l2(supabase, user["id"], tier, action="generation", role=role)
 
     vein = await asyncio.to_thread(
-        lambda: supabase.table("veins").select("*").eq("id", vein_id).eq("user_id", user["id"]).execute()
+        lambda: supabase.table("veins")
+        .select("*")
+        .eq("id", vein_id)
+        .eq("user_id", user["id"])
+        .eq("is_active", True)
+        .eq("date", date.today().isoformat())
+        .execute()
     )
     vein_data = vein.data[0] if vein.data else None
 

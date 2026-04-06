@@ -83,6 +83,8 @@ export default function OverviewResultScreen() {
       ? (profile?.persona_tier as "free" | "lite" | "pro") ?? "pro"
       : (profile?.tier as "free" | "lite" | "pro") ?? "free";
 
+  console.log("[Overview] profile:", profile?.role, profile?.tier, profile?.persona_tier, "isAdmin:", isAdmin, "userTier:", userTier);
+
   // 티어에 맞는 기본 depth
   const defaultDepth: AppraisalDepth =
     userTier === "pro" ? "basic" : userTier === "lite" ? "basic" : "basic_free";

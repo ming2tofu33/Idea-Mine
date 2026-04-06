@@ -58,6 +58,7 @@ function makeVein(slot: number): Vein {
   const kws = pickRandom(KEYWORDS, 5);
   const rarities: Array<"common" | "rare" | "golden" | "legend"> = ["common", "rare", "golden", "legend"];
   const rarity = rarities[Math.floor(Math.random() * rarities.length)];
+  const timestamp = new Date().toISOString();
   return {
     id: `vein-${randomId()}`,
     slot_index: slot,
@@ -87,9 +88,9 @@ const IDEA_TEMPLATES: { title: string; summary: string }[] = [
   { title: "핀테크 가계부 AI 코치", summary: "소비 패턴을 분석하고 절약 목표를 설정해주는 AI 재정 코치. 게이미피케이션 요소 포함" },
 ];
 
-const TIER_TYPES: Array<"stable" | "expanded" | "pivot" | "rare"> = [
+const TIER_TYPES: Array<"stable" | "expansion" | "pivot" | "rare"> = [
   "stable", "stable", "stable",
-  "expanded", "expanded", "expanded",
+  "expansion", "expansion", "expansion",
   "pivot", "pivot",
   "rare", "rare",
 ];
@@ -237,6 +238,11 @@ export const mockVaultApi = {
     await delay(150);
     return mockAppraisals.find((a) => a.id === appraisalId) ?? null;
   },
+
+  async getAppraisalsByOverview(overviewId: string): Promise<Appraisal[]> {
+    await delay(150);
+    return mockAppraisals.filter((a) => a.overview_id === overviewId);
+  },
 };
 
 // --- Mock Lab ---
@@ -249,6 +255,7 @@ function makeMockOverview(ideaId: string): Overview {
   return {
     id: `overview-${randomId()}`,
     idea_id: ideaId,
+    user_id: "mock-user",
     concept_ko: `${title}의 핵심 컨셉입니다. AI 기술을 활용해 사용자 문제를 해결합니다.`,
     concept_en: `Core concept for ${title}. Uses AI to solve user problems.`,
     problem_ko: "기존 솔루션은 사용자 맞춤이 부족하고, 수동 작업이 많아 비효율적입니다.",
@@ -263,7 +270,8 @@ function makeMockOverview(ideaId: string): Overview {
     revenue_en: "Premium subscription ($9.99/mo). Free trial conversion.",
     mvp_scope_ko: "핵심 기능 3개 + 온보딩 + 기본 분석. 4주 내 출시 목표.",
     mvp_scope_en: "3 core features + onboarding + basic analytics. 4-week launch target.",
-    created_at: new Date().toISOString(),
+    created_at: timestamp,
+    updated_at: timestamp,
   };
 }
 
@@ -294,8 +302,10 @@ function makeMockAppraisal(overviewId: string, depth: AppraisalDepth): Appraisal
 }
 
 function makeMockFullOverview(overviewId: string): FullOverview {
+  const timestamp = new Date().toISOString();
   return {
     id: `full-overview-${randomId()}`,
+    user_id: "mock-user",
     overview_id: overviewId,
     concept: "AI 기반 개인 건강 코치 — 음성 입력으로 매일 건강 상태를 기록하고 맞춤 조언을 제공",
     problem: "건강 관리 앱이 너무 많지만 '꾸준히 쓰는 앱'은 없음. 입력이 번거롭고 조언이 일반적.",
@@ -314,7 +324,8 @@ function makeMockFullOverview(overviewId: string): FullOverview {
     file_structure: "app/(tabs)/ — 홈, 기록, 리포트, 설정\nlib/ — api, supabase\ncomponents/ — 체크인, 추천카드, 리포트",
     external_services: ["OpenAI API (Whisper + GPT-4o)", "Supabase Auth + DB", "Expo Notifications"],
     auth_flow: ["이메일/소셜 가입", "Supabase Auth 토큰 발급", "프로필 생성", "온보딩 완료"],
-    created_at: new Date().toISOString(),
+    created_at: timestamp,
+    updated_at: timestamp,
   };
 }
 

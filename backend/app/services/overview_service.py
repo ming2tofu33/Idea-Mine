@@ -76,7 +76,8 @@ async def generate_overview(
         user_id=user_id,
         tier=tier,
         session_id=session_id,
-        feature_type="overview",  # TODO: DB constraint에 "overview-concept" 추가 후 복원
+        feature_type="overview",
+        feature_variant="concept",
         model=CONCEPT_MODEL,
         input_tokens=step1_input,
         output_tokens=step1_output,
@@ -118,7 +119,8 @@ async def generate_overview(
             user_id=user_id,
             tier=tier,
             session_id=session_id,
-            feature_type="overview",  # TODO: DB constraint에 "overview-full" 추가 후 복원
+            feature_type="overview",
+            feature_variant="full",
             model=OVERVIEW_MODEL,
             input_tokens=step2_input,
             output_tokens=step2_output,
@@ -135,7 +137,8 @@ async def generate_overview(
             user_id=user_id,
             tier=tier,
             session_id=session_id,
-            feature_type="overview",  # TODO: DB constraint에 "overview-full" 추가 후 복원
+            feature_type="overview",
+            feature_variant="full",
             model=OVERVIEW_MODEL,
             input_tokens=0,
             output_tokens=0,
@@ -177,6 +180,7 @@ async def _log_ai_usage(supabase: Client, **fields) -> None:
         "tier": fields["tier"],
         "session_id": fields["session_id"],
         "feature_type": fields["feature_type"],
+        "feature_variant": fields.get("feature_variant"),
         "model": fields.get("model", OVERVIEW_MODEL),
         "prompt_version": PROMPT_VERSION,
         "input_tokens": fields["input_tokens"],

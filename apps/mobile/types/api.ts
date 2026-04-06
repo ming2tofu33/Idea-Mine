@@ -43,7 +43,7 @@ export interface RerollResponse {
 
 // --- Ideas ---
 
-export type IdeaTierType = "stable" | "expanded" | "pivot" | "rare";
+export type IdeaTierType = "stable" | "expansion" | "pivot" | "rare";
 
 export interface Idea {
   id: string;

@@ -54,6 +54,7 @@ class RerollResponse(BaseModel):
 class OverviewOut(BaseModel):
     id: str
     idea_id: str
+    user_id: str
     concept_ko: str
     concept_en: str
     problem_ko: str
@@ -68,6 +69,8 @@ class OverviewOut(BaseModel):
     revenue_en: str
     mvp_scope_ko: str
     mvp_scope_en: str
+    created_at: str
+    updated_at: str
 
 
 class AppraisalOut(BaseModel):

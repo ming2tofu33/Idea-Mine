@@ -9,6 +9,40 @@ import { PixelButton } from "../../../components/PixelButton";
 import { ScreenHeader } from "../../../components/shared/ScreenHeader";
 import type { FullOverview } from "../../../types/full_overview";
 
+function asStringList(value: unknown): string[] {
+  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === "string");
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function asStringMap(value: unknown): Record<string, string> {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return Object.fromEntries(
+      Object.entries(value).filter(([, item]) => typeof item === "string")
+    );
+  }
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+        ? Object.fromEntries(
+            Object.entries(parsed).filter(([, item]) => typeof item === "string")
+          )
+        : {};
+    } catch {
+      return {};
+    }
+  }
+  return {};
+}
+
 /** 신뢰도 라벨 */
 const CONFIDENCE = {
   ready: { label: "✅ 그대로 사용 가능", color: "#4ade80" },
@@ -32,16 +66,16 @@ export default function FullOverviewResultScreen() {
         // JSON 파싱
         setData({
           ...row,
-          features_must: JSON.parse(row.features_must || "[]"),
-          features_should: JSON.parse(row.features_should || "[]"),
-          features_later: JSON.parse(row.features_later || "[]"),
-          user_flow: JSON.parse(row.user_flow || "[]"),
-          screens: JSON.parse(row.screens || "[]"),
-          business_rules: JSON.parse(row.business_rules || "[]"),
-          tech_stack: JSON.parse(row.tech_stack || "{}"),
-          api_endpoints: JSON.parse(row.api_endpoints || "[]"),
-          external_services: JSON.parse(row.external_services || "[]"),
-          auth_flow: JSON.parse(row.auth_flow || "[]"),
+          features_must: asStringList(row.features_must),
+          features_should: asStringList(row.features_should),
+          features_later: asStringList(row.features_later),
+          user_flow: asStringList(row.user_flow),
+          screens: asStringList(row.screens),
+          business_rules: asStringList(row.business_rules),
+          tech_stack: asStringMap(row.tech_stack),
+          api_endpoints: asStringList(row.api_endpoints),
+          external_services: asStringList(row.external_services),
+          auth_flow: asStringList(row.auth_flow),
         } as FullOverview);
       }
     }

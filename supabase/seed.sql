@@ -1,0 +1,2 @@
+-- V2 seed data should live in numbered migrations for deterministic resets.
+-- This file intentionally remains a no-op because config.toml enables db.seed.

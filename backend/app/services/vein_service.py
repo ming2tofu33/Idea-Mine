@@ -87,7 +87,7 @@ async def _create_veins(
     today: str,
     role: str = "user",
 ) -> list[dict]:
-    """광맥 3개 생성. slot_index는 기존 max+1부터 시작."""
+    """광맥 3개 생성. active 광맥은 매일 slot 1~3을 재사용한다."""
     # admin은 항상 시즌 활성화 (모든 희귀도 확인 가능)
     if role == "admin":
         is_season = True
@@ -97,6 +97,7 @@ async def _create_veins(
             season_check = (
                 supabase.table("active_seasons")
                 .select("id")
+                .eq("is_active", True)
                 .lte("start_date", today)
                 .gte("end_date", today)
                 .limit(1)
@@ -125,21 +126,9 @@ async def _create_veins(
         if cat in keywords_by_cat:
             keywords_by_cat[cat].append(kw)
 
-    # 기존 slot_index 최대값 조회 (리롤 히스토리 포함)
-    existing_slots = (
-        supabase.table("veins")
-        .select("slot_index")
-        .eq("user_id", user_id)
-        .eq("date", today)
-        .order("slot_index", desc=True)
-        .limit(1)
-        .execute()
-    )
-    start_slot = (existing_slots.data[0]["slot_index"] + 1) if existing_slots.data else 1
-
     veins = []
     for i in range(3):
-        slot = start_slot + i
+        slot = i + 1
 
         num_keywords = min(len(categories), random.randint(5, len(categories)))
         selected_cats = random.sample(categories, num_keywords)

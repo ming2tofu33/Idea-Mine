@@ -86,7 +86,8 @@ async def generate_full_overview(
         user_id=user_id,
         tier=tier,
         session_id=session_id,
-        feature_type="full-overview",
+        feature_type="full_overview",
+        feature_variant="narrative",
         input_tokens=step1_input,
         output_tokens=step1_output,
         total_cost=step1_cost,
@@ -124,7 +125,8 @@ async def generate_full_overview(
             user_id=user_id,
             tier=tier,
             session_id=session_id,
-            feature_type="full-overview",
+            feature_type="full_overview",
+            feature_variant="technical",
             input_tokens=step2_input,
             output_tokens=step2_output,
             total_cost=step2_cost,
@@ -140,7 +142,8 @@ async def generate_full_overview(
             user_id=user_id,
             tier=tier,
             session_id=session_id,
-            feature_type="full-overview",
+            feature_type="full_overview",
+            feature_variant="technical",
             input_tokens=0,
             output_tokens=0,
             total_cost=0,
@@ -163,21 +166,21 @@ async def generate_full_overview(
             "concept": narrative.get("concept", ""),
             "problem": narrative.get("problem", ""),
             "target_user": narrative.get("target_user", ""),
-            "features_must": json.dumps(narrative.get("features_must", [])),
-            "features_should": json.dumps(narrative.get("features_should", [])),
-            "features_later": json.dumps(narrative.get("features_later", [])),
-            "user_flow": json.dumps(narrative.get("user_flow", [])),
-            "screens": json.dumps(narrative.get("screens", [])),
+            "features_must": _as_string_list(narrative.get("features_must", [])),
+            "features_should": _as_string_list(narrative.get("features_should", [])),
+            "features_later": _as_string_list(narrative.get("features_later", [])),
+            "user_flow": _as_string_list(narrative.get("user_flow", [])),
+            "screens": _as_string_list(narrative.get("screens", [])),
             "business_model": narrative.get("business_model", ""),
-            "business_rules": json.dumps(narrative.get("business_rules", [])),
+            "business_rules": _as_string_list(narrative.get("business_rules", [])),
             "mvp_scope": narrative.get("mvp_scope", ""),
             # Technical
-            "tech_stack": json.dumps(technical.get("tech_stack", {})),
+            "tech_stack": _as_string_map(technical.get("tech_stack", {})),
             "data_model_sql": technical.get("data_model_sql", ""),
-            "api_endpoints": json.dumps(technical.get("api_endpoints", [])),
+            "api_endpoints": _as_string_list(technical.get("api_endpoints", [])),
             "file_structure": technical.get("file_structure", ""),
-            "external_services": json.dumps(technical.get("external_services", [])),
-            "auth_flow": json.dumps(technical.get("auth_flow", [])),
+            "external_services": _as_string_list(technical.get("external_services", [])),
+            "auth_flow": _as_string_list(technical.get("auth_flow", [])),
         })
         .execute()
     )
@@ -193,12 +196,25 @@ def _infer_product_type(overview: dict) -> str:
     return "B2C"
 
 
+def _as_string_list(value: object) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [item for item in value if isinstance(item, str)]
+
+
+def _as_string_map(value: object) -> dict[str, str]:
+    if not isinstance(value, dict):
+        return {}
+    return {str(key): item for key, item in value.items() if isinstance(item, str)}
+
+
 async def _log_ai_usage(supabase: Client, **fields) -> None:
     supabase.table("ai_usage_logs").insert({
         "user_id": fields["user_id"],
         "tier": fields["tier"],
         "session_id": fields["session_id"],
         "feature_type": fields["feature_type"],
+        "feature_variant": fields.get("feature_variant"),
         "model": MODEL,
         "prompt_version": PROMPT_VERSION,
         "input_tokens": fields["input_tokens"],

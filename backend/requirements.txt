@@ -5,3 +5,5 @@ openai==1.82.0
 supabase==2.15.2
 python-dotenv==1.1.0
 tavily-python==0.7.23
+psycopg[binary]==3.2.9
+pytest==9.0.2

@@ -1,11 +1,12 @@
 export interface FullOverview {
   id: string;
+  user_id: string;
   overview_id: string;
   // Narrative
   concept: string;
   problem: string;
   target_user: string;
-  features_must: string[];    // JSON parsed
+  features_must: string[];
   features_should: string[];
   features_later: string[];
   user_flow: string[];
@@ -21,4 +22,5 @@ export interface FullOverview {
   external_services: string[];
   auth_flow: string[];
   created_at: string;
+  updated_at: string;
 }

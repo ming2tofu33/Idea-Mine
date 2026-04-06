@@ -127,6 +127,7 @@ async def _log_ai_usage(supabase: Client, **fields) -> None:
         "tier": fields["tier"],
         "session_id": fields["session_id"],
         "feature_type": fields["feature_type"],
+        "feature_variant": fields.get("feature_variant"),
         "model": MODEL,
         "prompt_version": PROMPT_VERSION,
         "input_tokens": fields["input_tokens"],

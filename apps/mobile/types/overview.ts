@@ -1,6 +1,7 @@
 export interface Overview {
   id: string;
   idea_id: string;
+  user_id: string;
   concept_ko: string;
   concept_en: string;
   problem_ko: string;
@@ -16,4 +17,5 @@ export interface Overview {
   mvp_scope_ko: string;
   mvp_scope_en: string;
   created_at: string;
+  updated_at: string;
 }

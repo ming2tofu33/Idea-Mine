@@ -58,7 +58,7 @@ export const RARITY_CONFIG: Record<string, {
 export function tierToRarity(tierType: string): string {
   const map: Record<string, string> = {
     stable: "common",
-    expanded: "rare",
+    expansion: "rare",
     pivot: "golden",
     rare: "legend",
   };
