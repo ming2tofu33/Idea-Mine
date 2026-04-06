@@ -76,6 +76,79 @@ export interface VaultResponse {
   idea_ids: string[];
 }
 
+// --- Overview ---
+
+export interface Overview {
+  id: string;
+  idea_id: string;
+  user_id: string;
+  concept_ko: string;
+  concept_en: string;
+  problem_ko: string;
+  problem_en: string;
+  target_ko: string;
+  target_en: string;
+  features_ko: string;
+  features_en: string;
+  differentiator_ko: string;
+  differentiator_en: string;
+  revenue_ko: string;
+  revenue_en: string;
+  mvp_scope_ko: string;
+  mvp_scope_en: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// --- Appraisal ---
+
+export type AppraisalDepth = "basic_free" | "basic" | "precise_lite" | "precise_pro";
+
+export interface Appraisal {
+  id: string;
+  overview_id: string;
+  depth: AppraisalDepth;
+  market_fit_ko: string;
+  market_fit_en: string;
+  problem_fit_ko?: string;
+  problem_fit_en?: string;
+  feasibility_ko: string;
+  feasibility_en: string;
+  differentiation_ko?: string;
+  differentiation_en?: string;
+  scalability_ko?: string;
+  scalability_en?: string;
+  risk_ko: string;
+  risk_en: string;
+}
+
+// --- Full Overview ---
+
+export interface FullOverview {
+  id: string;
+  user_id: string;
+  overview_id: string;
+  concept: string;
+  problem: string;
+  target_user: string;
+  features_must: string[];
+  features_should: string[];
+  features_later: string[];
+  user_flow: string[];
+  screens: string[];
+  business_model: string;
+  business_rules: string[];
+  mvp_scope: string;
+  tech_stack: Record<string, string>;
+  data_model_sql: string;
+  api_endpoints: string[];
+  file_structure: string;
+  external_services: string[];
+  auth_flow: string[];
+  created_at: string;
+  updated_at: string;
+}
+
 // --- Error ---
 
 export interface ApiError {

@@ -5,6 +5,11 @@ import type {
   RerollResponse,
   MineResponse,
   VaultResponse,
+  Idea,
+  Overview,
+  Appraisal,
+  AppraisalDepth,
+  FullOverview,
 } from "@/types/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
@@ -79,4 +84,83 @@ export const ideasApi = {
       method: "PATCH",
       body: JSON.stringify({ idea_ids: ideaIds, vein_id: veinId }),
     }),
+};
+
+// --- Vault API (Supabase direct read) ---
+
+export const vaultApi = {
+  async getVaultedIdeas(): Promise<Idea[]> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    const { data, error } = await supabase
+      .from("ideas")
+      .select("*")
+      .eq("is_vaulted", true)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  },
+
+  async getOverviewByIdea(ideaId: string): Promise<Overview | null> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    const { data, error } = await supabase
+      .from("overviews")
+      .select("*")
+      .eq("idea_id", ideaId)
+      .maybeSingle();
+    if (error) throw error;
+    return data as Overview | null;
+  },
+
+  async deleteIdea(ideaId: string): Promise<void> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    const { error } = await supabase
+      .from("ideas")
+      .delete()
+      .eq("id", ideaId);
+    if (error) throw error;
+  },
+};
+
+// --- Lab API ---
+
+export const labApi = {
+  createOverview: (ideaId: string) =>
+    apiFetch<Overview>("/lab/overview", {
+      method: "POST",
+      body: JSON.stringify({ idea_id: ideaId }),
+    }),
+
+  createAppraisal: (overviewId: string, depth: AppraisalDepth = "basic") =>
+    apiFetch<Appraisal>("/lab/appraisal", {
+      method: "POST",
+      body: JSON.stringify({ overview_id: overviewId, depth }),
+    }),
+
+  createFullOverview: (overviewId: string) =>
+    apiFetch<FullOverview>("/lab/overview/full", {
+      method: "POST",
+      body: JSON.stringify({ overview_id: overviewId }),
+    }),
+
+  async getAppraisalsByOverview(overviewId: string): Promise<Appraisal[]> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    const { data, error } = await supabase
+      .from("appraisals")
+      .select("*")
+      .eq("overview_id", overviewId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as Appraisal[];
+  },
+
+  async getFullOverview(overviewId: string): Promise<FullOverview | null> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    const { data, error } = await supabase
+      .from("full_overviews")
+      .select("*")
+      .eq("overview_id", overviewId)
+      .maybeSingle();
+    if (error) throw error;
+    return data as FullOverview | null;
+  },
 };
