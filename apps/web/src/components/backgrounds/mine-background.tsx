@@ -2,56 +2,51 @@
 
 import { useEffect, useRef } from "react";
 
-// --- Star types & constants ---
+// --- Types ---
 
 interface Star {
   x: number;
   y: number;
+  z: number; // 0 (far) ~ 1 (near), drives everything
   baseSize: number;
   baseOpacity: number;
-  depth: number; // 0.2 (far) ~ 1.0 (near)
-  speed: number;
   color: "white" | "pink" | "cyan";
-  // twinkle
   twinkleSpeed: number;
   twinkleAmplitude: number;
   phase: number;
-  // glow
   hasGlow: boolean;
+  hasCross: boolean; // bright stars get cross/diamond rays
 }
 
-const STAR_COUNT = 200;
-const PARALLAX_STRENGTH = 30;
+const STAR_COUNT = 500;
+const PARALLAX_STRENGTH = 35;
+const DRIFT_SPEED = 0.00012; // z-axis drift: stars slowly come toward you
 
-function createStar(w: number, h: number): Star {
+function createStar(w: number, h: number, forceZ?: number): Star {
   const rand = Math.random();
   const color: Star["color"] =
-    rand < 0.08 ? "pink" : rand < 0.12 ? "cyan" : "white";
+    rand < 0.07 ? "pink" : rand < 0.12 ? "cyan" : "white";
 
-  // 3 depth layers: far (60%), mid (30%), near (10%)
-  const depthRand = Math.random();
-  const depth = depthRand < 0.6 ? 0.15 + Math.random() * 0.15 // far: 0.15-0.3
-    : depthRand < 0.9 ? 0.4 + Math.random() * 0.2             // mid: 0.4-0.6
-    : 0.7 + Math.random() * 0.3;                               // near: 0.7-1.0
-
-  const isBright = Math.random() < 0.12;
+  // 70% far, 20% mid, 10% near — 밤하늘은 대부분 먼 별
+  const zRand = Math.random();
+  const z = forceZ ?? (zRand < 0.7 ? Math.random() * 0.3
+    : zRand < 0.9 ? 0.3 + Math.random() * 0.3
+    : 0.6 + Math.random() * 0.4);
+  const isBright = Math.random() < 0.1;
 
   return {
-    x: Math.random() * w,
-    y: Math.random() * h,
-    baseSize: depth < 0.35 ? 0.3 + Math.random() * 0.5        // far: tiny
-      : depth < 0.65 ? 0.5 + Math.random() * 1.0              // mid: small
-      : 1.0 + Math.random() * 1.5,                            // near: visible
-    baseOpacity: depth < 0.35 ? 0.1 + Math.random() * 0.15
-      : depth < 0.65 ? 0.2 + Math.random() * 0.2
-      : 0.3 + Math.random() * 0.3,
-    depth,
-    speed: 0.01 + depth * 0.03,
+    // Distribute across full viewport with extra margin
+    x: w * 0.5 + (Math.random() - 0.5) * w * 2.0,
+    y: h * 0.5 + (Math.random() - 0.5) * h * 2.0,
+    z,
+    baseSize: 0.8 + z * 2.0, // far=small but visible, near=large
+    baseOpacity: 0.25 + z * 0.45, // far=clearly visible, near=bright
     color,
-    twinkleSpeed: 0.001 + Math.random() * 0.003,
-    twinkleAmplitude: isBright ? 0.2 + Math.random() * 0.2 : 0.05 + Math.random() * 0.1,
+    twinkleSpeed: 0.0008 + Math.random() * 0.003,
+    twinkleAmplitude: isBright ? 0.25 + Math.random() * 0.2 : 0.04 + Math.random() * 0.08,
     phase: Math.random() * Math.PI * 2,
     hasGlow: isBright || color !== "white",
+    hasCross: isBright && z > 0.6,
   };
 }
 
@@ -61,6 +56,47 @@ const COLOR_MAP = {
   cyan: [92, 205, 229],
 } as const;
 
+// --- Draw helpers ---
+
+function drawCross(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  size: number,
+  r: number,
+  g: number,
+  b: number,
+  opacity: number,
+) {
+  const len = size * 4;
+  const grad1 = ctx.createLinearGradient(x - len, y, x + len, y);
+  const grad2 = ctx.createLinearGradient(x, y - len, x, y + len);
+  const center = `rgba(${r}, ${g}, ${b}, ${opacity * 0.6})`;
+  const edge = `rgba(${r}, ${g}, ${b}, 0)`;
+
+  grad1.addColorStop(0, edge);
+  grad1.addColorStop(0.5, center);
+  grad1.addColorStop(1, edge);
+
+  grad2.addColorStop(0, edge);
+  grad2.addColorStop(0.5, center);
+  grad2.addColorStop(1, edge);
+
+  ctx.lineWidth = size * 0.3;
+
+  ctx.beginPath();
+  ctx.moveTo(x - len, y);
+  ctx.lineTo(x + len, y);
+  ctx.strokeStyle = grad1;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(x, y - len);
+  ctx.lineTo(x, y + len);
+  ctx.strokeStyle = grad2;
+  ctx.stroke();
+}
+
 // --- Component ---
 
 export function MineBackground() {
@@ -68,8 +104,9 @@ export function MineBackground() {
   const starsRef = useRef<Star[]>([]);
   const rafRef = useRef<number>(0);
   const timeRef = useRef<number>(0);
-  const mouseRef = useRef({ x: 0, y: 0 }); // normalized -1..1
-  const smoothMouseRef = useRef({ x: 0, y: 0 }); // lerped for smoothness
+  const mouseRef = useRef({ x: 0, y: 0 });
+  const smoothMouseRef = useRef({ x: 0, y: 0 });
+  const nebulaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -86,10 +123,9 @@ export function MineBackground() {
       canvas.style.width = `${w}px`;
       canvas.style.height = `${h}px`;
 
-      // Only create stars on first setup
       if (starsRef.current.length === 0) {
         starsRef.current = Array.from({ length: STAR_COUNT }, () =>
-          createStar(w, h)
+          createStar(w, h),
         );
       }
     }
@@ -108,52 +144,79 @@ export function MineBackground() {
 
       const w = canvas.width / dpr;
       const h = canvas.height / dpr;
+      const cx = w / 2;
+      const cy = h / 2;
       timeRef.current += 1;
       const t = timeRef.current;
 
-      // Smooth mouse lerp (0.05 = slow follow)
-      smoothMouseRef.current.x += (mouseRef.current.x - smoothMouseRef.current.x) * 0.03;
-      smoothMouseRef.current.y += (mouseRef.current.y - smoothMouseRef.current.y) * 0.03;
+      // Smooth mouse lerp
+      smoothMouseRef.current.x +=
+        (mouseRef.current.x - smoothMouseRef.current.x) * 0.025;
+      smoothMouseRef.current.y +=
+        (mouseRef.current.y - smoothMouseRef.current.y) * 0.025;
       const mx = smoothMouseRef.current.x;
       const my = smoothMouseRef.current.y;
+
+      // Nebula CSS layers follow mouse (slower than stars)
+      if (nebulaRef.current) {
+        nebulaRef.current.style.transform = `translate(${mx * -8}px, ${my * -8}px)`;
+      }
 
       ctx.save();
       ctx.scale(dpr, dpr);
       ctx.clearRect(0, 0, w, h);
 
       for (const star of starsRef.current) {
-        // Drift upward slowly
-        star.y -= star.speed;
-        if (star.y < -5) {
-          star.y = h + 5;
-          star.x = Math.random() * w;
+        // Z-axis drift: near stars rush past, far stars barely crawl
+        star.z += DRIFT_SPEED * (0.2 + star.z * star.z * 3);
+
+        if (star.z > 1.1) {
+          // Reset to far background
+          Object.assign(star, createStar(w, h, 0.01 + Math.random() * 0.1));
         }
 
-        // Mouse parallax offset (deeper stars move less)
-        const px = star.x + mx * star.depth * PARALLAX_STRENGTH;
-        const py = star.y + my * star.depth * PARALLAX_STRENGTH;
+        // Perspective projection: near stars spread dramatically from center
+        const scale = 0.2 + star.z * star.z * 1.2;
+        const projX = cx + (star.x - cx) * scale;
+        const projY = cy + (star.y - cy) * scale;
+
+        // Mouse parallax (deeper = less movement)
+        const px = projX + mx * star.z * PARALLAX_STRENGTH;
+        const py = projY + my * star.z * PARALLAX_STRENGTH;
+
+        // Skip if off screen
+        if (px < -20 || px > w + 20 || py < -20 || py > h + 20) continue;
 
         // Twinkle
-        const twinkle = Math.sin(t * star.twinkleSpeed + star.phase) * star.twinkleAmplitude;
-        const opacity = Math.max(0.02, Math.min(1, star.baseOpacity + twinkle));
-        const size = star.baseSize * (1 + twinkle * 0.3);
+        const twinkle =
+          Math.sin(t * star.twinkleSpeed + star.phase) * star.twinkleAmplitude;
+        const opacity = Math.max(
+          0.02,
+          Math.min(1, star.baseOpacity * star.z + twinkle),
+        );
+        const size = Math.max(0.2, star.baseSize * star.z * (1 + twinkle * 0.3));
 
         const [r, g, b] = COLOR_MAP[star.color];
 
-        // Glow (only on accent/bright stars)
-        if (star.hasGlow && size > 0.5) {
-          ctx.shadowBlur = size * 6;
-          ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${opacity * 0.5})`;
+        // Cross rays for bright near stars
+        if (star.hasCross && size > 1.2) {
+          drawCross(ctx, px, py, size, r, g, b, opacity);
+        }
+
+        // Glow halo
+        if (star.hasGlow && size > 0.6) {
+          ctx.shadowBlur = size * 8;
+          ctx.shadowColor = `rgba(${r}, ${g}, ${b}, ${opacity * 0.4})`;
         } else {
           ctx.shadowBlur = 0;
         }
 
+        // Star body
         ctx.beginPath();
-        ctx.arc(px, py, Math.max(0.2, size), 0, Math.PI * 2);
+        ctx.arc(px, py, size, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${opacity})`;
         ctx.fill();
 
-        // Reset shadow
         if (star.hasGlow) {
           ctx.shadowBlur = 0;
         }
@@ -169,7 +232,6 @@ export function MineBackground() {
     window.addEventListener("resize", resize);
     window.addEventListener("mousemove", handleMouseMove);
 
-    // Pause when tab hidden
     function handleVisibility() {
       if (document.hidden) {
         cancelAnimationFrame(rafRef.current);
@@ -189,14 +251,16 @@ export function MineBackground() {
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
-      {/* Nebula CSS layers (respond to nothing — static depth) */}
+      {/* Nebula layers — respond to mouse at slower rate */}
       <div
-        className="absolute inset-0"
+        ref={nebulaRef}
+        className="absolute -inset-8 transition-transform duration-700 ease-out"
         style={{
           background: [
-            "radial-gradient(ellipse 80% 60% at 15% 25%, rgba(12, 21, 36, 0.4) 0%, transparent 70%)",
-            "radial-gradient(ellipse 60% 50% at 80% 70%, rgba(18, 29, 49, 0.35) 0%, transparent 65%)",
-            "radial-gradient(ellipse 90% 70% at 50% 85%, rgba(12, 21, 36, 0.25) 0%, transparent 60%)",
+            "radial-gradient(ellipse 80% 60% at 18% 25%, rgba(12, 21, 36, 0.5) 0%, transparent 70%)",
+            "radial-gradient(ellipse 60% 50% at 82% 72%, rgba(18, 29, 49, 0.4) 0%, transparent 65%)",
+            "radial-gradient(ellipse 100% 70% at 50% 90%, rgba(12, 21, 36, 0.3) 0%, transparent 55%)",
+            "radial-gradient(ellipse 40% 35% at 65% 20%, rgba(18, 29, 49, 0.2) 0%, transparent 60%)",
           ].join(", "),
         }}
       />
@@ -205,23 +269,29 @@ export function MineBackground() {
       <div
         className="absolute inset-0"
         style={{
-          animation: "glowPulse 10s ease-in-out infinite",
+          animation: "glowPulse 12s ease-in-out infinite",
           background: [
-            "radial-gradient(circle 350px at 22% 35%, rgba(255, 59, 147, 0.1) 0%, transparent 70%)",
-            "radial-gradient(circle 280px at 78% 65%, rgba(255, 59, 147, 0.08) 0%, transparent 70%)",
+            "radial-gradient(circle 400px at 22% 35%, rgba(255, 59, 147, 0.08) 0%, transparent 70%)",
+            "radial-gradient(circle 300px at 78% 68%, rgba(255, 59, 147, 0.06) 0%, transparent 70%)",
           ].join(", "),
         }}
       />
 
-      {/* Canvas — stars with parallax + twinkle + glow */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0"
+      {/* Canvas — stars with perspective + parallax + twinkle + glow + cross */}
+      <canvas ref={canvasRef} className="absolute inset-0" />
+
+      {/* Vignette — darker edges for "observatory viewport" feel */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 85% 80% at 50% 50%, transparent 0%, rgba(2, 5, 13, 0.35) 100%)",
+        }}
       />
 
       <style>{`
         @keyframes glowPulse {
-          0%, 100% { opacity: 0.6; }
+          0%, 100% { opacity: 0.5; }
           50% { opacity: 1; }
         }
       `}</style>

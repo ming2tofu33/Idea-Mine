@@ -30,33 +30,36 @@ export function AppShell({
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="flex items-center justify-between border-b border-line-steel bg-bg-base px-6 py-3">
-        <nav className="flex items-center gap-1">
+      <header className="relative z-20 flex items-center justify-between border-b border-white/[0.06] bg-bg-deep/60 px-6 py-3 backdrop-blur-xl">
+        <nav className="flex items-center gap-1.5">
           {NAV_ITEMS.map(({ href, label }) => {
             const isActive = pathname.startsWith(href);
             return (
               <Link
                 key={href}
                 href={href}
-                className={`rounded-md px-4 py-2 text-sm transition-colors ${
+                className={`relative rounded-md border px-4 py-1.5 text-sm tracking-wide transition-all duration-200 ${
                   isActive
-                    ? "bg-surface-2 text-signal-pink"
-                    : "text-text-secondary hover:text-text-primary"
+                    ? "border-signal-pink/30 bg-[rgba(255,59,147,0.08)] text-text-primary shadow-[0_0_12px_rgba(255,59,147,0.15)]"
+                    : "border-transparent text-text-secondary hover:border-line-steel/50 hover:bg-surface-1/50 hover:text-text-primary"
                 }`}
               >
                 {label}
+                {isActive && (
+                  <span className="absolute bottom-0 left-1/2 h-px w-3/5 -translate-x-1/2 bg-gradient-to-r from-transparent via-signal-pink/60 to-transparent" />
+                )}
               </Link>
             );
           })}
         </nav>
 
         <div className="flex items-center gap-4">
-          <span className="text-xs text-text-secondary">
+          <span className="text-xs text-text-secondary/70">
             {user.email}
           </span>
           <button
             onClick={handleSignOut}
-            className="text-xs text-text-secondary hover:text-text-primary"
+            className="rounded-md border border-transparent px-3 py-1 text-xs text-text-secondary transition-all hover:border-line-steel/40 hover:text-text-primary"
           >
             로그아웃
           </button>
