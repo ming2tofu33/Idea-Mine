@@ -2,63 +2,53 @@
 title: Tech Stack
 tags:
   - implementation
+  - v2
 ---
 
 # Tech Stack
 
-> Expo + Supabase 기반 크로스 플랫폼 아키텍처.
+> v2: Next.js 웹 우선 + Supabase + Python 백엔드 아키텍처.
 
 ---
 
-## 스택 구성
+## 스택 구성 (v2)
 
 | 영역 | 선택 | 역할 |
 |------|------|------|
-| Frontend | Expo (React Native) | 모바일(iOS/Android) + 웹 단일 코드베이스 |
-| Router | Expo Router | 파일 기반 라우팅 (Next.js와 유사) |
+| Frontend (Web) | React + Next.js | 웹 우선 제품. 컴포넌트 구조, 라우팅, SSR |
+| Language | TypeScript | 타입 기반 상태, API 응답, 도메인 구조 |
+| Motion | Framer Motion | 프리미엄 모션 계층 |
+| Graphics | CSS + Canvas | 기본. 선택적으로 React Three Fiber |
 | Backend | Supabase | Auth, PostgreSQL DB, Storage |
-| Backend 로직 | Python | 비즈니스 로직, AI 파이프라인 |
+| Backend 로직 | Python (FastAPI) | 비즈니스 로직, AI 파이프라인 |
 | AI Engine | OpenAI API | 아이디어 원석 생성, 프로젝트 개요 생성 |
-| 모바일 결제 | RevenueCat | Apple IAP + Google Play Billing 래퍼 |
 | 웹 결제 | Polar.sh | MoR(Merchant of Record), 세금/VAT 대행 |
-| Ads | Google AdMob | 보상형 광고 |
-| Push | Expo Notifications | 네이티브 푸시 알림 |
-| Build | EAS Build | 클라우드 빌드 (Windows에서도 iOS 빌드 가능) |
-| MCP 서버 | Python + FastMCP | 백엔드 API 위 얇은 래퍼. 획득 채널 |
 | Domain | ideamineai.com | 웹 배포 + 랜딩 |
+
+### 나중에 확장 (웹 검증 후)
+
+| 영역 | 선택 | 시점 |
+|------|------|------|
+| Mobile | Expo (React Native) | 웹 핵심 루프 검증 후 |
+| 모바일 결제 | RevenueCat | 모바일 앱 출시 시 |
+| Push | Web Push API / Expo Notifications | 리텐션 단계 |
 
 ---
 
-## 플랫폼 분기 전략
+## 아키텍처 원칙
 
-UI와 비즈니스 로직은 100% 공유, 플랫폼 의존 기능만 분기:
+- **재사용 로직과 채널별 UI를 분리한다.** 데이터 모델, API 계약, 도메인 동작은 이식 가능해야 한다. 인터페이스 레이어는 웹/앱 각각의 맥락에 맞게 달라질 수 있다.
+- **API 응답은 DB 구조를 그대로 노출하지 않는다.** API contract는 제품 개념 중심. DB는 저장 구조, API는 사용 구조.
+- **단순 조회는 direct read, 상태 변화/생성은 backend API를 통과시킨다.**
 
-| 기능 | 모바일 | 웹 | MCP |
-|------|--------|-----|-----|
-| 결제 | RevenueCat | Polar.sh | 없음 (무료만) |
-| 광고 | AdMob | AdSense | 없음 |
-| 푸시 | Expo Notifications | Web Push API | 없음 |
-| UI | 자동 변환 | react-native-web | 텍스트 (AI 어시스턴트) |
-| 저장 | Supabase | Supabase | 불가 (휘발성) |
-
-### MCP 아키텍처
-
-```
-[AI 어시스턴트] → [MCP 서버 (FastMCP)] → [백엔드 API] → [OpenAI/Supabase]
-```
-
-- MCP에 비즈니스 로직 0줄. API 호출 + 포맷 변환만.
-- 앱/웹/MCP가 같은 백엔드 API를 호출. 로직 중복 없음.
-- API `source` 태그로 비용 분리 추적 (`app` | `web` | `mcp`).
-- 상세: `plans/2026-03-22-mcp-server-spec.md`
+상세: `docs/Idea-Mine-V2-V3-Safety-Rails.ko.md`
 
 ---
 
 ## 개발 환경
 
 - OS: Windows 11
-- 테스트: Expo Go (폰 QR 스캔) + 웹 브라우저 + Android 에뮬레이터
-- 빌드: EAS Build (클라우드)
+- 테스트: 웹 브라우저 (Chrome DevTools)
 - 개발 도구: Claude Code
 - 개발자 배경: Python + Supabase 경험 있음, React/프론트엔드는 처음
 
@@ -66,10 +56,12 @@ UI와 비즈니스 로직은 100% 공유, 플랫폼 의존 기능만 분기:
 
 ## Related
 
+- [[Implementation-Plan]] — 실행 계약과 문서 운영 규칙
+- [[Phase-Flow]] — Phase/Sprint 흐름
 - [[Phase-1-MVP]] — MVP 범위
 - [[Security-Policy]] — API 키 보호, RLS 등 아키텍처 보안 (04-Features)
 
 ## See Also
 
 - [[Project-Vision]] — 기술 선택 이유 (01-Core)
-- `2026-03-22-abuse-prevention-design` -- rate limiting 미들웨어 + ai_usage_logs 테이블 설계 (09-Implementation/plans)
+- `2026-03-22-abuse-prevention-design` — rate limiting 미들웨어 + ai_usage_logs 테이블 설계 (09-Implementation/plans)

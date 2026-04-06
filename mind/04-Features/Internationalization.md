@@ -64,7 +64,7 @@ tags:
 | 광부 | Miner |
 | 핑크 결정 | Pink Crystal |
 | 고대 동전 | Ancient Coin |
-| 캠프 | Camp |
+| 베이스캠프 | Basecamp |
 | 곡괭이 | Pickaxe |
 | 가방 | Bag |
 | 광차 | Mine Cart |

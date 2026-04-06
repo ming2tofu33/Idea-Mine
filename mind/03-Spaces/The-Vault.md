@@ -52,7 +52,7 @@ tags:
 | Pro | 대용량 |
 
 - 운반은 광차로 자유로워도 Vault가 꽉 차면 정리 필요
-- Vault 확장은 Lite/Pro 구독 또는 Pink Diamond로 가능
+- Vault 확장은 우선 Lite/Pro 구독 경계로 운영하고, 향후 프리미엄 경제 레이어와 연동 가능
 
 ### 과거 채굴 기록
 
@@ -61,7 +61,7 @@ tags:
 
 ### 금고 확장 슬롯
 
-- 저장 공간 확장 (Lite/Pro 또는 Pink Diamond 사용)
+- 저장 공간 확장 (MVP는 Lite/Pro 중심, 이후 프리미엄 경제 레이어 연동 가능)
 
 ---
 

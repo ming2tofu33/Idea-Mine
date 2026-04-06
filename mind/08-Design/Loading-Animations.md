@@ -277,13 +277,19 @@ shimmer도 계속 동작하여 "살아있는" 느낌 유지.
 
 ---
 
+## v2 전환 노트
+
+v1에서 구현된 로딩 연출들(LanternEntry, MiningLoader, RerollBlast 등)은 Expo/React Native 기반이다.
+v2에서는 Framer Motion + CSS/Canvas 기반으로 재구현하되, **세계관 연출 개념(광맥 탐색, 원석 연마 등)은 유지**한다.
+단, 프리미엄 스페이스 UI 방향에 맞게 이모지 대신 정교한 모션 그래픽으로 격상.
+
+---
+
 ## Related
 
-- [[Pixel-Art-Style-Guide]] — 에셋 스타일 기준
-- [[Brand-Identity]] — 전체 브랜드 무드
-- [[Color-Theme]] — 색상 토큰
+- [[Color-Theme]] — v2 컬러 토큰
+- [[Premium-Space-UI-Direction]] — v2 디자인 방향
 
 ## See Also
 
-- `plans/2026-03-23-loading-animations.md` — 구현 상세 스펙
-- `plans/2026-03-23-loading-impl.md` — 구현 계획
+- `plans/2026-03-23-loading-animations.md` — v1 구현 상세 스펙 (참조용)

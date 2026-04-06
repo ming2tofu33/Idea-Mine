@@ -41,7 +41,7 @@ tags:
 | 개요서 만들기 | 제련 / 가공 |
 | 평가하기 | 감정 |
 | 공개하기 | 전시 |
-| 프로필 | 캠프 |
+| 프로필/설정 | 베이스캠프 |
 
 ---
 
@@ -73,4 +73,4 @@ tags:
 ## See Also
 
 - [[Worldview-&-Metaphor]] — 세계관 메타포 (02-World-Building)
-- [[Brand-Identity]] — 브랜드 비주얼 정체성 (08-Design)
+- [[Premium-Space-UI-Direction]] — v2 디자인 방향 (08-Design)

@@ -238,4 +238,4 @@ AI PM/기획자는 LinkedIn/트위터 헤비 유저. 이들의 피드에서 "픽
 ## See Also
 
 - [[Project-Vision]] -- 평가 대상 프로젝트 비전 (01-Core)
-- [[Phases-Roadmap]] -- 평가 대상 로드맵 (01-Core)
+- [[V2-Roadmap]] -- v2 Gate-Based 로드맵 (01-Core)

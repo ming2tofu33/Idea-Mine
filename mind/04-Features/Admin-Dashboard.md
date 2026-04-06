@@ -7,13 +7,13 @@ tags:
 
 # Admin Dashboard
 
-> 앱 내 admin 전용 모니터링 대시보드. 별도 웹 어드민 없이, Camp 탭의 Admin 섹션에서 핵심 운영 지표를 실시간 확인.
+> 앱 내 admin 전용 모니터링 대시보드. 별도 웹 어드민 없이, Basecamp의 Admin 섹션에서 핵심 운영 지표를 실시간 확인.
 
 ---
 
 ## Admin 기능의 두 축
 
-Camp 탭의 Admin 섹션은 **두 가지 성격의 기능**으로 구성:
+Basecamp의 Admin 섹션은 **두 가지 성격의 기능**으로 구성:
 
 | 축 | 문서 | 성격 |
 |----|------|------|
@@ -32,10 +32,10 @@ Camp 탭의 Admin 섹션은 **두 가지 성격의 기능**으로 구성:
 
 ## Admin 섹션 구조
 
-Camp 탭 > Admin 섹션 (role이 admin일 때만 노출)
+Basecamp > Admin 섹션 (role이 admin일 때만 노출)
 
-```
-Camp
+``` 
+Basecamp
 ├── 프로필 / 설정 (일반 유저)
 └── Admin (admin 전용)
     │
@@ -83,8 +83,8 @@ Camp
 | 지표 | 데이터 소스 | 시각화 |
 |------|------------|--------|
 | 첫 채굴 완료율 | analytics events | 퍼널 차트 |
-| 원석 금고 반입률 | `vault_items` / `ideas` 비율 | 퍼센트 게이지 |
-| 프로젝트 개요 생성률 | `project_outlines` / `vault_items` 비율 | 퍼센트 게이지 |
+| 원석 금고 반입률 | `ideas(is_vaulted=true)` / `ideas` 비율 | 퍼센트 게이지 |
+| 프로젝트 개요 생성률 | `overviews` / `ideas(is_vaulted=true)` 비율 | 퍼센트 게이지 |
 | D1 리텐션 | analytics events | 일별 라인 차트 |
 | 유료 전환 클릭률 | analytics events | 퍼센트 + 추이 |
 
@@ -341,7 +341,7 @@ feature_flags 테이블
 ### 아키텍처
 
 ```
-앱 (Camp > Admin) --> Python 백엔드 (admin 엔드포인트) --> Supabase (집계 뷰)
+앱 (Basecamp > Admin) --> Python 백엔드 (admin 엔드포인트) --> Supabase (집계 뷰)
                          ↓
                    role == 'admin' 미들웨어
 ```

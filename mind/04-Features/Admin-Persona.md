@@ -7,16 +7,16 @@ tags:
 
 # Admin Persona
 
-> Admin 계정의 Camp 내 전용 설정. 페르소나 전환, 제한 해제, 시뮬레이션, 디버그 도구를 통해 1인 개발 환경에서 모든 티어/상황을 검증.
+> Admin 계정의 Basecamp 내 전용 설정. 페르소나 전환, 제한 해제, 시뮬레이션, 디버그 도구를 통해 1인 개발 환경에서 모든 티어/상황을 검증.
 
 ---
 
-## Admin Camp 전체 구조
+## Admin Basecamp 전체 구조
 
-Camp 탭 > Admin 섹션 (role이 admin일 때만 노출)
+Basecamp > Admin 섹션 (role이 admin일 때만 노출)
 
 ```
-Camp > Admin
+Basecamp > Admin
 ├── A. 제한 해제         -- 테스트 블로커 제거
 ├── B. 페르소나 전환      -- 티어별 UX 검증
 ├── C. 프로필 조작        -- 레벨/슬롯/스트릭 테스트
@@ -209,7 +209,7 @@ Phase 1.5에서 RevenueCat 연동 시 구현. Phase 1에서는 `tier` 직접 변
 
 | 도구 | 동작 | 주의 |
 |------|------|------|
-| 금고 초기화 | `vault_items`, `project_outlines`, `appraisals` 내 데이터 삭제 | 확인 다이얼로그 필수 |
+| 금고 초기화 | `ideas(is_vaulted=true)`, `overviews`, `appraisals` 내 데이터 삭제 | 확인 다이얼로그 필수 |
 | 오늘 광맥 재생성 | 오늘자 `veins` 삭제 + 새 광맥 3개 강제 생성 | - |
 | 일일 상태 리셋 | `user_daily_state` 오늘자 초기화 (A 섹션과 동일) | - |
 | 전체 리셋 | 금고 + 광맥 + daily state + 프로필(레벨/슬롯) 일괄 초기화 | 이중 확인 필수 |
@@ -259,7 +259,7 @@ $$ LANGUAGE plpgsql;
 ## 프론트엔드 구현
 
 - `useAuth()` 훅에서 `effectiveTier` 제공
-- admin이면 Camp 탭에 Admin 섹션 조건부 렌더링
+- admin이면 Basecamp에 Admin 섹션 조건부 렌더링
 - 페르소나 전환 시 `effectiveTier` 갱신 → 앱 전체 리렌더
 - 무제한 모드 상태도 전역 context로 관리
 

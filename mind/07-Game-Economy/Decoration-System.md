@@ -68,4 +68,4 @@ tags:
 
 ## See Also
 
-- [[Brand-Identity]] — 픽셀 아트 비주얼 (08-Design)
+- [[Premium-Space-UI-Direction]] — v2 디자인 방향 (08-Design)
