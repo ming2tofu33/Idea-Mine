@@ -7,7 +7,9 @@ app = FastAPI(title="IDEA MINE API", version="0.1.0")
 
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:3001",
     "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
     "https://ideamineai.com",
     "https://www.ideamineai.com",
 ]
