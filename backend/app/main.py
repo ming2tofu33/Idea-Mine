@@ -1,3 +1,4 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import mining, ideas, admin, lab, appraisal
@@ -10,6 +11,11 @@ ALLOWED_ORIGINS = [
     "https://ideamineai.com",
     "https://www.ideamineai.com",
 ]
+
+# 환경변수로 추가 origin 허용 (쉼표 구분)
+extra_origins = os.environ.get("CORS_EXTRA_ORIGINS", "")
+if extra_origins:
+    ALLOWED_ORIGINS.extend(o.strip() for o in extra_origins.split(",") if o.strip())
 
 app.add_middleware(
     CORSMiddleware,
