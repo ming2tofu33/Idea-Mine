@@ -15,9 +15,15 @@ export default async function AppLayout({
     redirect("/auth/sign-in");
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
   return (
     <QueryProvider>
-      <AppShell user={user}>{children}</AppShell>
+      <AppShell user={user} profile={profile}>{children}</AppShell>
     </QueryProvider>
   );
 }

@@ -4,6 +4,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
+import type { UserProfile } from "@/types/api";
+import { PersonaBadge } from "@/components/admin/persona-badge";
+import { AdminFab } from "@/components/admin/admin-fab";
 
 const NAV_ITEMS = [
   { href: "/mine", label: "Mine" },
@@ -13,9 +16,11 @@ const NAV_ITEMS = [
 
 export function AppShell({
   user,
+  profile,
   children,
 }: {
   user: User;
+  profile: UserProfile | null;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -53,7 +58,8 @@ export function AppShell({
           })}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {profile && <PersonaBadge profile={profile} />}
           <span className="text-xs text-text-secondary/70">
             {user.email}
           </span>
@@ -67,6 +73,8 @@ export function AppShell({
       </header>
 
       <main className="flex flex-1 flex-col">{children}</main>
+
+      {profile?.role === "admin" && <AdminFab profile={profile} />}
     </div>
   );
 }

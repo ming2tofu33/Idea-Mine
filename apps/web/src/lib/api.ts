@@ -8,6 +8,7 @@ import type {
   Idea,
   Overview,
   Appraisal,
+  UserProfile,
   AppraisalDepth,
   FullOverview,
 } from "@/types/api";
@@ -163,4 +164,37 @@ export const labApi = {
     if (error) throw error;
     return data as FullOverview | null;
   },
+};
+
+// --- Profile API ---
+
+export const profileApi = {
+  async getProfile(): Promise<UserProfile> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+    if (error) throw error;
+    return data as UserProfile;
+  },
+};
+
+// --- Admin API ---
+
+export const adminApi = {
+  setPersona: (personaTier: string | null) =>
+    apiFetch<{ status: string; persona_tier: string | null }>("/admin/persona", {
+      method: "POST",
+      body: JSON.stringify({ persona_tier: personaTier }),
+    }),
+
+  resetDailyState: () =>
+    apiFetch<{ status: string }>("/admin/reset-daily-state", { method: "POST" }),
+
+  regenerateVeins: () =>
+    apiFetch<TodayVeinsResponse>("/admin/regenerate-veins", { method: "POST" }),
 };

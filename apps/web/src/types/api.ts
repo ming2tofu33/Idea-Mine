@@ -156,3 +156,19 @@ export interface ApiError {
   message: string;
   retry_after?: number;
 }
+
+// --- User Profile ---
+
+export type UserTier = "free" | "lite" | "pro";
+export type UserRole = "user" | "admin";
+
+export interface UserProfile {
+  id: string;
+  nickname: string;
+  language: "ko" | "en";
+  tier: UserTier;
+  role: UserRole;
+  persona_tier: UserTier | null;
+  miner_level: number;
+  streak_days: number;
+}
