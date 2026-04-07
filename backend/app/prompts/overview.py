@@ -4,8 +4,8 @@ def build_overview_prompt(
     keywords: list[dict],
     market_research: str,
     concept: dict,
-) -> str:
-    """Step 2: 개요서 생성 프롬프트 v4.2.
+) -> tuple[str, str]:
+    """Step 2: 개요서 생성 프롬프트 v5.
 
     변경 이력:
     - v1~v3.2: 단일 프롬프트
@@ -13,6 +13,9 @@ def build_overview_prompt(
     - v4.1: 전체 few-shot 제거 → 섹션별 인라인 GOOD/BAD + 품질 루브릭.
     - v4.2: Screen Test 강제, 차별점 User Sentence, MVP 테스트 다양화,
             한국어 자연스러운 톤 지시, Chain-of-Thought self-verification.
+    - v5: system/user 분리, Pydantic structured output 전환,
+          JSON 템플릿 제거 (스키마가 구조 보장),
+          anti-pattern 8→5 축소, verification loop 강화.
     """
     kw_by_role: dict[str, str] = {}
     for kw in keywords:
@@ -30,24 +33,9 @@ def build_overview_prompt(
     primary_user = concept.get("primary_user_en", "")
     core_experience = concept.get("core_experience_en", "")
 
-    return f"""You are writing a project overview. Your concept is already decided — do not deviate from it.
+    # ── System prompt (Context + Constraints) ──
 
-=== FIXED CONCEPT (do NOT change this) ===
-
-Concept: {concept_en}
-Product type: {product_type}
-Primary user: {primary_user}
-Core experience: {core_experience}
-
-Every section below MUST describe a product that matches this concept exactly.
-
-=== KEYWORDS ===
-
-{kw_block}
-
-=== MARKET CONTEXT (from web search) ===
-
-{market_research}
+    system_prompt = """You are writing a project overview. Your concept is already decided — do not deviate from it.
 
 === QUALITY RUBRIC ===
 
@@ -64,6 +52,46 @@ Before writing each sentence, ask yourself these 3 tests:
 3. HUMAN TEST: Would a real PM say this in a team meeting?
    GOOD: "앱 열면 오늘의 추천 3개가 카드로 뜬다"
    BAD: "사용자 기본 설정을 기반으로 음식 옵션을 추천합니다"
+
+=== ANTI-PATTERNS ===
+
+- TAUTOLOGY: Feature name repeats in description ("맞춤 추천: 추천합니다") → Describe the SCREEN and INTERACTION instead
+- SYSTEM VOICE: Describes what the system does ("provides", "leverages") → Describe what the USER does ("taps", "swipes", "sees")
+- PRICING AS FEATURE: Revenue/pricing in core features → Move to business model section
+- SOLUTION IN PROBLEM: Problem section mentions the product or its solution → Problem describes ONLY the current state and pain
+- BUZZWORD PADDING: Empty adjectives ("AI-powered", "혁신적인", "종합적인 솔루션") → Delete any adjective that can be removed without changing the meaning
+
+=== VERIFICATION ===
+
+Before outputting, run each section through the 3 quality tests. Fix any that fail.
+
+=== RULES ===
+
+- Korean: Write as a PM would speak in a team meeting. Natural, conversational.
+- English: Same content, professional but natural.
+- features: • bullet points with \\n separators.
+- NEVER fabricate statistics. Use market research data only.
+- No scores, no ratings, no evaluations.
+- Primary user is the ONLY persona. No other user type appears anywhere."""
+
+    # ── User prompt (Task + dynamic data) ──
+
+    user_prompt = f"""=== FIXED CONCEPT (do NOT change this) ===
+
+Concept: {concept_en}
+Product type: {product_type}
+Primary user: {primary_user}
+Core experience: {core_experience}
+
+Every section below MUST describe a product that matches this concept exactly.
+
+=== KEYWORDS ===
+
+{kw_block}
+
+=== MARKET CONTEXT (from web search) ===
+
+{market_research}
 
 === WRITE 6 SECTIONS ===
 
@@ -92,7 +120,7 @@ Before writing each sentence, ask yourself these 3 tests:
    GOOD: "오늘의 추천: 앱을 열면 3개의 음식 카드가 나타남 → 카드를 좌우로 스와이프 → 오른쪽 스와이프한 음식 기반 근처 맛집 추천 — 30초 안에 저녁 결정"
    BAD: "맞춤 추천: 사용자 기본 설정을 기반으로 음식 옵션을 추천합니다"
 
-   IMPORTANT: Ads, subscriptions, payments, and premium upgrades are NEVER features. Even if MONEY is "ad-supported", do NOT list ad display as a feature. Ads go in BUSINESS MODEL only.
+   IMPORTANT: Ads, subscriptions, payments, and premium upgrades are NEVER features.
    Self-check for each feature: If I read this to a developer, can they start building the screen?
 
 4. DIFFERENTIATOR (3-5 sentences)
@@ -124,68 +152,6 @@ Before writing each sentence, ask yourself these 3 tests:
      * Hardware/IoT → Wizard-of-Oz test with manual backend
      Do NOT default to "Google Form survey" for every idea.
 
-=== ANTI-PATTERNS ===
+Provide concept_ko and concept_en echoing the fixed concept."""
 
-- TAUTOLOGY: Feature name repeats in description ("맞춤 추천: 추천합니다", "데이터 입력: 데이터를 입력") → Describe the SCREEN and INTERACTION instead
-- SYSTEM VOICE: Describes what the system does ("provides", "leverages", "utilizes") → Describe what the USER does ("taps", "swipes", "sees")
-- PRICING AS FEATURE: Revenue/pricing in core features → Move to business model section
-- WRONG COMPETITORS: Enterprise tools when user is individual, or unrelated products → Name products the user ACTUALLY uses
-- UNIFORM MVP TEST: Same test method regardless of product type → Match test to product type
-- MONETIZATION AS FEATURE: Subscription, ads, or payment listed as a feature ("프리미엄 기능: 결제 창에서 구독 선택", "광고 기반 정보: 배너 광고 표시") → If the user wouldn't say "I use this app FOR this feature", it's not a feature. Monetization belongs in business model only.
-- SOLUTION IN PROBLEM: Problem section mentions the product or its solution ("이 앱으로 해결할 수 있다") → Problem describes ONLY the current state and pain. Zero mention of the product.
-- BUZZWORD PADDING: Empty adjectives that add no information ("AI-powered", "혁신적인", "종합적인 솔루션", "data-driven") → Delete any adjective that can be removed without changing the meaning.
-- NO RETENTION HOOK: All features describe first-time use only, no reason to return → At least ONE feature must answer "why does the user come back tomorrow?"
-
-=== COHERENCE CHECK (verify ALL before outputting) ===
-
-For each feature you wrote:
-  □ Can a developer read this and start building the screen? If no → add screen details.
-  □ Is the feature name different from its description? If same → rewrite description.
-  □ Is this about monetization (subscription, ads, payment)? If yes → delete and replace with a real feature.
-  □ Does at least ONE feature give a reason to come back tomorrow? If no → add retention hook.
-
-For the problem section:
-  □ Does it mention the product or solution at all? If yes → remove. Problem = current pain only.
-
-For the differentiator:
-  □ Could the primary user say this out loud? If no → rewrite as user speech.
-  □ Did you use "AI-powered", "혁신적", "종합적" or similar? If yes → delete the buzzword.
-
-For MVP test:
-  □ Is the test method specific to this product type? If it's "Google Form" → reconsider.
-
-For every Korean sentence:
-  □ Does it sound like a PM talking in a meeting? If it sounds translated → rewrite naturally.
-
-If ANY check fails, revise before outputting.
-
-=== OUTPUT ===
-
-Respond ONLY with valid JSON:
-{{{{
-  "concept_en": "{concept_en}",
-  "concept_ko": "{concept.get("concept_ko", "")}",
-  "problem_ko": "3-5문장, 자연스러운 한국어",
-  "problem_en": "3-5 sentences",
-  "target_ko": "3-5문장, 한국 이름+나이+직업+구체적 순간",
-  "target_en": "3-5 sentences, name+age+job+specific moment",
-  "features_ko": "• 기능명: [화면] → [동작] → [결과] — [이유]\\n• ...",
-  "features_en": "• Name: [screen] → [action] → [result] — [why]\\n• ...",
-  "differentiator_ko": "3-5문장, 사용자가 말하듯이",
-  "differentiator_en": "3-5 sentences, as if user is explaining",
-  "revenue_ko": "3-5문장, 구체적 금액 2개 이상",
-  "revenue_en": "3-5 sentences, 2+ specific dollar amounts",
-  "mvp_scope_ko": "3-5문장, IN/OUT/핵심경험/제품 맞춤 테스트",
-  "mvp_scope_en": "3-5 sentences, IN/OUT/core/product-specific test"
-}}}}
-
-=== RULES ===
-
-- Korean: Write as a PM would speak in a team meeting. Natural, conversational.
-  GOOD: "앱 열면 카드 3개 뜨고, 스와이프하면 맛집 추천이 나온다"
-  BAD: "사용자 기본 설정을 기반으로 음식 옵션을 추천합니다"
-- English: Same content, professional but natural.
-- features: • bullet points with \\n separators.
-- NEVER fabricate statistics. Use market research data only.
-- No scores, no ratings, no evaluations.
-- Primary user is the ONLY persona. No other user type appears anywhere."""
+    return system_prompt, user_prompt

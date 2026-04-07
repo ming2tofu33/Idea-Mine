@@ -6,20 +6,16 @@ def build_appraisal_prompt(
     keywords: list[dict],
     market_research: str,
     depth: Literal["basic", "basic_free", "precise_lite", "precise_pro"] = "basic",
-) -> str:
-    """감정 프롬프트 v2.
+) -> tuple[str, str]:
+    """감정 프롬프트 v3.
 
     변경 이력:
     - v1: 기본 3단계 (basic/precise/deep).
     - v2: 4단계로 분리 (basic_free/basic/precise_lite/precise_pro).
           GOOD/BAD 인라인 예시, Anti-pattern, 점수 완전 제거.
-          Free 축소판(3축), Lite 얕은 vs Pro 풀 구분.
-
-    depth:
-    - basic_free: Free — 3축만 (시장성, 실행 가능성, 리스크), 축당 1-2문장.
-    - basic: Lite/Pro — 6축 전부, 축당 1-2문장.
-    - precise_lite: Lite — 6축, 축당 2-3문장. 핵심 근거만. "더 깊게 보고 싶다" 유도.
-    - precise_pro: Pro — 6축, 축당 3-5문장. 유사 사례 + 구체적 근거 + 리스크 시나리오.
+    - v3: system/user 분리, Pydantic structured output 전환,
+          JSON 템플릿 제거 (스키마가 구조 보장),
+          anti-pattern 5→4 축소, depth config에서 output 키 제거.
     """
     kw_list = ", ".join(f"{kw['en']} ({kw['category'].upper()})" for kw in keywords)
 
@@ -32,31 +28,11 @@ MVP Scope: {overview.get('mvp_scope_en', '')}"""
 
     depth_config = _get_depth_config(depth)
 
-    return f"""You are a sharp, honest startup critic — not a cheerleader.
+    # ── System prompt (Context + Constraints) ──
 
-Your job is to APPRAISE this project idea. Be specific and actionable.
-Generic praise like "promising market" is worthless.
-If something is weak, say so directly. If something is strong, explain WHY.
+    system_prompt = """You are a sharp, honest startup critic — not a cheerleader. Be specific and actionable. Generic praise is worthless.
 
-=== PROJECT OVERVIEW ===
-
-{overview_context}
-
-Keywords: {kw_list}
-
-=== MARKET RESEARCH ===
-
-{market_research}
-
-=== APPRAISAL TASK ===
-
-{depth_config['instruction']}
-
-=== DIMENSIONS ===
-
-{depth_config['dimensions']}
-
-=== QUALITY RUBRIC ===
+=== QUALITY TESTS ===
 
 Before writing each comment, apply these tests:
 
@@ -77,22 +53,11 @@ Before writing each comment, apply these tests:
 - GENERIC PRAISE: "유망한 시장입니다", "잠재력이 있습니다" → WHY? 구체적 근거를 달아라
 - HEDGE: "~할 수 있습니다", "~에 따라 다릅니다" → 입장을 정하고 이유를 써라
 - REPEAT OVERVIEW: 개요서 내용을 다시 쓰지 마라. 개요서에 없는 새로운 관점을 줘라
-- FAKE COMPARISON: 실제로 존재하는 서비스만 이름을 언급해라. 없으면 "직접적 경쟁자가 보이지 않는다"라고 써라
 - SCORE/NUMBER: 점수, 등급, 숫자 평가를 절대 넣지 마라. "7/10", "B+", "상/중/하" 모두 금지.
 
-=== COHERENCE CHECK ===
+=== VERIFICATION ===
 
-For each comment:
-  □ Can the founder take a specific action from this? If not → rewrite with action.
-  □ Does it take a clear stance? If "~할 수도" → pick a side.
-  □ Is it NEW information, not repeating the overview? If repeat → add new angle.
-
-For Korean:
-  □ Does it sound like a 선배 PM talking honestly? If formal/translated → rewrite naturally.
-
-=== OUTPUT FORMAT ===
-
-{depth_config['output']}
+Before outputting, verify each dimension passes all 3 quality tests.
 
 === RULES ===
 
@@ -104,9 +69,31 @@ For Korean:
 - Be a critic, not a consultant. "This fails because..." > "This could work if..."
 - Every sentence should give the reader a clear signal: strong, weak, or uncertain."""
 
+    # ── User prompt (Task + dynamic data) ──
+
+    user_prompt = f"""=== PROJECT OVERVIEW ===
+
+{overview_context}
+
+Keywords: {kw_list}
+
+=== MARKET RESEARCH ===
+
+{market_research}
+
+=== APPRAISAL TASK ===
+
+{depth_config['instruction']}
+
+=== DIMENSIONS ===
+
+{depth_config['dimensions']}"""
+
+    return system_prompt, user_prompt
+
 
 def _get_depth_config(depth: str) -> dict:
-    """depth별 지시사항, 차원, 출력 포맷을 반환."""
+    """depth별 지시사항과 차원을 반환."""
 
     # 6축 전체 정의
     all_dimensions = """1. MARKET FIT (시장성)
@@ -176,15 +163,6 @@ def _get_depth_config(depth: str) -> dict:
 Hit the ONE core insight per dimension. Nothing more.
 Total should take under 30 seconds to read.""",
             "dimensions": free_dimensions,
-            "output": """Respond ONLY with valid JSON:
-{{{{
-  "market_fit_ko": "한국어 1-2문장",
-  "market_fit_en": "English 1-2 sentences",
-  "feasibility_ko": "한국어 1-2문장",
-  "feasibility_en": "English 1-2 sentences",
-  "risk_ko": "한국어 1-2문장",
-  "risk_en": "English 1-2 sentences"
-}}}}""",
         }
 
     if depth == "basic":
@@ -193,21 +171,6 @@ Total should take under 30 seconds to read.""",
 Hit the ONE core insight per dimension.
 Total should take under 1 minute to read.""",
             "dimensions": all_dimensions,
-            "output": """Respond ONLY with valid JSON:
-{{{{
-  "market_fit_ko": "한국어 1-2문장",
-  "market_fit_en": "English 1-2 sentences",
-  "problem_fit_ko": "한국어 1-2문장",
-  "problem_fit_en": "English 1-2 sentences",
-  "feasibility_ko": "한국어 1-2문장",
-  "feasibility_en": "English 1-2 sentences",
-  "differentiation_ko": "한국어 1-2문장",
-  "differentiation_en": "English 1-2 sentences",
-  "scalability_ko": "한국어 1-2문장",
-  "scalability_en": "English 1-2 sentences",
-  "risk_ko": "한국어 1-2문장",
-  "risk_en": "English 1-2 sentences"
-}}}}""",
         }
 
     if depth == "precise_lite":
@@ -217,21 +180,6 @@ Include ONE specific evidence or reasoning per dimension.
 Keep it tight — this should make the reader think "I want to see the full analysis."
 Total should take 1-2 minutes to read.""",
             "dimensions": all_dimensions,
-            "output": """Respond ONLY with valid JSON:
-{{{{
-  "market_fit_ko": "한국어 2-3문장, 근거 1개",
-  "market_fit_en": "English 2-3 sentences, 1 evidence",
-  "problem_fit_ko": "한국어 2-3문장",
-  "problem_fit_en": "English 2-3 sentences",
-  "feasibility_ko": "한국어 2-3문장",
-  "feasibility_en": "English 2-3 sentences",
-  "differentiation_ko": "한국어 2-3문장",
-  "differentiation_en": "English 2-3 sentences",
-  "scalability_ko": "한국어 2-3문장",
-  "scalability_en": "English 2-3 sentences",
-  "risk_ko": "한국어 2-3문장",
-  "risk_en": "English 2-3 sentences"
-}}}}""",
         }
 
     # precise_pro
@@ -245,19 +193,4 @@ For each dimension:
 - End each dimension with a clear verdict: strong, weak, or conditional.
 Total should take 3-4 minutes to read.""",
         "dimensions": all_dimensions,
-        "output": """Respond ONLY with valid JSON:
-{{{{
-  "market_fit_ko": "한국어 3-5문장, 근거 + 경쟁사 + 판정",
-  "market_fit_en": "English 3-5 sentences, evidence + competitors + verdict",
-  "problem_fit_ko": "한국어 3-5문장",
-  "problem_fit_en": "English 3-5 sentences",
-  "feasibility_ko": "한국어 3-5문장",
-  "feasibility_en": "English 3-5 sentences",
-  "differentiation_ko": "한국어 3-5문장, moat 분석",
-  "differentiation_en": "English 3-5 sentences, moat analysis",
-  "scalability_ko": "한국어 3-5문장, 확장 경로 + lock-in",
-  "scalability_en": "English 3-5 sentences, expansion + lock-in",
-  "risk_ko": "한국어 3-5문장, if-then 시나리오",
-  "risk_en": "English 3-5 sentences, if-then scenarios"
-}}}}""",
     }

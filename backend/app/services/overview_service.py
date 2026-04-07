@@ -1,9 +1,9 @@
-import json
 import time
 import uuid
 from openai import OpenAI
 from supabase import Client
 from app.config import settings
+from app.models.llm_schemas import ConceptResponse, OverviewResponse
 from app.prompts.concept import build_concept_prompt
 from app.prompts.overview import build_overview_prompt
 from app.services.market_research import research_market
@@ -20,7 +20,7 @@ OVERVIEW_MODEL = "gpt-5-mini"
 OVERVIEW_COST_INPUT = 0.00075
 OVERVIEW_COST_OUTPUT = 0.0045
 
-PROMPT_VERSION = "overview-v4-pipeline"
+PROMPT_VERSION = "overview-v5-pipeline"
 
 
 def get_openai() -> OpenAI:
@@ -48,21 +48,28 @@ async def generate_overview(
     )
 
     # ── Step 1: Concept 생성 (gpt-5-nano) ──
-    concept_prompt = build_concept_prompt(
+    system_prompt, user_prompt = build_concept_prompt(
         title_en=idea["title_en"],
         summary_en=idea["summary_en"],
         keywords=idea["keyword_combo"],
     )
 
     step1_start = time.time()
-    step1_response = client.chat.completions.create(
+    step1_response = client.beta.chat.completions.parse(
         model=CONCEPT_MODEL,
-        messages=[{"role": "user", "content": concept_prompt}],
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
         temperature=0.5,
-        response_format={"type": "json_object"},
+        response_format=ConceptResponse,
     )
     step1_elapsed = int((time.time() - step1_start) * 1000)
-    concept = json.loads(step1_response.choices[0].message.content)
+
+    if step1_response.choices[0].message.refusal:
+        raise RuntimeError(f"Model refused: {step1_response.choices[0].message.refusal}")
+
+    concept = step1_response.choices[0].message.parsed.model_dump()
 
     step1_input = step1_response.usage.prompt_tokens
     step1_output = step1_response.usage.completion_tokens
@@ -88,7 +95,7 @@ async def generate_overview(
     )
 
     # ── Step 2: Full Overview (gpt-5-mini) ──
-    overview_prompt = build_overview_prompt(
+    system_prompt, user_prompt = build_overview_prompt(
         title_en=idea["title_en"],
         summary_en=idea["summary_en"],
         keywords=idea["keyword_combo"],
@@ -98,14 +105,21 @@ async def generate_overview(
 
     step2_start = time.time()
     try:
-        step2_response = client.chat.completions.create(
+        step2_response = client.beta.chat.completions.parse(
             model=OVERVIEW_MODEL,
-            messages=[{"role": "user", "content": overview_prompt}],
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
             temperature=0.7,
-            response_format={"type": "json_object"},
+            response_format=OverviewResponse,
         )
         step2_elapsed = int((time.time() - step2_start) * 1000)
-        result = json.loads(step2_response.choices[0].message.content)
+
+        if step2_response.choices[0].message.refusal:
+            raise RuntimeError(f"Model refused: {step2_response.choices[0].message.refusal}")
+
+        result = step2_response.choices[0].message.parsed.model_dump()
 
         step2_input = step2_response.usage.prompt_tokens
         step2_output = step2_response.usage.completion_tokens
@@ -154,20 +168,20 @@ async def generate_overview(
         .insert({
             "user_id": user_id,
             "idea_id": idea["id"],
-            "concept_ko": result.get("concept_ko", concept.get("concept_ko", "")),
-            "concept_en": result.get("concept_en", concept.get("concept_en", "")),
-            "problem_ko": result.get("problem_ko", ""),
-            "problem_en": result.get("problem_en", ""),
-            "target_ko": result.get("target_ko", ""),
-            "target_en": result.get("target_en", ""),
-            "features_ko": result.get("features_ko", ""),
-            "features_en": result.get("features_en", ""),
-            "differentiator_ko": result.get("differentiator_ko", ""),
-            "differentiator_en": result.get("differentiator_en", ""),
-            "revenue_ko": result.get("revenue_ko", ""),
-            "revenue_en": result.get("revenue_en", ""),
-            "mvp_scope_ko": result.get("mvp_scope_ko", ""),
-            "mvp_scope_en": result.get("mvp_scope_en", ""),
+            "concept_ko": result["concept_ko"],
+            "concept_en": result["concept_en"],
+            "problem_ko": result["problem_ko"],
+            "problem_en": result["problem_en"],
+            "target_ko": result["target_ko"],
+            "target_en": result["target_en"],
+            "features_ko": result["features_ko"],
+            "features_en": result["features_en"],
+            "differentiator_ko": result["differentiator_ko"],
+            "differentiator_en": result["differentiator_en"],
+            "revenue_ko": result["revenue_ko"],
+            "revenue_en": result["revenue_en"],
+            "mvp_scope_ko": result["mvp_scope_ko"],
+            "mvp_scope_en": result["mvp_scope_en"],
         })
         .execute()
     )

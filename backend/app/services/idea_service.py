@@ -1,16 +1,16 @@
-import json
 import time
 import uuid
 from openai import OpenAI
 from supabase import Client
 from app.config import settings
+from app.models.llm_schemas import MiningResponse
 from app.prompts.mining import build_mining_prompt
 from app.services.combo_builder import build_keyword_combos
 
 _openai: OpenAI | None = None
 
 MODEL = "gpt-5-nano"
-PROMPT_VERSION = "v2"
+PROMPT_VERSION = "v4"
 
 COST_PER_1K_INPUT = 0.00005
 COST_PER_1K_OUTPUT = 0.0004
@@ -37,25 +37,30 @@ async def generate_ideas(
     has_ai_keyword = any(kw["category"] == "ai" for kw in keywords)
 
     combos = build_keyword_combos(keywords, has_ai_keyword)
-    prompt = build_mining_prompt(combos)
+    system_prompt, user_prompt = build_mining_prompt(combos)
 
     client = get_openai()
     start_time = time.time()
 
     try:
-        response = client.chat.completions.create(
+        response = client.beta.chat.completions.parse(
             model=MODEL,
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
             temperature=0.9,
-            response_format={"type": "json_object"},
+            response_format=MiningResponse,
         )
 
         elapsed_ms = int((time.time() - start_time) * 1000)
-        content = response.choices[0].message.content
 
-        ideas_raw = json.loads(content)
-        if isinstance(ideas_raw, dict) and "ideas" in ideas_raw:
-            ideas_raw = ideas_raw["ideas"]
+        # Check for refusal
+        if response.choices[0].message.refusal:
+            raise RuntimeError(f"Model refused: {response.choices[0].message.refusal}")
+
+        result = response.choices[0].message.parsed
+        ideas_raw = [idea.model_dump() for idea in result.ideas]
 
         input_tokens = response.usage.prompt_tokens
         output_tokens = response.usage.completion_tokens

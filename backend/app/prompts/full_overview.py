@@ -1,3 +1,172 @@
+def build_full_overview_prompt(
+    concept: dict,
+    light_overview: dict,
+    market_research: str,
+) -> tuple[str, str]:
+    """풀 개요서: 서술 + 기술 블록을 하나의 프롬프트로 생성.
+
+    Returns (system_prompt, user_prompt).
+    """
+    concept_en = concept.get("concept_en", "")
+    product_type = concept.get("product_type", "B2C")
+    primary_user = concept.get("primary_user_en", "")
+    core_experience = concept.get("core_experience_en", "")
+
+    system_prompt = """You are a senior full-stack architect writing an implementation-ready document.
+This document will be placed in a /docs folder so that AI coding tools (Claude Code, Cursor) can start building immediately.
+
+=== ANTI-PATTERNS (avoid these) ===
+
+1. SYSTEM VOICE: "The system provides..." → Describe what the USER does, not the system.
+2. BUZZWORD PADDING: "AI-powered", "innovative", "comprehensive" → Delete if removing changes nothing.
+3. OVER-ENGINEERING: 3-6 tables max, standard tech only. No 15-table schemas.
+4. MISMATCHED SCHEMAS: API endpoints must match data model tables. Every endpoint body must match columns.
+5. GENERIC FILE STRUCTURE: "src/components/" is not enough — list actual files with real names.
+
+=== CROSS-CHECK (verify before outputting) ===
+
+1. Every Must feature has at least one API endpoint
+2. Every API endpoint references a table in the data model
+3. File structure matches tech stack conventions
+4. Business rules are reflected in data model constraints
+5. Every external service has an env var name
+6. Auth flow covers signup → login → token → tier check
+7. API endpoints that need auth are marked
+
+=== VERIFICATION ===
+
+After writing all 15 sections, verify the cross-check. Fix any inconsistencies."""
+
+    user_prompt = f"""=== FIXED CONCEPT ===
+
+Concept: {concept_en}
+Product type: {product_type}
+Primary user: {primary_user}
+Core experience: {core_experience}
+
+=== LIGHT OVERVIEW (already validated — use as foundation) ===
+
+Problem: {light_overview.get("problem_en", "")}
+Target: {light_overview.get("target_en", "")}
+Features: {light_overview.get("features_en", "")}
+Revenue: {light_overview.get("revenue_en", "")}
+MVP Scope: {light_overview.get("mvp_scope_en", "")}
+
+=== MARKET CONTEXT ===
+
+{market_research}
+
+=== WRITE 15 SECTIONS ===
+
+Write in English only. This is a technical document for AI coding tools.
+Add [REVIEW], [DRAFT], or [READY] label to each section title.
+
+── NARRATIVE SECTIONS ──
+
+1. ONE-LINE CONCEPT
+   Copy the concept exactly as-is: "{concept_en}"
+
+2. PROBLEM DEFINITION (3-5 sentences)
+   Expand the light overview's problem. Add:
+   - How often this pain occurs (daily, weekly)
+   - What the user currently does as a workaround
+   - Why the workaround fails
+
+3. TARGET USER (3-5 sentences)
+   Expand the light overview's target. Add:
+   - The specific moment they'd reach for this product
+   - Their technical comfort level (tech-savvy, casual, non-technical)
+
+4. CORE FEATURES — Must / Should / Later
+   Take the light overview's features and categorize:
+   - Must (MVP — build first): 3-4 features. These ship in v1.
+   - Should (v1.1 — build next): 2-3 features. High value but not blocking launch.
+   - Later (v2+ — backlog): 2-3 features. Nice to have, not validated yet.
+
+   For each feature:
+   "Feature Name: [user action] → [system response] → [outcome]"
+   GOOD: "Daily Recommendation: user opens app → sees 3 food cards → swipes right to pick → gets nearby restaurant"
+   BAD: "Recommendation Engine: provides personalized suggestions using AI"
+
+5. USER FLOW (step-by-step, happy path)
+   Write the primary user's journey from first open to core experience complete.
+   Format as numbered steps (8-12 steps, happy path only):
+   1. User opens app for the first time
+   2. User sees onboarding screen with...
+   MUST include: what the user SEES at each step and what they DO.
+
+6. SCREEN LIST
+   List every screen/page the MVP needs. One line each:
+   "Screen Name — what the user does here"
+   GOOD: "Home — sees today's 3 recommendations as swipeable cards"
+   BAD: "Home — main screen of the application"
+
+7. BUSINESS MODEL + PRICING
+   Expand the light overview's revenue. Include:
+   - Specific pricing tiers with dollar amounts
+   - Free vs paid feature split
+   - 2 competitor benchmarks with prices
+   - Revenue projection: "If X users at Y conversion = $Z MRR"
+
+8. CORE BUSINESS RULES
+   List the rules that MUST be coded. These are NOT features — they're constraints:
+   - "Free users: 3 sessions/day, paid: unlimited"
+   - "Content expires after 24 hours unless saved"
+   Format as bullet points. 5-10 rules.
+
+9. MVP SCOPE + VALIDATION
+   - IN: 3-4 Must features (from section 4)
+   - OUT: Everything in Should + Later
+   - Core hypothesis: "We believe [WHO] will [ACTION] because [REASON]"
+   - Validation questions:
+     * "Does the user complete the core flow without help?"
+     * "Does the user return within 3 days?"
+     * "Would the user pay for this?"
+   - Cheapest test method (specific tool + community + number)
+
+── TECHNICAL SECTIONS ──
+
+10. TECH STACK
+    Recommend specific technologies. For each, explain WHY in one phrase.
+    Format: "Component: [technology] — [why]"
+    6 components: frontend, backend, database, AI/ML, auth, hosting.
+
+    AI/ML selection rule:
+    - If the product CALLS an external AI API (OpenAI, Claude, etc.) → list that API, NOT an ML framework.
+      GOOD: "OpenAI API — generates food recommendations via API call"
+      BAD: "TensorFlow.js — allows ML models to run in browser"
+    - Only recommend ML frameworks if the product trains or runs models locally.
+
+11. DATA MODEL
+    Write SQL CREATE TABLE statements for the core tables.
+    - Primary keys (UUID), foreign keys, essential columns only
+    - created_at, updated_at timestamps
+    - Comments explaining non-obvious columns
+    3-6 tables for MVP.
+
+12. API ENDPOINTS
+    REST API endpoints for MVP features.
+    Format: "METHOD /path — what it does — auth required?"
+    Include request/response summary.
+    8-15 endpoints for MVP.
+
+13. FILE STRUCTURE
+    Show the project directory tree following framework conventions.
+    Only files that would exist in v1 (MVP). Name actual files.
+
+14. EXTERNAL SERVICES & API KEYS
+    Format: "Service — what it's used for — free tier available? — env var name"
+    GOOD: "OpenAI API — food recommendation generation — $5 free credit — OPENAI_API_KEY"
+    BAD: "AI service — for AI features"
+
+15. AUTH FLOW
+    Authentication flow step-by-step (5-8 steps):
+    - Sign up method, login flow, token management, free vs paid tier"""
+
+    return system_prompt, user_prompt
+
+
+# DEPRECATED — kept for rollback. Use build_full_overview_prompt() instead.
 def build_full_overview_narrative_prompt(
     concept: dict,
     light_overview: dict,
@@ -143,6 +312,7 @@ Respond ONLY with valid JSON:
 }}}}"""
 
 
+# DEPRECATED — kept for rollback. Use build_full_overview_prompt() instead.
 def build_full_overview_technical_prompt(
     concept: dict,
     narrative: dict,

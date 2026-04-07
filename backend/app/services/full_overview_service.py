@@ -1,13 +1,10 @@
-import json
 import time
 import uuid
 from openai import OpenAI
 from supabase import Client
 from app.config import settings
-from app.prompts.full_overview import (
-    build_full_overview_narrative_prompt,
-    build_full_overview_technical_prompt,
-)
+from app.models.llm_schemas import FullOverviewResponse
+from app.prompts.full_overview import build_full_overview_prompt
 from app.services.market_research import research_market
 
 _openai: OpenAI | None = None
@@ -15,7 +12,7 @@ _openai: OpenAI | None = None
 MODEL = "gpt-5"
 COST_PER_1K_INPUT = 0.00125
 COST_PER_1K_OUTPUT = 0.01
-PROMPT_VERSION = "full-overview-v1"
+PROMPT_VERSION = "full-overview-v2"
 
 
 def get_openai() -> OpenAI:
@@ -33,10 +30,9 @@ async def generate_full_overview(
     idea: dict,
     source: str = "app",
 ) -> dict:
-    """풀 개요서 생성: 라이트 개요서 기반 2단계 파이프라인.
+    """풀 개요서 생성: 라이트 개요서 기반 단일 호출 파이프라인.
 
-    Step 1 (Narrative): 비전 + 제품 + 비즈니스 블록
-    Step 2 (Technical): 기술 블록 (스택, DB, API, 파일구조, 인증)
+    서술(narrative) + 기술(technical) 블록을 하나의 LLM 호출로 생성.
     """
     session_id = str(uuid.uuid4())
     client = get_openai()
@@ -45,7 +41,7 @@ async def generate_full_overview(
     concept = {
         "concept_en": overview.get("concept_en", ""),
         "concept_ko": overview.get("concept_ko", ""),
-        "product_type": _infer_product_type(overview),
+        "product_type": overview.get("product_type", "B2C"),
         "primary_user_en": overview.get("target_en", "").split(".")[0] if overview.get("target_en") else "",
         "core_experience_en": overview.get("features_en", "").split("—")[0] if overview.get("features_en") else "",
     }
@@ -57,67 +53,36 @@ async def generate_full_overview(
         keywords=idea["keyword_combo"],
     )
 
-    # ── Step 1: Narrative (비전 + 제품 + 비즈니스) ──
-    narrative_prompt = build_full_overview_narrative_prompt(
+    # ── Single merged call ──
+    system_prompt, user_prompt = build_full_overview_prompt(
         concept=concept,
         light_overview=overview,
         market_research=market_data,
     )
 
-    step1_start = time.time()
-    step1_response = client.chat.completions.create(
-        model=MODEL,
-        messages=[{"role": "user", "content": narrative_prompt}],
-        temperature=0.5,
-        response_format={"type": "json_object"},
-    )
-    step1_elapsed = int((time.time() - step1_start) * 1000)
-    narrative = json.loads(step1_response.choices[0].message.content)
-
-    step1_input = step1_response.usage.prompt_tokens
-    step1_output = step1_response.usage.completion_tokens
-    step1_cost = (
-        step1_input / 1000 * COST_PER_1K_INPUT
-        + step1_output / 1000 * COST_PER_1K_OUTPUT
-    )
-
-    await _log_ai_usage(
-        supabase,
-        user_id=user_id,
-        tier=tier,
-        session_id=session_id,
-        feature_type="full_overview",
-        feature_variant="narrative",
-        input_tokens=step1_input,
-        output_tokens=step1_output,
-        total_cost=step1_cost,
-        response_time_ms=step1_elapsed,
-        status="success",
-        source=source,
-    )
-
-    # ── Step 2: Technical (기술 블록) ──
-    technical_prompt = build_full_overview_technical_prompt(
-        concept=concept,
-        narrative=narrative,
-    )
-
-    step2_start = time.time()
+    start_time = time.time()
     try:
-        step2_response = client.chat.completions.create(
+        response = client.beta.chat.completions.parse(
             model=MODEL,
-            messages=[{"role": "user", "content": technical_prompt}],
-            temperature=0.3,
-            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            temperature=0.4,
+            response_format=FullOverviewResponse,
         )
-        step2_elapsed = int((time.time() - step2_start) * 1000)
-        technical = json.loads(step2_response.choices[0].message.content)
+        elapsed_ms = int((time.time() - start_time) * 1000)
 
-        step2_input = step2_response.usage.prompt_tokens
-        step2_output = step2_response.usage.completion_tokens
-        step2_cost = (
-            step2_input / 1000 * COST_PER_1K_INPUT
-            + step2_output / 1000 * COST_PER_1K_OUTPUT
+        if response.choices[0].message.refusal:
+            raise RuntimeError(f"Model refused: {response.choices[0].message.refusal}")
+
+        result = response.choices[0].message.parsed
+
+        input_tokens = response.usage.prompt_tokens
+        output_tokens = response.usage.completion_tokens
+        total_cost = (
+            input_tokens / 1000 * COST_PER_1K_INPUT
+            + output_tokens / 1000 * COST_PER_1K_OUTPUT
         )
 
         await _log_ai_usage(
@@ -126,35 +91,31 @@ async def generate_full_overview(
             tier=tier,
             session_id=session_id,
             feature_type="full_overview",
-            feature_variant="technical",
-            input_tokens=step2_input,
-            output_tokens=step2_output,
-            total_cost=step2_cost,
-            response_time_ms=step2_elapsed,
+            feature_variant="merged",
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            total_cost=total_cost,
+            response_time_ms=elapsed_ms,
             status="success",
             source=source,
         )
-
     except Exception:
-        step2_elapsed = int((time.time() - step2_start) * 1000)
+        elapsed_ms = int((time.time() - start_time) * 1000)
         await _log_ai_usage(
             supabase,
             user_id=user_id,
             tier=tier,
             session_id=session_id,
             feature_type="full_overview",
-            feature_variant="technical",
+            feature_variant="merged",
             input_tokens=0,
             output_tokens=0,
             total_cost=0,
-            response_time_ms=step2_elapsed,
+            response_time_ms=elapsed_ms,
             status="error",
             source=source,
         )
         raise
-
-    # 결과 합치기 (narrative + technical)
-    full_result = {**narrative, **technical}
 
     # DB 저장
     row = (
@@ -162,38 +123,27 @@ async def generate_full_overview(
         .insert({
             "user_id": user_id,
             "overview_id": overview["id"],
-            # Narrative
-            "concept": narrative.get("concept", ""),
-            "problem": narrative.get("problem", ""),
-            "target_user": narrative.get("target_user", ""),
-            "features_must": _as_string_list(narrative.get("features_must", [])),
-            "features_should": _as_string_list(narrative.get("features_should", [])),
-            "features_later": _as_string_list(narrative.get("features_later", [])),
-            "user_flow": _as_string_list(narrative.get("user_flow", [])),
-            "screens": _as_string_list(narrative.get("screens", [])),
-            "business_model": narrative.get("business_model", ""),
-            "business_rules": _as_string_list(narrative.get("business_rules", [])),
-            "mvp_scope": narrative.get("mvp_scope", ""),
-            # Technical
-            "tech_stack": _as_string_map(technical.get("tech_stack", {})),
-            "data_model_sql": technical.get("data_model_sql", ""),
-            "api_endpoints": _as_string_list(technical.get("api_endpoints", [])),
-            "file_structure": technical.get("file_structure", ""),
-            "external_services": _as_string_list(technical.get("external_services", [])),
-            "auth_flow": _as_string_list(technical.get("auth_flow", [])),
+            "concept": result.concept,
+            "problem": result.problem,
+            "target_user": result.target_user,
+            "features_must": _as_string_list(result.features_must),
+            "features_should": _as_string_list(result.features_should),
+            "features_later": _as_string_list(result.features_later),
+            "user_flow": _as_string_list(result.user_flow),
+            "screens": _as_string_list(result.screens),
+            "business_model": result.business_model,
+            "business_rules": _as_string_list(result.business_rules),
+            "mvp_scope": result.mvp_scope,
+            "tech_stack": _as_string_map(result.tech_stack),
+            "data_model_sql": result.data_model_sql,
+            "api_endpoints": _as_string_list(result.api_endpoints),
+            "file_structure": result.file_structure,
+            "external_services": _as_string_list(result.external_services),
+            "auth_flow": _as_string_list(result.auth_flow),
         })
         .execute()
     )
     return row.data[0]
-
-
-def _infer_product_type(overview: dict) -> str:
-    """개요서 내용에서 B2B/B2C를 추론."""
-    text = (overview.get("target_en", "") + " " + overview.get("problem_en", "")).lower()
-    b2b_signals = ["business owner", "manager", "enterprise", "company", "b2b", "saas", "dashboard"]
-    if any(signal in text for signal in b2b_signals):
-        return "B2B"
-    return "B2C"
 
 
 def _as_string_list(value: object) -> list[str]:

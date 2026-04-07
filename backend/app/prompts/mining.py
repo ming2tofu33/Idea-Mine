@@ -1,37 +1,18 @@
-def build_mining_prompt(combos: list[dict]) -> str:
-    """v3: 키워드 역할 설명 + 요약 품질 루브릭 추가.
+def build_mining_prompt(combos: list[dict]) -> tuple[str, str]:
+    """v4: Split into system/user prompts for structured output.
 
     변경 이력:
     - v1: 기본 프롬프트
     - v2: Python이 결정한 10개 조합, 4군 tier_instructions
-    - v3: 카테고리별 역할 설명 추가 (LLM이 키워드를 더 구체적으로 해석),
-          요약 품질 루브릭 (WHO+ACTION, DIFFERENCE, OUTCOME),
-          GOOD/BAD 인라인 예시, anti-pattern 추가.
+    - v3: 카테고리별 역할 설명 추가, 요약 품질 루브릭, anti-pattern 추가
+    - v4: system/user 분리, Pydantic structured output 전환,
+          anti-pattern 4개로 축소, verification loop 추가,
+          JSON 템플릿 제거 (스키마가 구조 보장)
     """
-    combo_sections = []
 
-    tier_instructions = {
-        "stable": "Create an idea that is FAITHFUL to these keywords. Immediately understandable. 'Of course this combination leads to this.'",
-        "expansion": "PUSH one keyword much harder than others. Stretch the interpretation. 'Same vein, different reading.'",
-        "pivot": "CHANGE the service format or business model entirely. If others are apps, make this an API or marketplace. 'I didn't expect this direction.'",
-        "rare": "EXPERIMENTAL and MEMORABLE. The most unexpected direction from these keywords. Something people would screenshot and share. Surprising but coherent.",
-    }
+    # ── System prompt (CTCO: Context + Constraints) ──
 
-    for combo in combos:
-        kw_list = ", ".join(f"{kw['en']} ({kw['category'].upper()})" for kw in combo["keywords"])
-        instruction = tier_instructions[combo["tier_type"]]
-
-        combo_sections.append(
-            f"=== Idea {combo['sort_order']} ===\n"
-            f"Keywords: {kw_list}\n"
-            f"Direction: {instruction}"
-        )
-
-    combos_text = "\n\n".join(combo_sections)
-
-    return f"""You are the idea engine for IDEA MINE, an AI startup idea generator.
-
-Below are 10 keyword combinations. For EACH combination, generate exactly ONE startup/service idea.
+    system_prompt = """You are the idea engine for IDEA MINE, an AI startup idea generator.
 
 === KEYWORD ROLES ===
 
@@ -42,10 +23,6 @@ Each keyword has a category that defines its role in the idea:
 - DOMAIN: The industry. This defines the market and problem space.
 - VALUE: The core value delivered. This is WHY the user cares.
 - MONEY: The revenue model. This is HOW the business makes money — NOT a feature.
-
-=== COMBINATIONS ===
-
-{combos_text}
 
 === SUMMARY QUALITY RUBRIC ===
 
@@ -70,10 +47,8 @@ For EACH summary, self-check:
 
 - SYSTEM VOICE: "제공합니다", "활용합니다", "지원합니다" → Describe what the USER does, not the system
 - BUZZWORD: "AI 기반", "맞춤형", "혁신적", "종합적" → Delete if removing changes nothing
-- REPEAT: Multiple ideas saying "AI가 추천합니다" in different words → Each idea must have a UNIQUE mechanism
-- MONEY AS FEATURE: Don't describe the revenue model in the summary. Summary = user experience only.
 - FAKE STATS: Do NOT invent percentages or statistics ("50% 향상", "70% 증가"). Instead, describe a concrete usage scenario: "매주 월요일 저녁 메뉴를 5분 안에 결정" is better than "결정 시간이 80% 감소".
-- SAME SENTENCE PATTERN: Do NOT repeat "기존의 ~와는 달리" in every idea. Use varied phrasing: "배민에서 30분 스크롤하는 대신", "유튜브 레시피 검색 없이도", "매번 같은 걸 시키는 루틴을 깨고" etc.
+- MONEY AS FEATURE: Don't describe the revenue model in the summary. Summary = user experience only.
 
 === QUALITY RULES ===
 
@@ -85,22 +60,36 @@ For EACH summary, self-check:
 6. Every idea must describe a real service that real users would pay for
 7. Every idea must be implementable — no fantasy technology
 
-=== RESPONSE FORMAT ===
+=== VERIFICATION ===
 
-Respond ONLY with valid JSON. Generate BOTH Korean and English for each idea:
-{{{{
-  "ideas": [
-    {{{{
-      "sort_order": 1,
-      "title_ko": "짧고 인상적인 한국어 제목",
-      "title_en": "Short catchy English title",
-      "summary_ko": "2-3문장. WHO+ACTION, DIFFERENCE, OUTCOME 필수 포함",
-      "summary_en": "2-3 sentences. WHO+ACTION, DIFFERENCE, OUTCOME required"
-    }}}}
-  ]
-}}}}
+Before outputting, re-read each idea. Verify it has all 3 summary elements and violates no anti-pattern. Fix any that fail."""
 
-- sort_order: 1-10, matching the combination numbers above
-- Korean and English versions should convey the SAME idea, not different ideas
-- Korean should feel natural (not translated), English should feel natural (not translated)
-- Each version should stand on its own as a compelling pitch"""
+    # ── User prompt (Task + dynamic data) ──
+
+    tier_instructions = {
+        "stable": "Create an idea that is FAITHFUL to these keywords. Immediately understandable. 'Of course this combination leads to this.'",
+        "expansion": "PUSH one keyword much harder than others. Stretch the interpretation. 'Same vein, different reading.'",
+        "pivot": "CHANGE the service format or business model entirely. If others are apps, make this an API or marketplace. 'I didn't expect this direction.'",
+        "rare": "EXPERIMENTAL and MEMORABLE. The most unexpected direction from these keywords. Something people would screenshot and share. Surprising but coherent.",
+    }
+
+    combo_sections = []
+    for combo in combos:
+        kw_list = ", ".join(f"{kw['en']} ({kw['category'].upper()})" for kw in combo["keywords"])
+        instruction = tier_instructions[combo["tier_type"]]
+
+        combo_sections.append(
+            f"=== Idea {combo['sort_order']} ===\n"
+            f"Keywords: {kw_list}\n"
+            f"Direction: {instruction}"
+        )
+
+    combos_text = "\n\n".join(combo_sections)
+
+    user_prompt = f"""=== COMBINATIONS ===
+
+{combos_text}
+
+Generate 10 ideas for the combinations above. Each idea must have sort_order, title_ko, title_en, summary_ko, summary_en."""
+
+    return system_prompt, user_prompt
