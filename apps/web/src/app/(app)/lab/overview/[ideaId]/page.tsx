@@ -4,7 +4,11 @@ import { use, useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { LabBackground } from "@/components/backgrounds/lab-background";
+import { Breadcrumb } from "@/components/shared/breadcrumb";
+import { ProgressSteps } from "@/components/shared/progress-steps";
+import { SectionCard } from "@/components/shared/section-card";
 import { vaultApi, labApi } from "@/lib/api";
 import type { Overview } from "@/types/api";
 
@@ -26,34 +30,53 @@ function LoadingState() {
     return () => timers.forEach(clearTimeout);
   }, []);
 
+  const progress = ((phaseIndex + 1) / LOADING_PHASES.length) * 100;
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center py-20">
-      <div className="mb-6 h-3 w-3 animate-pulse rounded-full bg-cold-cyan/60" />
+      {/* Progress bar */}
+      <div className="mb-6 h-1 w-48 overflow-hidden rounded-full bg-surface-2/60">
+        <div
+          className="h-full rounded-full bg-cold-cyan/60 transition-all duration-1000 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
       <p className="text-sm text-text-secondary transition-opacity duration-500">
         {LOADING_PHASES[phaseIndex].text}
+      </p>
+      <p className="mt-2 text-[11px] text-text-secondary/40">
+        {phaseIndex + 1} / {LOADING_PHASES.length}
       </p>
     </div>
   );
 }
 
-// --- Section card ---
+// --- Section group ---
 
-function OverviewSection({
-  title,
-  content,
+function SectionGroup({
+  label,
+  children,
+  delay = 0,
 }: {
-  title: string;
-  content: string;
+  label: string;
+  children: React.ReactNode;
+  delay?: number;
 }) {
   return (
-    <div className="rounded-lg border border-line-steel/20 bg-surface-1/40 p-4">
-      <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-cold-cyan/80">
-        {title}
-      </h4>
-      <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
-        {content}
-      </p>
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay }}
+      className="space-y-3"
+    >
+      <div className="flex items-center gap-3">
+        <span className="text-[11px] font-semibold uppercase tracking-widest text-text-secondary/40">
+          {label}
+        </span>
+        <div className="h-px flex-1 bg-line-steel/15" />
+      </div>
+      {children}
+    </motion.div>
   );
 }
 
@@ -88,28 +111,67 @@ function OverviewDisplay({
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-3">
-        <OverviewSection title="컨셉" content={overview.concept_ko} />
-        <OverviewSection title="문제 정의" content={overview.problem_ko} />
-        <OverviewSection title="타깃 사용자" content={overview.target_ko} />
-        <OverviewSection title="핵심 기능" content={overview.features_ko} />
-        <OverviewSection title="차별점" content={overview.differentiator_ko} />
-        <OverviewSection title="수익 모델" content={overview.revenue_ko} />
-        <OverviewSection title="MVP 범위" content={overview.mvp_scope_ko} />
-      </div>
+      {/* Vision */}
+      <SectionGroup label="Vision" delay={0}>
+        <SectionCard title="컨셉">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
+            {overview.concept_ko}
+          </p>
+        </SectionCard>
+        <SectionCard title="문제 정의">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
+            {overview.problem_ko}
+          </p>
+        </SectionCard>
+        <SectionCard title="타깃 사용자">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
+            {overview.target_ko}
+          </p>
+        </SectionCard>
+      </SectionGroup>
+
+      {/* Product */}
+      <SectionGroup label="Product" delay={0.1}>
+        <SectionCard title="핵심 기능">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
+            {overview.features_ko}
+          </p>
+        </SectionCard>
+        <SectionCard title="차별점">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
+            {overview.differentiator_ko}
+          </p>
+        </SectionCard>
+      </SectionGroup>
+
+      {/* Business */}
+      <SectionGroup label="Business" delay={0.2}>
+        <SectionCard title="수익 모델">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
+            {overview.revenue_ko}
+          </p>
+        </SectionCard>
+        <SectionCard title="MVP 범위">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
+            {overview.mvp_scope_ko}
+          </p>
+        </SectionCard>
+      </SectionGroup>
 
       {/* Actions */}
       <div className="flex flex-wrap items-center gap-3 border-t border-line-steel/20 pt-4">
+        {/* Primary */}
         <Link
           href={`/lab/appraisal/${overview.id}`}
-          className="rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-5 py-2.5 text-sm font-medium text-cold-cyan transition-all hover:bg-cold-cyan/20"
+          className="cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-5 py-2.5 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/20 hover:shadow-[0_0_20px_rgba(92,205,229,0.1)]"
         >
           감정 요청하기
         </Link>
+        {/* Secondary */}
         {fullOverviewQuery.data ? (
           <Link
             href={`/lab/full/${overview.id}`}
-            className="rounded-lg border border-line-steel/30 bg-surface-2/50 px-5 py-2.5 text-sm font-medium text-text-secondary transition-all hover:border-cold-cyan/20 hover:text-text-primary"
+            className="cursor-pointer rounded-lg border border-line-steel/30 bg-surface-2/50 px-5 py-2.5 text-sm font-medium text-text-secondary transition-all duration-200 hover:border-cold-cyan/20 hover:text-text-primary"
           >
             풀 개요 보기
           </Link>
@@ -119,9 +181,9 @@ function OverviewDisplay({
             onClick={() => fullOverviewMutation.mutate()}
             disabled={fullOverviewMutation.isPending}
             className={[
-              "rounded-lg border px-5 py-2.5 text-sm font-medium transition-all",
+              "cursor-pointer rounded-lg border px-5 py-2.5 text-sm font-medium transition-all duration-200",
               fullOverviewMutation.isPending
-                ? "cursor-not-allowed border-line-steel/20 bg-surface-2/30 text-text-secondary/50"
+                ? "cursor-not-allowed border-line-steel/20 bg-surface-2/30 text-text-secondary/50 opacity-50"
                 : "border-line-steel/30 bg-surface-2/50 text-text-secondary hover:border-cold-cyan/20 hover:text-text-primary",
             ].join(" ")}
           >
@@ -130,11 +192,12 @@ function OverviewDisplay({
               : "풀 개요 생성"}
           </button>
         )}
+        {/* Tertiary */}
         <Link
           href={`/vault/${ideaId}`}
-          className="rounded-lg border border-line-steel/30 bg-surface-2/50 px-5 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+          className="cursor-pointer rounded-lg border border-line-steel/20 bg-transparent px-5 py-2.5 text-sm text-text-secondary/70 transition-colors duration-200 hover:text-text-primary"
         >
-          금고로 돌아가기
+          금고로
         </Link>
       </div>
     </div>
@@ -142,6 +205,8 @@ function OverviewDisplay({
 }
 
 // --- Page ---
+
+const WORKFLOW_STEPS = ["Mine", "Vault", "개요", "감정", "풀 개요"];
 
 export default function LabOverviewPage({
   params,
@@ -181,34 +246,17 @@ export default function LabOverviewPage({
     <div className="relative flex min-h-0 flex-1">
       <LabBackground />
 
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
-        {/* Back link */}
-        <div className="mx-auto mb-6 w-full max-w-2xl">
-          <Link
-            href="/lab"
-            className="inline-flex items-center gap-1.5 text-sm text-text-secondary transition-colors hover:text-text-primary"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              className="text-current"
-            >
-              <path
-                d="M10 12L6 8L10 4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            실험실로 돌아가기
-          </Link>
-        </div>
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-2xl space-y-6">
+          {/* Breadcrumb */}
+          <Breadcrumb
+            items={[
+              { label: "Lab", href: "/lab" },
+              { label: "개요" },
+              ...(idea ? [{ label: idea.title_ko }] : []),
+            ]}
+          />
 
-        {/* Content */}
-        <div className="mx-auto w-full max-w-2xl flex-1">
           {isLoading ? (
             <div className="animate-pulse space-y-4">
               <div className="h-7 w-2/3 rounded bg-surface-2/60" />
@@ -225,13 +273,16 @@ export default function LabOverviewPage({
               </p>
               <Link
                 href="/vault"
-                className="mt-4 rounded-lg border border-line-steel bg-surface-2 px-5 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+                className="mt-4 cursor-pointer rounded-lg border border-line-steel bg-surface-2 px-5 py-2.5 text-sm font-medium text-text-secondary transition-colors duration-200 hover:text-text-primary"
               >
                 금고로 돌아가기
               </Link>
             </div>
           ) : (
-            <div className="space-y-6">
+            <>
+              {/* Progress steps */}
+              <ProgressSteps steps={WORKFLOW_STEPS} currentStep={2} />
+
               {/* Idea title */}
               <div>
                 <h2 className="text-xl font-bold text-text-primary">
@@ -258,7 +309,7 @@ export default function LabOverviewPage({
                   <button
                     type="button"
                     onClick={() => createMutation.mutate()}
-                    className="mt-3 rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-5 py-2.5 text-sm font-medium text-cold-cyan transition-all hover:bg-cold-cyan/20"
+                    className="mt-3 cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-5 py-2.5 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/20"
                   >
                     다시 시도
                   </button>
@@ -278,13 +329,13 @@ export default function LabOverviewPage({
                   <button
                     type="button"
                     onClick={() => createMutation.mutate()}
-                    className="rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-6 py-3 text-sm font-medium text-cold-cyan transition-all hover:bg-cold-cyan/20 hover:shadow-[0_0_20px_rgba(92,205,229,0.15)]"
+                    className="cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-6 py-3 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/20 hover:shadow-[0_0_20px_rgba(92,205,229,0.15)]"
                   >
                     개요 생성
                   </button>
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
       </div>

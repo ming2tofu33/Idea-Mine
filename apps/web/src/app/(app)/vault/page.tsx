@@ -3,9 +3,51 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
+import { Lock, Pickaxe, Trash2 } from "lucide-react";
 import { VaultBackground } from "@/components/backgrounds/vault-background";
+import { Breadcrumb } from "@/components/shared/breadcrumb";
+import { EmptyState } from "@/components/shared/empty-state";
 import { vaultApi } from "@/lib/api";
 import type { Idea } from "@/types/api";
+
+// --- Progress dots for workflow status ---
+
+const WORKFLOW_STEPS = ["원석", "개요", "감정", "풀 개요"] as const;
+
+function WorkflowDots({ hasOverview }: { hasOverview: boolean }) {
+  const current = hasOverview ? 1 : 0;
+
+  return (
+    <div className="flex items-center gap-1">
+      {WORKFLOW_STEPS.map((step, i) => (
+        <div key={step} className="flex items-center gap-1">
+          {i > 0 && (
+            <div
+              className={[
+                "h-px w-2",
+                i <= current ? "bg-cold-cyan/40" : "bg-line-steel/30",
+              ].join(" ")}
+            />
+          )}
+          <div
+            title={step}
+            className={[
+              "h-1.5 w-1.5 rounded-full transition-colors duration-200",
+              i < current
+                ? "bg-cold-cyan/60"
+                : i === current
+                  ? "bg-cold-cyan"
+                  : "bg-line-steel/30",
+            ].join(" ")}
+          />
+        </div>
+      ))}
+      <span className="ml-1.5 text-[10px] text-text-secondary/60">
+        {hasOverview ? "개요 완료" : "원석"}
+      </span>
+    </div>
+  );
+}
 
 // --- Skeleton ---
 
@@ -36,69 +78,60 @@ function VaultIdeaCard({
   onDelete: (id: string) => void;
   isDeleting: boolean;
 }) {
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
-    <div className="group rounded-xl border border-line-steel/30 bg-surface-1/50 p-5 backdrop-blur-sm transition-all duration-200 hover:border-cold-cyan/20 hover:bg-surface-1/70">
-      <div className="mb-1 flex items-start justify-between gap-2">
-        <Link
-          href={`/vault/${idea.id}`}
-          className="flex-1 text-base font-semibold text-text-primary transition-colors hover:text-cold-cyan"
-        >
-          {idea.title_ko}
-        </Link>
-        {hasOverview && (
-          <span className="shrink-0 rounded-full border border-cold-cyan/30 bg-cold-cyan/10 px-2 py-0.5 text-[10px] font-medium text-cold-cyan">
-            개요 완료
-          </span>
+    <Link
+      href={`/vault/${idea.id}`}
+      className="group relative flex cursor-pointer flex-col rounded-xl border border-line-steel/30 bg-surface-1/50 p-5 backdrop-blur-sm transition-all duration-200 hover:border-cold-cyan/20 hover:bg-surface-1/70 motion-safe:hover:-translate-y-0.5"
+    >
+      {/* Delete button — top-right, hover-visible */}
+      <div
+        className="absolute right-3 top-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+        onClick={(e) => e.preventDefault()}
+      >
+        {confirmDelete ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete(idea.id);
+            }}
+            disabled={isDeleting}
+            className="cursor-pointer rounded px-2 py-1 text-[11px] font-medium text-red-400 transition-colors hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isDeleting ? "..." : "삭제?"}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setConfirmDelete(true);
+              setTimeout(() => setConfirmDelete(false), 3000);
+            }}
+            className="cursor-pointer rounded p-1 text-text-secondary/40 transition-colors hover:text-red-400"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
         )}
       </div>
 
-      <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-text-secondary">
+      {/* Title */}
+      <h3 className="mb-1 pr-8 text-base font-semibold text-text-primary transition-colors group-hover:text-cold-cyan">
+        {idea.title_ko}
+      </h3>
+
+      {/* Summary */}
+      <p className="mb-4 line-clamp-2 flex-1 text-sm leading-relaxed text-text-secondary">
         {idea.summary_ko}
       </p>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link
-            href={`/lab/overview/${idea.id}`}
-            className="text-xs text-cold-cyan/70 transition-colors hover:text-cold-cyan"
-          >
-            Lab으로 보내기
-          </Link>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {showConfirm ? (
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => onDelete(idea.id)}
-                disabled={isDeleting}
-                className="rounded px-2 py-0.5 text-xs text-red-400 transition-colors hover:bg-red-400/10"
-              >
-                {isDeleting ? "삭제 중..." : "확인"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowConfirm(false)}
-                className="rounded px-2 py-0.5 text-xs text-text-secondary transition-colors hover:text-text-primary"
-              >
-                취소
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowConfirm(true)}
-              className="rounded px-2 py-0.5 text-xs text-text-secondary/50 opacity-0 transition-all hover:text-red-400 group-hover:opacity-100"
-            >
-              삭제
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+      {/* Bottom: workflow progress */}
+      <WorkflowDots hasOverview={hasOverview} />
+    </Link>
   );
 }
 
@@ -149,11 +182,21 @@ export default function VaultPage() {
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mx-auto mb-6 w-full max-w-4xl">
-          <h2 className="text-xl font-bold text-text-primary">The Vault</h2>
-          <p className="mt-1 text-sm text-text-secondary">
-            채굴한 아이디어를 보관하고 관리하는 공간
-          </p>
+        <div className="mx-auto mb-6 w-full max-w-4xl space-y-3">
+          <Breadcrumb items={[{ label: "Vault" }]} />
+          <div className="flex items-baseline justify-between">
+            <div>
+              <h2 className="text-xl font-bold text-text-primary">The Vault</h2>
+              <p className="mt-1 text-sm text-text-secondary">
+                채굴한 아이디어를 보관하고 관리하는 공간
+              </p>
+            </div>
+            {ideas && ideas.length > 0 && (
+              <span className="text-xs text-text-secondary/60">
+                {ideas.length}개의 아이디어
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Content */}
@@ -189,31 +232,20 @@ export default function VaultPage() {
               ))}
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <div className="mb-4 text-4xl opacity-30">
-                <svg
-                  width="48"
-                  height="48"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1"
-                  className="text-text-secondary"
+            <EmptyState
+              icon={<Lock className="h-12 w-12" />}
+              title="금고가 비어있어요"
+              description="Mine에서 아이디어를 채굴해보세요"
+              action={
+                <Link
+                  href="/mine"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-line-steel bg-surface-2 px-5 py-2.5 text-sm font-medium text-text-secondary transition-all duration-200 hover:border-cold-cyan/30 hover:text-text-primary"
                 >
-                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                </svg>
-              </div>
-              <p className="text-sm text-text-secondary">
-                아직 금고에 저장된 아이디어가 없습니다
-              </p>
-              <Link
-                href="/mine"
-                className="mt-4 rounded-lg border border-line-steel bg-surface-2 px-5 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:border-cold-cyan/30 hover:text-text-primary"
-              >
-                광산에서 채굴하기
-              </Link>
-            </div>
+                  <Pickaxe className="h-4 w-4" />
+                  광산에서 채굴하기
+                </Link>
+              }
+            />
           )}
         </div>
       </div>

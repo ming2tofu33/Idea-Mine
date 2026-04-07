@@ -1,9 +1,13 @@
 "use client";
 
-import { use, useState, useEffect, useCallback } from "react";
+import { use, useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
 import { LabBackground } from "@/components/backgrounds/lab-background";
+import { Breadcrumb } from "@/components/shared/breadcrumb";
+import { SectionCard } from "@/components/shared/section-card";
 import { labApi } from "@/lib/api";
 import type { FullOverview } from "@/types/api";
 
@@ -25,34 +29,54 @@ function LoadingState() {
     return () => timers.forEach(clearTimeout);
   }, []);
 
+  const progress = ((phaseIndex + 1) / LOADING_PHASES.length) * 100;
+
   return (
     <div className="flex flex-1 flex-col items-center justify-center py-20">
-      <div className="mb-6 h-3 w-3 animate-pulse rounded-full bg-cold-cyan/60" />
+      <div className="mb-6 h-1 w-48 overflow-hidden rounded-full bg-surface-2/60">
+        <div
+          className="h-full rounded-full bg-cold-cyan/60 transition-all duration-1000 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
       <p className="text-sm text-text-secondary transition-opacity duration-500">
         {LOADING_PHASES[phaseIndex].text}
+      </p>
+      <p className="mt-2 text-[11px] text-text-secondary/40">
+        {phaseIndex + 1} / {LOADING_PHASES.length}
       </p>
     </div>
   );
 }
 
-// --- Section components ---
+// --- Copy button for code blocks ---
 
-function SectionCard({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [text]);
+
   return (
-    <div className="rounded-lg border border-line-steel/20 bg-surface-1/40 p-4">
-      <h4 className="mb-2 text-xs font-semibold uppercase tracking-wider text-cold-cyan/80">
-        {title}
-      </h4>
-      {children}
-    </div>
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="absolute right-2 top-2 cursor-pointer rounded border border-line-steel/20 bg-surface-2/60 p-1.5 text-text-secondary/40 transition-all duration-200 hover:border-cold-cyan/20 hover:text-text-primary"
+      title="복사"
+    >
+      {copied ? (
+        <Check className="h-3 w-3 text-cold-cyan" />
+      ) : (
+        <Copy className="h-3 w-3" />
+      )}
+    </button>
   );
 }
+
+// --- Section components ---
 
 function TextSection({ title, content }: { title: string; content: string }) {
   return (
@@ -123,9 +147,12 @@ function CodeBlockSection({
 }) {
   return (
     <SectionCard title={title}>
-      <pre className="overflow-x-auto rounded-md bg-bg-deep/80 p-3 text-xs font-mono text-text-secondary">
-        {content}
-      </pre>
+      <div className="relative">
+        <CopyButton text={content} />
+        <pre className="overflow-x-auto rounded-md bg-bg-deep/80 p-3 pr-10 font-mono text-xs text-text-secondary">
+          {content}
+        </pre>
+      </div>
     </SectionCard>
   );
 }
@@ -149,6 +176,110 @@ function TechStackSection({
         ))}
       </div>
     </SectionCard>
+  );
+}
+
+// --- Table of contents ---
+
+interface TocItem {
+  id: string;
+  label: string;
+  group: string;
+}
+
+const TOC_ITEMS: TocItem[] = [
+  { id: "concept", label: "컨셉", group: "VISION" },
+  { id: "problem", label: "문제 정의", group: "VISION" },
+  { id: "target", label: "타깃 사용자", group: "VISION" },
+  { id: "features-must", label: "필수 기능", group: "PRODUCT" },
+  { id: "features-should", label: "권장 기능", group: "PRODUCT" },
+  { id: "features-later", label: "향후 기능", group: "PRODUCT" },
+  { id: "user-flow", label: "사용자 흐름", group: "PRODUCT" },
+  { id: "screens", label: "화면 목록", group: "PRODUCT" },
+  { id: "business-model", label: "비즈니스 모델", group: "BUSINESS" },
+  { id: "business-rules", label: "비즈니스 규칙", group: "BUSINESS" },
+  { id: "mvp-scope", label: "MVP 범위", group: "BUSINESS" },
+  { id: "tech-stack", label: "기술 스택", group: "TECH" },
+  { id: "data-model", label: "데이터 모델", group: "TECH" },
+  { id: "api-endpoints", label: "API 엔드포인트", group: "TECH" },
+  { id: "file-structure", label: "파일 구조", group: "TECH" },
+  { id: "external-services", label: "외부 서비스", group: "TECH" },
+  { id: "auth-flow", label: "인증 흐름", group: "TECH" },
+];
+
+function TableOfContents({
+  activeId,
+  onSelect,
+}: {
+  activeId: string;
+  onSelect: (id: string) => void;
+}) {
+  const [collapsed, setCollapsed] = useState(false);
+  const groups = ["VISION", "PRODUCT", "BUSINESS", "TECH"];
+
+  return (
+    <nav className="space-y-1">
+      {/* Mobile toggle */}
+      <button
+        type="button"
+        onClick={() => setCollapsed(!collapsed)}
+        className="flex w-full cursor-pointer items-center justify-between rounded-lg border border-line-steel/20 bg-surface-1/50 px-3 py-2 text-xs font-medium text-text-secondary lg:hidden"
+      >
+        목차
+        {collapsed ? (
+          <ChevronDown className="h-3.5 w-3.5" />
+        ) : (
+          <ChevronUp className="h-3.5 w-3.5" />
+        )}
+      </button>
+
+      <div
+        className={[
+          "space-y-3 overflow-hidden transition-all duration-200",
+          collapsed ? "max-h-0 lg:max-h-none" : "max-h-[800px]",
+        ].join(" ")}
+      >
+        {groups.map((group) => {
+          const items = TOC_ITEMS.filter((t) => t.group === group);
+          return (
+            <div key={group}>
+              <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-text-secondary/30">
+                {group}
+              </p>
+              {items.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onSelect(item.id)}
+                  className={[
+                    "block w-full cursor-pointer rounded px-2 py-1 text-left text-[12px] transition-colors duration-200",
+                    activeId === item.id
+                      ? "bg-cold-cyan/5 font-medium text-cold-cyan"
+                      : "text-text-secondary/60 hover:text-text-primary",
+                  ].join(" ")}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
+// --- Section group divider ---
+
+function GroupDivider({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-4 py-2">
+      <div className="h-px flex-1 bg-line-steel/20" />
+      <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-text-secondary/30">
+        {label}
+      </span>
+      <div className="h-px flex-1 bg-line-steel/20" />
+    </div>
   );
 }
 
@@ -247,6 +378,8 @@ function formatAsMarkdown(fo: FullOverview): string {
 
 function FullOverviewDisplay({ data }: { data: FullOverview }) {
   const [copied, setCopied] = useState(false);
+  const [activeSection, setActiveSection] = useState("concept");
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   const handleCopy = useCallback(async () => {
     const md = formatAsMarkdown(data);
@@ -255,68 +388,177 @@ function FullOverviewDisplay({ data }: { data: FullOverview }) {
     setTimeout(() => setCopied(false), 2000);
   }, [data]);
 
+  // Scroll spy
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveSection(entry.target.id);
+            break;
+          }
+        }
+      },
+      { rootMargin: "-20% 0px -60% 0px" },
+    );
+
+    Object.values(sectionRefs.current).forEach((el) => {
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollTo = (id: string) => {
+    const el = sectionRefs.current[id];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const setRef = (id: string) => (el: HTMLDivElement | null) => {
+    sectionRefs.current[id] = el;
+  };
+
   return (
-    <div className="space-y-8">
-      {/* Copy button */}
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="rounded-lg border border-line-steel/30 bg-surface-2/50 px-4 py-2 text-xs font-medium text-text-secondary transition-all hover:border-cold-cyan/20 hover:text-text-primary"
+    <div className="flex gap-8">
+      {/* Sidebar TOC — sticky on desktop */}
+      <aside className="hidden w-44 shrink-0 lg:block">
+        <div className="sticky top-6">
+          <TableOfContents activeId={activeSection} onSelect={scrollTo} />
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div className="min-w-0 flex-1 space-y-8">
+        {/* Copy all button + mobile TOC */}
+        <div className="space-y-3">
+          <div className="lg:hidden">
+            <TableOfContents activeId={activeSection} onSelect={scrollTo} />
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-text-secondary/40">
+              {TOC_ITEMS.length}개 섹션
+            </p>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-cold-cyan/20 bg-surface-1/50 px-4 py-2 text-xs font-medium text-cold-cyan/80 transition-all duration-200 hover:border-cold-cyan/40 hover:text-cold-cyan"
+            >
+              {copied ? (
+                <>
+                  <Check className="h-3.5 w-3.5" />
+                  복사됨!
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3.5 w-3.5" />
+                  전체 마크다운 복사
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* VISION */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0 }}
+          className="space-y-3"
         >
-          {copied ? "복사됨!" : "복사하기"}
-        </button>
-      </div>
+          <GroupDivider label="Vision" />
+          <div ref={setRef("concept")} id="concept">
+            <TextSection title="컨셉" content={data.concept} />
+          </div>
+          <div ref={setRef("problem")} id="problem">
+            <TextSection title="문제 정의" content={data.problem} />
+          </div>
+          <div ref={setRef("target")} id="target">
+            <TextSection title="타깃 사용자" content={data.target_user} />
+          </div>
+        </motion.div>
 
-      {/* Narrative Block */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <h3 className="text-lg font-bold text-text-primary">내러티브</h3>
-          <div className="h-px flex-1 bg-line-steel/20" />
-        </div>
+        {/* PRODUCT */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.1 }}
+          className="space-y-3"
+        >
+          <GroupDivider label="Product" />
+          <div ref={setRef("features-must")} id="features-must">
+            <BulletListSection title="필수 기능" items={data.features_must} />
+          </div>
+          <div ref={setRef("features-should")} id="features-should">
+            <BulletListSection title="권장 기능" items={data.features_should} />
+          </div>
+          <div ref={setRef("features-later")} id="features-later">
+            <BulletListSection title="향후 기능" items={data.features_later} />
+          </div>
+          <div ref={setRef("user-flow")} id="user-flow">
+            <NumberedListSection title="사용자 흐름" items={data.user_flow} />
+          </div>
+          <div ref={setRef("screens")} id="screens">
+            <BulletListSection title="화면 목록" items={data.screens} />
+          </div>
+        </motion.div>
 
-        {/* Vision */}
-        <div className="space-y-3">
-          <TextSection title="컨셉" content={data.concept} />
-          <TextSection title="문제 정의" content={data.problem} />
-          <TextSection title="타깃 사용자" content={data.target_user} />
-        </div>
+        {/* BUSINESS */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.2 }}
+          className="space-y-3"
+        >
+          <GroupDivider label="Business" />
+          <div ref={setRef("business-model")} id="business-model">
+            <TextSection title="비즈니스 모델" content={data.business_model} />
+          </div>
+          <div ref={setRef("business-rules")} id="business-rules">
+            <BulletListSection
+              title="비즈니스 규칙"
+              items={data.business_rules}
+            />
+          </div>
+          <div ref={setRef("mvp-scope")} id="mvp-scope">
+            <TextSection title="MVP 범위" content={data.mvp_scope} />
+          </div>
+        </motion.div>
 
-        {/* Product */}
-        <div className="space-y-3">
-          <BulletListSection title="필수 기능" items={data.features_must} />
-          <BulletListSection title="권장 기능" items={data.features_should} />
-          <BulletListSection title="향후 기능" items={data.features_later} />
-          <NumberedListSection title="사용자 흐름" items={data.user_flow} />
-          <BulletListSection title="화면 목록" items={data.screens} />
-        </div>
-
-        {/* Business */}
-        <div className="space-y-3">
-          <TextSection title="비즈니스 모델" content={data.business_model} />
-          <BulletListSection title="비즈니스 규칙" items={data.business_rules} />
-          <TextSection title="MVP 범위" content={data.mvp_scope} />
-        </div>
-      </div>
-
-      {/* Technical Block */}
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          <h3 className="text-lg font-bold text-text-primary">기술</h3>
-          <div className="h-px flex-1 bg-line-steel/20" />
-        </div>
-
-        <div className="space-y-3">
-          <TechStackSection title="기술 스택" stack={data.tech_stack} />
-          <CodeBlockSection title="데이터 모델" content={data.data_model_sql} />
-          <BulletListSection title="API 엔드포인트" items={data.api_endpoints} />
-          <CodeBlockSection title="파일 구조" content={data.file_structure} />
-          <BulletListSection
-            title="외부 서비스"
-            items={data.external_services}
-          />
-          <NumberedListSection title="인증 흐름" items={data.auth_flow} />
-        </div>
+        {/* TECH */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.3 }}
+          className="space-y-3"
+        >
+          <GroupDivider label="Tech" />
+          <div ref={setRef("tech-stack")} id="tech-stack">
+            <TechStackSection title="기술 스택" stack={data.tech_stack} />
+          </div>
+          <div ref={setRef("data-model")} id="data-model">
+            <CodeBlockSection title="데이터 모델" content={data.data_model_sql} />
+          </div>
+          <div ref={setRef("api-endpoints")} id="api-endpoints">
+            <BulletListSection
+              title="API 엔드포인트"
+              items={data.api_endpoints}
+            />
+          </div>
+          <div ref={setRef("file-structure")} id="file-structure">
+            <CodeBlockSection title="파일 구조" content={data.file_structure} />
+          </div>
+          <div ref={setRef("external-services")} id="external-services">
+            <BulletListSection
+              title="외부 서비스"
+              items={data.external_services}
+            />
+          </div>
+          <div ref={setRef("auth-flow")} id="auth-flow">
+            <NumberedListSection title="인증 흐름" items={data.auth_flow} />
+          </div>
+        </motion.div>
       </div>
     </div>
   );
@@ -355,33 +597,13 @@ export default function FullOverviewPage({
       <LabBackground />
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
-        {/* Back link */}
-        <div className="mx-auto mb-6 w-full max-w-2xl">
-          <Link
-            href="/lab"
-            className="inline-flex items-center gap-1.5 text-sm text-text-secondary transition-colors hover:text-text-primary"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              className="text-current"
-            >
-              <path
-                d="M10 12L6 8L10 4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            실험실로 돌아가기
-          </Link>
-        </div>
+        <div className="mx-auto w-full max-w-4xl space-y-6 pb-8">
+          {/* Breadcrumb */}
+          <Breadcrumb
+            items={[{ label: "Lab", href: "/lab" }, { label: "풀 개요" }]}
+          />
 
-        {/* Content */}
-        <div className="mx-auto w-full max-w-2xl flex-1 pb-8">
+          {/* Content */}
           {isLoading ? (
             <div className="animate-pulse space-y-4">
               <div className="h-7 w-2/3 rounded bg-surface-2/60" />
@@ -406,7 +628,7 @@ export default function FullOverviewPage({
               <button
                 type="button"
                 onClick={() => createMutation.mutate()}
-                className="mt-3 rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-5 py-2.5 text-sm font-medium text-cold-cyan transition-all hover:bg-cold-cyan/20"
+                className="mt-3 cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-5 py-2.5 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/20"
               >
                 다시 시도
               </button>
@@ -421,7 +643,7 @@ export default function FullOverviewPage({
               <button
                 type="button"
                 onClick={() => createMutation.mutate()}
-                className="rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-6 py-3 text-sm font-medium text-cold-cyan transition-all hover:bg-cold-cyan/20 hover:shadow-[0_0_20px_rgba(92,205,229,0.15)]"
+                className="cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-6 py-3 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/20 hover:shadow-[0_0_20px_rgba(92,205,229,0.15)]"
               >
                 풀 개요 생성
               </button>
