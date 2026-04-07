@@ -7,9 +7,9 @@ from supabase import Client
 _request_counts: dict[str, list[float]] = {}
 
 TIER_LIMITS = {
-    "free": {"rerolls": 2, "generations": 1},
-    "lite": {"rerolls": 10, "generations": 5},
-    "pro": {"rerolls": 20, "generations": 50},
+    "free": {"rerolls": 2, "generations": 1, "overviews": 3},
+    "lite": {"rerolls": 10, "generations": 5, "overviews": 10},
+    "pro": {"rerolls": 20, "generations": 50, "overviews": 30},
 }
 
 
@@ -103,6 +103,15 @@ async def check_daily_limit_l2(
                 detail={
                     "error": "daily_limit",
                     "message": "오늘의 채굴 에너지를 모두 사용했습니다. 내일 광맥이 새로 열립니다",
+                },
+            )
+    elif action == "overview":
+        if state.get("overviews_used", 0) >= limits["overviews"]:
+            raise HTTPException(
+                status_code=429,
+                detail={
+                    "error": "daily_limit",
+                    "message": "오늘의 문서 생성 한도에 도달했습니다",
                 },
             )
 

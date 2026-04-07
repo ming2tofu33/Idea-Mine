@@ -72,6 +72,7 @@ async def generate_full_overview(
     )
 
     # ── Step 1: 축 분류 (gpt-5-nano) ──
+    print(f"[full_overview] Step 1: axes classification starting...")
     axes_start = time.time()
     axes_sys, axes_user = build_axes_prompt(
         concept=concept,
@@ -113,6 +114,8 @@ async def generate_full_overview(
         source=source,
     )
 
+    print(f"[full_overview] Step 1 done: {axes} ({axes_elapsed}ms)")
+
     # ── Step 2: 섹션 가중치 생성 (Python) ──
     depth_guide = build_depth_guide(
         axes["interface_complexity"],
@@ -121,6 +124,7 @@ async def generate_full_overview(
     )
 
     # ── Step 3: 풀 개요 생성 (gpt-5, depth guide 포함) ──
+    print(f"[full_overview] Step 3: generation starting (model={MODEL})...")
     gen_start = time.time()
     system_prompt, user_prompt = build_full_overview_prompt(
         concept=concept,
