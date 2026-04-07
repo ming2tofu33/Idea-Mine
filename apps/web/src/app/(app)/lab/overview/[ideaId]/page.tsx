@@ -12,40 +12,196 @@ import { SectionCard } from "@/components/shared/section-card";
 import { vaultApi, labApi } from "@/lib/api";
 import type { Overview } from "@/types/api";
 
-// --- Loading phases ---
+// --- Loading state ---
 
-const LOADING_PHASES = [
-  { text: "아이디어를 분석하는 중...", delay: 0 },
-  { text: "개요를 작성하는 중...", delay: 4000 },
-  { text: "마무리 검토 중...", delay: 8000 },
+const LOADING_MESSAGES = [
+  { text: "아이디어를 분석하는 중...", at: 0 },
+  { text: "키워드 조합을 해석하는 중...", at: 3000 },
+  { text: "시장 데이터를 수집하는 중...", at: 7000 },
+  { text: "문제 정의를 작성하는 중...", at: 12000 },
+  { text: "핵심 기능을 설계하는 중...", at: 18000 },
+  { text: "비즈니스 모델을 구성하는 중...", at: 25000 },
+  { text: "MVP 범위를 정리하는 중...", at: 32000 },
+];
+
+const WAITING_MESSAGES = [
+  "거의 다 됐어요...",
+  "마지막 문단을 다듬는 중...",
+  "품질을 검토하는 중...",
+  "읽기 좋게 정리하는 중...",
+  "조금만 더 기다려주세요...",
 ];
 
 function LoadingState() {
-  const [phaseIndex, setPhaseIndex] = useState(0);
+  const [messageIndex, setMessageIndex] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const [waitingIndex, setWaitingIndex] = useState(0);
+  const [dots, setDots] = useState("");
 
+  // Elapsed timer (100ms intervals for smooth progress)
   useEffect(() => {
-    const timers = LOADING_PHASES.slice(1).map((phase, i) =>
-      setTimeout(() => setPhaseIndex(i + 1), phase.delay),
+    const interval = setInterval(() => {
+      setElapsed((prev) => prev + 100);
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Phase message transitions
+  useEffect(() => {
+    const timers = LOADING_MESSAGES.slice(1).map((msg, i) =>
+      setTimeout(() => setMessageIndex(i + 1), msg.at),
     );
     return () => timers.forEach(clearTimeout);
   }, []);
 
-  const progress = ((phaseIndex + 1) / LOADING_PHASES.length) * 100;
+  // Waiting message rotation (after all phases done)
+  const allPhasesDone = elapsed > LOADING_MESSAGES[LOADING_MESSAGES.length - 1].at + 5000;
+
+  useEffect(() => {
+    if (!allPhasesDone) return;
+    const interval = setInterval(() => {
+      setWaitingIndex((prev) => (prev + 1) % WAITING_MESSAGES.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [allPhasesDone]);
+
+  // Animated dots
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDots((prev) => (prev.length >= 3 ? "" : prev + "."));
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Progress: fast at start, slows down, never reaches 100%
+  // Uses logarithmic curve: fast initially, asymptotically approaches 95%
+  // 40초 기준: 10초→30%, 20초→50%, 35초→70%, 60초→85%
+  const progressPercent = Math.min(93, 25 * Math.log(1 + elapsed / 12000) * 10);
+
+  const displayMessage = allPhasesDone
+    ? WAITING_MESSAGES[waitingIndex]
+    : LOADING_MESSAGES[messageIndex].text;
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center py-20">
-      {/* Progress bar */}
-      <div className="mb-6 h-1 w-48 overflow-hidden rounded-full bg-surface-2/60">
+      {/* Pulsing orb */}
+      <div className="relative mb-8">
+        <div className="h-4 w-4 rounded-full bg-cold-cyan/60 shadow-[0_0_20px_rgba(92,205,229,0.3)]" />
+        <div className="absolute inset-0 animate-ping rounded-full bg-cold-cyan/20" />
+      </div>
+
+      {/* Progress bar — never stops moving */}
+      <div className="mb-6 h-1 w-56 overflow-hidden rounded-full bg-surface-2/40">
         <div
-          className="h-full rounded-full bg-cold-cyan/60 transition-all duration-1000 ease-out"
-          style={{ width: `${progress}%` }}
+          className="h-full rounded-full bg-gradient-to-r from-cold-cyan/40 via-cold-cyan/70 to-cold-cyan/40"
+          style={{
+            width: `${progressPercent}%`,
+            transition: "width 0.3s ease-out",
+          }}
         />
       </div>
-      <p className="text-sm text-text-secondary transition-opacity duration-500">
-        {LOADING_PHASES[phaseIndex].text}
+
+      {/* Message */}
+      <p className="h-5 text-sm text-text-secondary">
+        {displayMessage}
       </p>
-      <p className="mt-2 text-[11px] text-text-secondary/40">
-        {phaseIndex + 1} / {LOADING_PHASES.length}
+
+      {/* Elapsed time + dots */}
+      <p className="mt-2 text-[11px] text-text-secondary/30">
+        {Math.floor(elapsed / 1000)}초 경과{dots}
+      </p>
+    </div>
+  );
+}
+
+// --- Full overview loading ---
+
+const FULL_OVERVIEW_MESSAGES = [
+  { text: "제품 구조를 분석하는 중...", at: 0 },
+  { text: "비전과 문제를 정의하는 중...", at: 5000 },
+  { text: "핵심 기능을 설계하는 중...", at: 12000 },
+  { text: "사용자 흐름을 구성하는 중...", at: 20000 },
+  { text: "기술 스택을 선정하는 중...", at: 28000 },
+  { text: "데이터 모델을 설계하는 중...", at: 36000 },
+  { text: "API 엔드포인트를 정의하는 중...", at: 44000 },
+  { text: "문서를 최종 검토하는 중...", at: 52000 },
+];
+
+const FULL_OVERVIEW_WAITING = [
+  "거의 완성됐어요...",
+  "15개 섹션을 교차 검증하는 중...",
+  "마지막 품질 점검 중...",
+  "조금만 더 기다려주세요...",
+];
+
+function FullOverviewLoading() {
+  const [messageIndex, setMessageIndex] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+  const [waitingIndex, setWaitingIndex] = useState(0);
+  const [dots, setDots] = useState("");
+
+  useEffect(() => {
+    const interval = setInterval(() => setElapsed((p) => p + 100), 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const timers = FULL_OVERVIEW_MESSAGES.slice(1).map((msg, i) =>
+      setTimeout(() => setMessageIndex(i + 1), msg.at),
+    );
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
+  const allDone = elapsed > FULL_OVERVIEW_MESSAGES[FULL_OVERVIEW_MESSAGES.length - 1].at + 5000;
+
+  useEffect(() => {
+    if (!allDone) return;
+    const interval = setInterval(() => {
+      setWaitingIndex((p) => (p + 1) % FULL_OVERVIEW_WAITING.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [allDone]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setDots((p) => (p.length >= 3 ? "" : p + "."));
+    }, 500);
+    return () => clearInterval(interval);
+  }, []);
+
+  // 60초 기준: 10초→25%, 30초→55%, 50초→75%, 90초→90%
+  const progress = Math.min(93, 30 * Math.log(1 + elapsed / 20000) * 10);
+  const displayMessage = allDone
+    ? FULL_OVERVIEW_WAITING[waitingIndex]
+    : FULL_OVERVIEW_MESSAGES[messageIndex].text;
+
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center py-20">
+      <div className="relative mb-6">
+        <div className="h-5 w-5 rounded-full bg-cold-cyan/50 shadow-[0_0_30px_rgba(92,205,229,0.4)]" />
+        <div className="absolute inset-0 animate-ping rounded-full bg-cold-cyan/20" />
+      </div>
+
+      <h3 className="mb-4 text-base font-semibold text-text-primary">
+        풀 개요서 생성 중
+      </h3>
+
+      <div className="mb-4 h-1 w-64 overflow-hidden rounded-full bg-surface-2/40">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-cold-cyan/40 via-cold-cyan/70 to-cold-cyan/40"
+          style={{ width: `${progress}%`, transition: "width 0.3s ease-out" }}
+        />
+      </div>
+
+      <p className="h-5 text-sm text-text-secondary">{displayMessage}</p>
+
+      <p className="mt-2 text-[11px] text-text-secondary/30">
+        {Math.floor(elapsed / 1000)}초 경과{dots}
+      </p>
+
+      <p className="mt-6 max-w-xs text-center text-[11px] text-text-secondary/30">
+        Narrative 9섹션 + Technical 6섹션을 한 번에 생성합니다.
+        보통 30~60초 정도 소요됩니다.
       </p>
     </div>
   );
@@ -108,6 +264,39 @@ function OverviewDisplay({
       router.push(`/lab/full/${overview.id}`);
     },
   });
+
+  // Show full-screen loading when generating full overview
+  if (fullOverviewMutation.isPending) {
+    return <FullOverviewLoading />;
+  }
+
+  // Show error state for full overview generation
+  if (fullOverviewMutation.isError) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center py-20 text-center">
+        <p className="text-sm text-red-400">풀 개요 생성에 실패했습니다</p>
+        <p className="mt-1 text-xs text-text-secondary/60">
+          {fullOverviewMutation.error instanceof Error
+            ? fullOverviewMutation.error.message
+            : "알 수 없는 오류"}
+        </p>
+        <div className="mt-4 flex gap-3">
+          <button
+            onClick={() => fullOverviewMutation.mutate()}
+            className="cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-5 py-2.5 text-sm font-medium text-cold-cyan transition-all hover:bg-cold-cyan/20"
+          >
+            다시 시도
+          </button>
+          <button
+            onClick={() => fullOverviewMutation.reset()}
+            className="cursor-pointer rounded-lg border border-line-steel/30 bg-surface-2/50 px-5 py-2.5 text-sm text-text-secondary transition-all hover:text-text-primary"
+          >
+            돌아가기
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

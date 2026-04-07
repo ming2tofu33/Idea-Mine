@@ -2,6 +2,7 @@ def build_full_overview_prompt(
     concept: dict,
     light_overview: dict,
     market_research: str,
+    depth_guide: str = "",
 ) -> tuple[str, str]:
     """풀 개요서: 서술 + 기술 블록을 하나의 프롬프트로 생성.
 
@@ -162,6 +163,36 @@ Add [REVIEW], [DRAFT], or [READY] label to each section title.
 15. AUTH FLOW
     Authentication flow step-by-step (5-8 steps):
     - Sign up method, login flow, token management, free vs paid tier"""
+
+    if depth_guide:
+        user_prompt = f"""{user_prompt}
+
+{depth_guide}"""
+
+    return system_prompt, user_prompt
+
+
+def build_full_overview_prompt_with_feedback(
+    concept: dict,
+    light_overview: dict,
+    market_research: str,
+    depth_guide: str,
+    previous_output: str,
+    critique_feedback: str,
+) -> tuple[str, str]:
+    """재생성용 프롬프트. 이전 출력 + 비평 피드백 포함."""
+
+    system_prompt, base_user = build_full_overview_prompt(
+        concept, light_overview, market_research, depth_guide
+    )
+
+    user_prompt = f"""{base_user}
+
+## REVIEWER FEEDBACK (MUST address these issues):
+{critique_feedback}
+
+## PREVIOUS OUTPUT (improve upon this, don't start from scratch):
+{previous_output}"""
 
     return system_prompt, user_prompt
 

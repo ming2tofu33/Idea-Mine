@@ -49,7 +49,6 @@ async def generate_ideas(
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            temperature=0.9,
             response_format=MiningResponse,
         )
 

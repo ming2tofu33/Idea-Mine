@@ -54,7 +54,7 @@ async def generate_appraisal(
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            temperature=0.7,
+
             response_format=schema,
         )
         elapsed_ms = int((time.time() - start_time) * 1000)

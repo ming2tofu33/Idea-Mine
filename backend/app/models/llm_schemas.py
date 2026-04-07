@@ -94,9 +94,29 @@ class FullOverviewResponse(BaseModel):
     business_rules: list[str]
     mvp_scope: str
     # Technical
-    tech_stack: dict[str, str]
+    tech_stack: list[str]
     data_model_sql: str
     api_endpoints: list[str]
     file_structure: str
     external_services: list[str]
     auth_flow: list[str]
+
+
+# --- Axes Classification ---
+
+class IdeaAxesResponse(BaseModel):
+    interface_complexity: Literal["high", "medium", "low"]
+    business_complexity: Literal["high", "medium", "low"]
+    technical_complexity: Literal["high", "medium", "low"]
+    reasoning: str
+
+
+# --- Self-Critique ---
+
+class CritiqueResponse(BaseModel):
+    score: int
+    needs_regeneration: bool
+    depth_match: str
+    actionability: str
+    consistency: str
+    feedback: str

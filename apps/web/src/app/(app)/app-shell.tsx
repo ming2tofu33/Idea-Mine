@@ -74,6 +74,10 @@ export function AppShell({
 
       <main className="flex flex-1 flex-col">{children}</main>
 
+      {/* DEBUG: profile 확인 */}
+      <div className="fixed bottom-20 left-6 z-50 rounded-lg border border-line-steel/30 bg-bg-deep/90 px-3 py-2 text-[10px] text-text-secondary backdrop-blur">
+        role: {profile?.role ?? "null"} | persona: {profile?.persona_tier ?? "null"}
+      </div>
       {profile?.role === "admin" && <AdminFab profile={profile} />}
     </div>
   );

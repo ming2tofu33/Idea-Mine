@@ -52,14 +52,29 @@ Lab은 더 이상 키워드를 직접 고르고 아이디어를 생성하는 공
 - 성격: 점수표보다 짧고 날카로운 판단 카드
 - 목표: 강점과 약점을 빠르게 입체적으로 보이기
 
-### 3단계. 풀 개요서 (Full Overview)
+### 3단계. 풀 개요서 (Full Overview) — Pipeline v2
 
 **역할:** "이 아이디어를 더 깊은 실행 문서 수준으로 확장하는 단계"
 
 - 입력: Overview + Appraisal을 거친 아이디어
-- 출력: Narrative 블록 + Technical 블록이 합쳐진 긴 문서
+- 출력: Narrative 블록(9섹션) + Technical 블록(6섹션)이 합쳐진 실행 문서
 - 성격: AI 코딩 도구나 실제 설계 작업의 출발점이 되는 문서
 - 목표: "좋은 아이디어"를 "바로 발전시킬 수 있는 자산"으로 전환
+
+**v2 파이프라인** (0to1log 핸드북 패턴 적용):
+
+```
+축 분류 (gpt-5-nano) → 섹션 가중치 생성 (Python)
+  → 풀 개요 생성 (gpt-5, depth guide 포함)
+  → Self-Critique (gpt-5-mini, 점수 < 70이면 재생성)
+  → DB 저장
+```
+
+**3축 분류:** 아이디어의 Interface/Business/Technical 복잡도를 high/medium/low로 측정.
+→ 축 값에 따라 15섹션 각각의 깊이가 달라짐.
+→ "감정 일기 앱"과 "기업용 SaaS"가 같은 템플릿이지만 다른 깊이로 생성.
+
+상세: `2026-04-06-full-overview-pipeline-v2`
 
 ---
 

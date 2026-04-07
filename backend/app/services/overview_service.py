@@ -61,7 +61,7 @@ async def generate_overview(
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-        temperature=0.5,
+
         response_format=ConceptResponse,
     )
     step1_elapsed = int((time.time() - step1_start) * 1000)
@@ -111,7 +111,7 @@ async def generate_overview(
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            temperature=0.7,
+
             response_format=OverviewResponse,
         )
         step2_elapsed = int((time.time() - step2_start) * 1000)
