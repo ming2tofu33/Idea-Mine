@@ -4,7 +4,7 @@ from supabase import Client
 from app.dependencies import get_supabase, get_current_user
 from app.services import appraisal_service
 from app.services.market_research import research_market
-from app.services.rate_limiter import check_rate_limit_l1, check_daily_limit_l2, increment_daily_count
+from app.services.rate_limiter import check_rate_limit_l1, check_daily_limit_l2, check_cost_limit_l4, increment_daily_count
 from app.utils import validate_uuid
 
 router = APIRouter(prefix="/lab", tags=["lab"])
@@ -27,10 +27,11 @@ async def create_appraisal(
     """개요서 → 감정 생성."""
     validate_uuid(req.overview_id, "overview_id")
 
-    # Rate limit
+    # Rate limit: L1 속도 + L2 일일 한도 + L4 비용
     effective_role = user.get("role", "user")
     check_rate_limit_l1(user["id"], role=effective_role)
     await check_daily_limit_l2(supabase, user["id"], user.get("tier", "free"), "overview", role=effective_role)
+    await check_cost_limit_l4(supabase, user["id"], user.get("tier", "free"), role=effective_role)
 
     # 티어별 depth 접근 제한
     tier = user.get("tier", "free")

@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from supabase import Client
 from app.dependencies import get_supabase, get_current_user
 from app.services import overview_service, full_overview_service
-from app.services.rate_limiter import check_rate_limit_l1, check_daily_limit_l2, increment_daily_count
+from app.services.rate_limiter import check_rate_limit_l1, check_daily_limit_l2, check_cost_limit_l4, increment_daily_count
 from app.utils import validate_uuid
 
 router = APIRouter(prefix="/lab", tags=["lab"])
@@ -26,6 +26,7 @@ async def create_overview(
     effective_tier = user.get("tier", "free")
     check_rate_limit_l1(user["id"], role=effective_role)
     state = await check_daily_limit_l2(supabase, user["id"], effective_tier, "overview", role=effective_role)
+    await check_cost_limit_l4(supabase, user["id"], effective_tier, role=effective_role)
 
     idea_result = (
         supabase.table("ideas")
@@ -71,9 +72,10 @@ async def create_full_overview(
     if effective_tier != "pro" and effective_role != "admin":
         raise HTTPException(status_code=403, detail="Full overview is Pro-only")
 
-    # Rate limit: L1 속도 + L2 일일 한도
+    # Rate limit: L1 속도 + L2 일일 한도 + L4 비용
     check_rate_limit_l1(user["id"], role=effective_role)
     state = await check_daily_limit_l2(supabase, user["id"], effective_tier, "overview", role=effective_role)
+    await check_cost_limit_l4(supabase, user["id"], effective_tier, role=effective_role)
 
     # 개요서 조회 + 소유권 확인
     overview_result = (

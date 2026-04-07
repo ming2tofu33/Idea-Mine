@@ -83,6 +83,7 @@ async def mine_vein(
 
     rate_limiter.check_rate_limit_l1(user["id"], role=role)
     state = await rate_limiter.check_daily_limit_l2(supabase, user["id"], tier, action="generation", role=role)
+    await rate_limiter.check_cost_limit_l4(supabase, user["id"], tier, role=role)
 
     vein = await asyncio.to_thread(
         lambda: supabase.table("veins")

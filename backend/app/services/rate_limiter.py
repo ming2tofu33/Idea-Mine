@@ -118,6 +118,52 @@ async def check_daily_limit_l2(
     return state
 
 
+# L4: 비용 차단기 (일일 AI 비용 상한)
+DAILY_COST_LIMITS = {
+    "free": 0.10,    # $0.10/일
+    "lite": 0.50,    # $0.50/일
+    "pro": 2.00,     # $2.00/일
+}
+
+SYSTEM_DAILY_BUDGET = 50.00  # 시스템 전체 $50/일
+
+
+async def check_cost_limit_l4(
+    supabase: Client,
+    user_id: str,
+    tier: str,
+    role: str = "user",
+) -> None:
+    """L4: 일일 AI 비용 상한. admin 건너뜀. 모든 AI 호출의 비용 합산 기준."""
+    if role == "admin":
+        return
+
+    today = date.today().isoformat()
+
+    # 유저 일일 비용 합산
+    result = (
+        supabase.table("ai_usage_logs")
+        .select("total_cost_usd")
+        .eq("user_id", user_id)
+        .gte("created_at", f"{today}T00:00:00+00:00")
+        .execute()
+    )
+
+    user_daily_cost = sum(
+        float(row.get("total_cost_usd", 0)) for row in (result.data or [])
+    )
+
+    user_limit = DAILY_COST_LIMITS.get(tier, DAILY_COST_LIMITS["free"])
+    if user_daily_cost >= user_limit:
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "error": "cost_limit",
+                "message": "오늘의 광산 자원이 소진되었습니다",
+            },
+        )
+
+
 async def increment_daily_count(
     supabase: Client,
     user_id: str,
