@@ -65,8 +65,11 @@ export default function VaultDetailPage({
 
   // Load overview
   const overviewQuery = useQuery({
-    queryKey: ["overview", ideaId],
-    queryFn: () => vaultApi.getOverviewByIdea(ideaId),
+    queryKey: ["overviews", ideaId],
+    queryFn: async () => {
+      const overviews = await vaultApi.getOverviewsByIdea(ideaId);
+      return overviews[0] ?? null;
+    },
     enabled: !!ideaId,
   });
 

@@ -158,8 +158,8 @@ export default function VaultPage() {
       const results: Record<string, boolean> = {};
       await Promise.all(
         ideas.map(async (idea) => {
-          const overview = await vaultApi.getOverviewByIdea(idea.id);
-          results[idea.id] = overview !== null;
+          const overviews = await vaultApi.getOverviewsByIdea(idea.id);
+          results[idea.id] = overviews.length > 0;
         }),
       );
       return results;

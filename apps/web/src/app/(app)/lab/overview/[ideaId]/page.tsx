@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { ChevronDown, ChevronUp, Trash2, RefreshCw } from "lucide-react";
 import { LabBackground } from "@/components/backgrounds/lab-background";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { ProgressSteps } from "@/components/shared/progress-steps";
@@ -74,8 +75,6 @@ function LoadingState() {
   }, []);
 
   // Progress: fast at start, slows down, never reaches 100%
-  // Uses logarithmic curve: fast initially, asymptotically approaches 95%
-  // 40초 기준: 10초→30%, 20초→50%, 35초→70%, 60초→85%
   const progressPercent = Math.min(93, 25 * Math.log(1 + elapsed / 12000) * 10);
 
   const displayMessage = allPhasesDone
@@ -90,7 +89,7 @@ function LoadingState() {
         <div className="absolute inset-0 animate-ping rounded-full bg-cold-cyan/20" />
       </div>
 
-      {/* Progress bar — never stops moving */}
+      {/* Progress bar */}
       <div className="mb-6 h-1 w-56 overflow-hidden rounded-full bg-surface-2/40">
         <div
           className="h-full rounded-full bg-gradient-to-r from-cold-cyan/40 via-cold-cyan/70 to-cold-cyan/40"
@@ -169,7 +168,6 @@ function FullOverviewLoading() {
     return () => clearInterval(interval);
   }, []);
 
-  // 60초 기준: 10초→25%, 30초→55%, 50초→75%, 90초→90%
   const progress = Math.min(93, 30 * Math.log(1 + elapsed / 20000) * 10);
   const displayMessage = allDone
     ? FULL_OVERVIEW_WAITING[waitingIndex]
@@ -236,68 +234,9 @@ function SectionGroup({
   );
 }
 
-// --- Overview display ---
+// --- Overview sections (reused for both latest and older versions) ---
 
-function OverviewDisplay({
-  overview,
-  ideaId,
-}: {
-  overview: Overview;
-  ideaId: string;
-}) {
-  const router = useRouter();
-  const queryClient = useQueryClient();
-
-  // Check if full overview already exists
-  const fullOverviewQuery = useQuery({
-    queryKey: ["fullOverview", overview.id],
-    queryFn: () => labApi.getFullOverview(overview.id),
-    enabled: !!overview.id,
-  });
-
-  const fullOverviewMutation = useMutation({
-    mutationFn: () => labApi.createFullOverview(overview.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["fullOverview", overview.id],
-      });
-      router.push(`/lab/full/${overview.id}`);
-    },
-  });
-
-  // Show full-screen loading when generating full overview
-  if (fullOverviewMutation.isPending) {
-    return <FullOverviewLoading />;
-  }
-
-  // Show error state for full overview generation
-  if (fullOverviewMutation.isError) {
-    return (
-      <div className="flex flex-1 flex-col items-center justify-center py-20 text-center">
-        <p className="text-sm text-red-400">풀 개요 생성에 실패했습니다</p>
-        <p className="mt-1 text-xs text-text-secondary/60">
-          {fullOverviewMutation.error instanceof Error
-            ? fullOverviewMutation.error.message
-            : "알 수 없는 오류"}
-        </p>
-        <div className="mt-4 flex gap-3">
-          <button
-            onClick={() => fullOverviewMutation.mutate()}
-            className="cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-5 py-2.5 text-sm font-medium text-cold-cyan transition-all hover:bg-cold-cyan/20"
-          >
-            다시 시도
-          </button>
-          <button
-            onClick={() => fullOverviewMutation.reset()}
-            className="cursor-pointer rounded-lg border border-line-steel/30 bg-surface-2/50 px-5 py-2.5 text-sm text-text-secondary transition-all hover:text-text-primary"
-          >
-            돌아가기
-          </button>
-        </div>
-      </div>
-    );
-  }
-
+function OverviewSections({ overview }: { overview: Overview }) {
   return (
     <div className="space-y-6">
       {/* Vision */}
@@ -346,6 +285,158 @@ function OverviewDisplay({
           </p>
         </SectionCard>
       </SectionGroup>
+    </div>
+  );
+}
+
+// --- Older version item ---
+
+function OlderOverviewItem({
+  overview,
+  onDelete,
+  isDeleting,
+}: {
+  overview: Overview;
+  onDelete: (id: string) => void;
+  isDeleting: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  return (
+    <div className="group rounded-lg border border-line-steel/15 bg-surface-1/20 transition-opacity hover:opacity-100 opacity-60">
+      <div className="flex items-center justify-between px-4 py-3">
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="flex cursor-pointer items-center gap-2 text-sm text-text-secondary hover:text-text-primary"
+        >
+          {expanded ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+          <span>
+            {new Date(overview.created_at).toLocaleDateString("ko-KR")}
+          </span>
+          <span className="text-xs text-text-secondary/40">
+            {expanded ? "접기" : "펼치기"}
+          </span>
+        </button>
+
+        <div className="flex items-center gap-2">
+          {confirmDelete ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-red-400">삭제?</span>
+              <button
+                type="button"
+                onClick={() => onDelete(overview.id)}
+                disabled={isDeleting}
+                className="cursor-pointer rounded px-2 py-1 text-xs font-medium text-red-400 transition-colors hover:bg-red-400/10"
+              >
+                확인
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="cursor-pointer rounded px-2 py-1 text-xs text-text-secondary transition-colors hover:text-text-primary"
+              >
+                취소
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="cursor-pointer rounded p-1.5 text-text-secondary/30 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-400/10 hover:text-red-400"
+              title="삭제"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="border-t border-line-steel/10 px-4 py-4">
+          <OverviewSections overview={overview} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- Overview display ---
+
+function OverviewDisplay({
+  overview,
+  ideaId,
+  onRegenerate,
+  isRegenerating,
+}: {
+  overview: Overview;
+  ideaId: string;
+  onRegenerate: () => void;
+  isRegenerating: boolean;
+}) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  // Check if full overview already exists
+  const fullOverviewQuery = useQuery({
+    queryKey: ["fullOverviews", overview.id],
+    queryFn: () => labApi.getFullOverviewsByOverview(overview.id),
+    enabled: !!overview.id,
+  });
+
+  const latestFullOverview = fullOverviewQuery.data?.[0] ?? null;
+
+  const fullOverviewMutation = useMutation({
+    mutationFn: () => labApi.createFullOverview(overview.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["fullOverviews", overview.id],
+      });
+      router.push(`/lab/full/${overview.id}`);
+    },
+  });
+
+  // Show full-screen loading when generating full overview
+  if (fullOverviewMutation.isPending) {
+    return <FullOverviewLoading />;
+  }
+
+  // Show error state for full overview generation
+  if (fullOverviewMutation.isError) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center py-20 text-center">
+        <p className="text-sm text-red-400">풀 개요 생성에 실패했습니다</p>
+        <p className="mt-1 text-xs text-text-secondary/60">
+          {fullOverviewMutation.error instanceof Error
+            ? fullOverviewMutation.error.message
+            : "알 수 없는 오류"}
+        </p>
+        <div className="mt-4 flex gap-3">
+          <button
+            onClick={() => fullOverviewMutation.mutate()}
+            className="cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-5 py-2.5 text-sm font-medium text-cold-cyan transition-all hover:bg-cold-cyan/20"
+          >
+            다시 시도
+          </button>
+          <button
+            onClick={() => fullOverviewMutation.reset()}
+            className="cursor-pointer rounded-lg border border-line-steel/30 bg-surface-2/50 px-5 py-2.5 text-sm text-text-secondary transition-all hover:text-text-primary"
+          >
+            돌아가기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <OverviewSections overview={overview} />
 
       {/* Actions */}
       <div className="flex flex-wrap items-center gap-3 border-t border-line-steel/20 pt-4">
@@ -356,8 +447,23 @@ function OverviewDisplay({
         >
           감정 요청하기
         </Link>
-        {/* Secondary */}
-        {fullOverviewQuery.data ? (
+        {/* Regenerate */}
+        <button
+          type="button"
+          onClick={onRegenerate}
+          disabled={isRegenerating}
+          className={[
+            "inline-flex cursor-pointer items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-medium transition-all duration-200",
+            isRegenerating
+              ? "cursor-not-allowed border-line-steel/20 bg-surface-2/30 text-text-secondary/50 opacity-50"
+              : "border-cold-cyan/30 bg-cold-cyan/10 text-cold-cyan hover:bg-cold-cyan/20 hover:shadow-[0_0_20px_rgba(92,205,229,0.1)]",
+          ].join(" ")}
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${isRegenerating ? "animate-spin" : ""}`} />
+          {isRegenerating ? "재생성 중..." : "재생성"}
+        </button>
+        {/* Full overview */}
+        {latestFullOverview ? (
           <Link
             href={`/lab/full/${overview.id}`}
             className="cursor-pointer rounded-lg border border-line-steel/30 bg-surface-2/50 px-5 py-2.5 text-sm font-medium text-text-secondary transition-all duration-200 hover:border-cold-cyan/20 hover:text-text-primary"
@@ -412,24 +518,35 @@ export default function LabOverviewPage({
     select: (ideas) => ideas.find((i) => i.id === ideaId),
   });
 
-  // Load existing overview
-  const overviewQuery = useQuery({
-    queryKey: ["overview", ideaId],
-    queryFn: () => vaultApi.getOverviewByIdea(ideaId),
+  // Load all overviews for this idea (newest first)
+  const overviewsQuery = useQuery({
+    queryKey: ["overviews", ideaId],
+    queryFn: () => vaultApi.getOverviewsByIdea(ideaId),
     enabled: !!ideaId,
   });
+
+  const overviews = overviewsQuery.data ?? [];
+  const latestOverview = overviews[0] ?? null;
+  const olderOverviews = overviews.slice(1);
 
   // Create overview mutation
   const createMutation = useMutation({
     mutationFn: () => labApi.createOverview(ideaId),
-    onSuccess: (data) => {
-      queryClient.setQueryData(["overview", ideaId], data);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["overviews", ideaId] });
+    },
+  });
+
+  // Delete overview mutation
+  const deleteMutation = useMutation({
+    mutationFn: (overviewId: string) => vaultApi.deleteOverview(overviewId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["overviews", ideaId] });
     },
   });
 
   const idea = ideaQuery.data;
-  const overview = overviewQuery.data;
-  const isLoading = ideaQuery.isLoading || overviewQuery.isLoading;
+  const isLoading = ideaQuery.isLoading || overviewsQuery.isLoading;
 
   return (
     <div className="relative flex min-h-0 flex-1">
@@ -503,13 +620,24 @@ export default function LabOverviewPage({
                     다시 시도
                   </button>
                 </div>
-              ) : overview ? (
-                <OverviewDisplay overview={overview} ideaId={ideaId} />
-              ) : createMutation.data ? (
-                <OverviewDisplay
-                  overview={createMutation.data}
-                  ideaId={ideaId}
-                />
+              ) : latestOverview ? (
+                <>
+                  <OverviewDisplay
+                    overview={latestOverview}
+                    ideaId={ideaId}
+                    onRegenerate={() => createMutation.mutate()}
+                    isRegenerating={createMutation.isPending}
+                  />
+
+                  {/* Older versions */}
+                  {olderOverviews.length > 0 && (
+                    <OlderOverviewsSection
+                      overviews={olderOverviews}
+                      onDelete={(id) => deleteMutation.mutate(id)}
+                      isDeleting={deleteMutation.isPending}
+                    />
+                  )}
+                </>
               ) : (
                 <div className="rounded-xl border border-dashed border-line-steel/30 bg-surface-1/30 p-8 text-center">
                   <p className="mb-4 text-sm text-text-secondary">
@@ -528,6 +656,50 @@ export default function LabOverviewPage({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// --- Older versions collapsible section ---
+
+function OlderOverviewsSection({
+  overviews,
+  onDelete,
+  isDeleting,
+}: {
+  overviews: Overview[];
+  onDelete: (id: string) => void;
+  isDeleting: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="border-t border-line-steel/15 mt-8 pt-6">
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="flex cursor-pointer items-center gap-2 text-sm font-medium text-text-secondary/60 transition-colors hover:text-text-primary"
+      >
+        {expanded ? (
+          <ChevronUp className="h-4 w-4" />
+        ) : (
+          <ChevronDown className="h-4 w-4" />
+        )}
+        이전 버전 ({overviews.length}개)
+      </button>
+
+      {expanded && (
+        <div className="mt-4 space-y-3">
+          {overviews.map((overview) => (
+            <OlderOverviewItem
+              key={overview.id}
+              overview={overview}
+              onDelete={onDelete}
+              isDeleting={isDeleting}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

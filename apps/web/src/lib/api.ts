@@ -101,15 +101,24 @@ export const vaultApi = {
     return data ?? [];
   },
 
-  async getOverviewByIdea(ideaId: string): Promise<Overview | null> {
+  async getOverviewsByIdea(ideaId: string): Promise<Overview[]> {
     const supabase = (await import("@/lib/supabase/client")).createClient();
     const { data, error } = await supabase
       .from("overviews")
       .select("*")
       .eq("idea_id", ideaId)
-      .maybeSingle();
+      .order("created_at", { ascending: false });
     if (error) throw error;
-    return data as Overview | null;
+    return (data ?? []) as Overview[];
+  },
+
+  async deleteOverview(overviewId: string): Promise<void> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    const { error } = await supabase
+      .from("overviews")
+      .delete()
+      .eq("id", overviewId);
+    if (error) throw error;
   },
 
   async deleteIdea(ideaId: string): Promise<void> {
@@ -154,15 +163,24 @@ export const labApi = {
     return (data ?? []) as Appraisal[];
   },
 
-  async getFullOverview(overviewId: string): Promise<FullOverview | null> {
+  async getFullOverviewsByOverview(overviewId: string): Promise<FullOverview[]> {
     const supabase = (await import("@/lib/supabase/client")).createClient();
     const { data, error } = await supabase
       .from("full_overviews")
       .select("*")
       .eq("overview_id", overviewId)
-      .maybeSingle();
+      .order("created_at", { ascending: false });
     if (error) throw error;
-    return data as FullOverview | null;
+    return (data ?? []) as FullOverview[];
+  },
+
+  async deleteFullOverview(fullOverviewId: string): Promise<void> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    const { error } = await supabase
+      .from("full_overviews")
+      .delete()
+      .eq("id", fullOverviewId);
+    if (error) throw error;
   },
 };
 

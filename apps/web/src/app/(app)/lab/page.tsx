@@ -135,7 +135,8 @@ export default function LabPage() {
       const results: Record<string, Overview | null> = {};
       await Promise.all(
         ideasQuery.data.map(async (idea) => {
-          results[idea.id] = await vaultApi.getOverviewByIdea(idea.id);
+          const overviews = await vaultApi.getOverviewsByIdea(idea.id);
+          results[idea.id] = overviews[0] ?? null;
         }),
       );
       return results;

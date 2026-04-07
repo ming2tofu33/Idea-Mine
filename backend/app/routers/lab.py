@@ -32,19 +32,6 @@ async def create_overview(
 
     idea = idea_result.data[0]
 
-    existing = (
-        supabase.table("overviews")
-        .select("id")
-        .eq("idea_id", req.idea_id)
-        .eq("user_id", user["id"])
-        .execute()
-    )
-    if existing.data:
-        raise HTTPException(
-            status_code=409,
-            detail={"error": "overview_exists", "message": "이 원석의 개요서가 이미 존재합니다"}
-        )
-
     overview = await overview_service.generate_overview(
         supabase=supabase,
         user_id=user["id"],
@@ -96,19 +83,6 @@ async def create_full_overview(
         raise HTTPException(status_code=404, detail="Idea not found")
 
     idea = idea_result.data[0]
-
-    # 중복 체크
-    existing = (
-        supabase.table("full_overviews")
-        .select("id")
-        .eq("overview_id", req.overview_id)
-        .execute()
-    )
-    if existing.data:
-        raise HTTPException(
-            status_code=409,
-            detail={"error": "full_overview_exists", "message": "이 개요서의 풀 개요서가 이미 존재합니다"}
-        )
 
     full_overview = await full_overview_service.generate_full_overview(
         supabase=supabase,

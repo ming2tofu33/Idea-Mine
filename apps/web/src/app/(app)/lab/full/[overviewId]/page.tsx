@@ -4,7 +4,7 @@ import { use, useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Copy, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Copy, Check, ChevronDown, ChevronUp, Trash2, RefreshCw } from "lucide-react";
 import { LabBackground } from "@/components/backgrounds/lab-background";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { SectionCard } from "@/components/shared/section-card";
@@ -374,9 +374,15 @@ function formatAsMarkdown(fo: FullOverview): string {
   return lines.join("\n");
 }
 
-// --- Full overview display ---
+// --- Full overview content sections (reusable) ---
 
-function FullOverviewDisplay({ data }: { data: FullOverview }) {
+function FullOverviewContent({
+  data,
+  showToc,
+}: {
+  data: FullOverview;
+  showToc?: boolean;
+}) {
   const [copied, setCopied] = useState(false);
   const [activeSection, setActiveSection] = useState("concept");
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -423,19 +429,23 @@ function FullOverviewDisplay({ data }: { data: FullOverview }) {
   return (
     <div className="flex gap-8">
       {/* Sidebar TOC — sticky on desktop */}
-      <aside className="hidden w-44 shrink-0 lg:block">
-        <div className="sticky top-6">
-          <TableOfContents activeId={activeSection} onSelect={scrollTo} />
-        </div>
-      </aside>
+      {showToc !== false && (
+        <aside className="hidden w-44 shrink-0 lg:block">
+          <div className="sticky top-6">
+            <TableOfContents activeId={activeSection} onSelect={scrollTo} />
+          </div>
+        </aside>
+      )}
 
       {/* Main content */}
       <div className="min-w-0 flex-1 space-y-8">
         {/* Copy all button + mobile TOC */}
         <div className="space-y-3">
-          <div className="lg:hidden">
-            <TableOfContents activeId={activeSection} onSelect={scrollTo} />
-          </div>
+          {showToc !== false && (
+            <div className="lg:hidden">
+              <TableOfContents activeId={activeSection} onSelect={scrollTo} />
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <p className="text-xs text-text-secondary/40">
               {TOC_ITEMS.length}개 섹션
@@ -564,6 +574,127 @@ function FullOverviewDisplay({ data }: { data: FullOverview }) {
   );
 }
 
+// --- Older version item ---
+
+function OlderFullOverviewItem({
+  data,
+  onDelete,
+  isDeleting,
+}: {
+  data: FullOverview;
+  onDelete: (id: string) => void;
+  isDeleting: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  return (
+    <div className="group rounded-lg border border-line-steel/15 bg-surface-1/20 transition-opacity hover:opacity-100 opacity-60">
+      <div className="flex items-center justify-between px-4 py-3">
+        <button
+          type="button"
+          onClick={() => setExpanded(!expanded)}
+          className="flex cursor-pointer items-center gap-2 text-sm text-text-secondary hover:text-text-primary"
+        >
+          {expanded ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+          <span>
+            {new Date(data.created_at).toLocaleDateString("ko-KR")}
+          </span>
+          <span className="text-xs text-text-secondary/40">
+            {expanded ? "접기" : "펼치기"}
+          </span>
+        </button>
+
+        <div className="flex items-center gap-2">
+          {confirmDelete ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-red-400">삭제?</span>
+              <button
+                type="button"
+                onClick={() => onDelete(data.id)}
+                disabled={isDeleting}
+                className="cursor-pointer rounded px-2 py-1 text-xs font-medium text-red-400 transition-colors hover:bg-red-400/10"
+              >
+                확인
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmDelete(false)}
+                className="cursor-pointer rounded px-2 py-1 text-xs text-text-secondary transition-colors hover:text-text-primary"
+              >
+                취소
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              className="cursor-pointer rounded p-1.5 text-text-secondary/30 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-400/10 hover:text-red-400"
+              title="삭제"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {expanded && (
+        <div className="border-t border-line-steel/10 px-4 py-4">
+          <FullOverviewContent data={data} showToc={false} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// --- Older versions collapsible section ---
+
+function OlderFullOverviewsSection({
+  versions,
+  onDelete,
+  isDeleting,
+}: {
+  versions: FullOverview[];
+  onDelete: (id: string) => void;
+  isDeleting: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="border-t border-line-steel/15 mt-8 pt-6">
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="flex cursor-pointer items-center gap-2 text-sm font-medium text-text-secondary/60 transition-colors hover:text-text-primary"
+      >
+        {expanded ? (
+          <ChevronUp className="h-4 w-4" />
+        ) : (
+          <ChevronDown className="h-4 w-4" />
+        )}
+        이전 버전 ({versions.length}개)
+      </button>
+
+      {expanded && (
+        <div className="mt-4 space-y-3">
+          {versions.map((version) => (
+            <OlderFullOverviewItem
+              key={version.id}
+              data={version}
+              onDelete={onDelete}
+              isDeleting={isDeleting}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // --- Page ---
 
 export default function FullOverviewPage({
@@ -574,23 +705,34 @@ export default function FullOverviewPage({
   const { overviewId } = use(params);
   const queryClient = useQueryClient();
 
-  // Load existing full overview
-  const fullOverviewQuery = useQuery({
-    queryKey: ["fullOverview", overviewId],
-    queryFn: () => labApi.getFullOverview(overviewId),
+  // Load all full overviews (newest first)
+  const fullOverviewsQuery = useQuery({
+    queryKey: ["fullOverviews", overviewId],
+    queryFn: () => labApi.getFullOverviewsByOverview(overviewId),
     enabled: !!overviewId,
   });
+
+  const fullOverviews = fullOverviewsQuery.data ?? [];
+  const latest = fullOverviews[0] ?? null;
+  const olderVersions = fullOverviews.slice(1);
 
   // Create full overview mutation
   const createMutation = useMutation({
     mutationFn: () => labApi.createFullOverview(overviewId),
-    onSuccess: (data) => {
-      queryClient.setQueryData(["fullOverview", overviewId], data);
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["fullOverviews", overviewId] });
     },
   });
 
-  const fullOverview = fullOverviewQuery.data ?? createMutation.data ?? null;
-  const isLoading = fullOverviewQuery.isLoading;
+  // Delete full overview mutation
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => labApi.deleteFullOverview(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["fullOverviews", overviewId] });
+    },
+  });
+
+  const isLoading = fullOverviewsQuery.isLoading;
 
   return (
     <div className="relative flex min-h-0 flex-1">
@@ -602,6 +744,21 @@ export default function FullOverviewPage({
           <Breadcrumb
             items={[{ label: "Lab", href: "/lab" }, { label: "풀 개요" }]}
           />
+
+          {/* Header with regenerate button */}
+          {latest && !createMutation.isPending && (
+            <div className="flex items-center justify-end">
+              <button
+                type="button"
+                onClick={() => createMutation.mutate()}
+                disabled={createMutation.isPending}
+                className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-4 py-2 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/20 hover:shadow-[0_0_20px_rgba(92,205,229,0.1)]"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                재생성
+              </button>
+            </div>
+          )}
 
           {/* Content */}
           {isLoading ? (
@@ -633,8 +790,19 @@ export default function FullOverviewPage({
                 다시 시도
               </button>
             </div>
-          ) : fullOverview ? (
-            <FullOverviewDisplay data={fullOverview} />
+          ) : latest ? (
+            <>
+              <FullOverviewContent data={latest} />
+
+              {/* Older versions */}
+              {olderVersions.length > 0 && (
+                <OlderFullOverviewsSection
+                  versions={olderVersions}
+                  onDelete={(id) => deleteMutation.mutate(id)}
+                  isDeleting={deleteMutation.isPending}
+                />
+              )}
+            </>
           ) : (
             <div className="rounded-xl border border-dashed border-line-steel/30 bg-surface-1/30 p-8 text-center">
               <p className="mb-4 text-sm text-text-secondary">
