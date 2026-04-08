@@ -10,6 +10,7 @@ def build_product_design_prompt(
     overview: dict,
     market_research: str,
     depth_guide: str = "",
+    language: str = "ko",
 ) -> tuple[str, str]:
     """제품 설계서 프롬프트. Returns (system_prompt, user_prompt)."""
 
@@ -17,12 +18,17 @@ def build_product_design_prompt(
     product_type = concept.get("product_type", "B2C")
     primary_user = concept.get("primary_user_en", "")
 
-    system_prompt = """You are a product designer expanding a project overview into a detailed product specification.
-Your output will be used by Korean founders and planners to understand exactly what to build.
+    lang_instruction = (
+        "Write ALL sections in Korean (한국어). Use natural Korean, not translated-sounding text.\n"
+        "Technical terms can stay in English when commonly used in Korean tech context (API, MVP, SaaS 등)."
+        if language == "ko"
+        else "Write ALL sections in English. Use clear, professional English."
+    )
+
+    system_prompt = f"""You are a product designer expanding a project overview into a detailed product specification.
 
 === LANGUAGE ===
-Write ALL sections in Korean (한국어). Use natural Korean, not translated-sounding text.
-Technical terms can stay in English when commonly used in Korean tech context (API, MVP, SaaS 등).
+{lang_instruction}
 
 === ROLE ===
 You are defining the PRODUCT layer — what users see, what they do, and what rules govern the system.

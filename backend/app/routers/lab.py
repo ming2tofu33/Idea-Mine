@@ -206,6 +206,7 @@ async def create_design(
 
     idea = idea_result.data[0]
 
+    user_language = user.get("language", "ko")
     design = await product_design_service.generate_product_design(
         supabase=supabase,
         user_id=user["id"],
@@ -213,6 +214,7 @@ async def create_design(
         overview=overview,
         idea=idea,
         source="app",
+        language=user_language,
     )
 
     await increment_daily_count(supabase, user["id"], "overview", current_state=state)
@@ -348,6 +350,7 @@ async def create_roadmap(
         "core_experience_en": overview.get("features_en", "").split("—")[0] if overview.get("features_en") else "",
     }
 
+    user_language = user.get("language", "ko")
     rm = await roadmap_service.generate_roadmap(
         supabase=supabase,
         user_id=user["id"],
@@ -356,6 +359,7 @@ async def create_roadmap(
         product_design=product_design,
         blueprint=blueprint,
         source="app",
+        language=user_language,
     )
 
     await increment_daily_count(supabase, user["id"], "overview", current_state=state)
@@ -373,6 +377,8 @@ async def generate_all(
 
     effective_role = user.get("role", "user")
     effective_tier = user.get("tier", "free")
+
+    user_language = user.get("language", "ko")
 
     # Pro 전용 체크
     if effective_tier != "pro" and effective_role != "admin":
@@ -476,6 +482,7 @@ async def generate_all(
             product_design=design_data,
             blueprint=blueprint_data,
             source="app",
+            language=user_language,
         )
 
     await increment_daily_count(supabase, user["id"], "overview", current_state=state)

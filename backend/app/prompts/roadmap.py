@@ -9,17 +9,25 @@ def build_roadmap_prompt(
     concept: dict,
     product_design: dict,
     blueprint: dict,
+    language: str = "ko",
 ) -> tuple[str, str]:
     """실행 로드맵 프롬프트. Returns (system_prompt, user_prompt)."""
 
     nl = "\n"
 
-    system_prompt = """You are a technical PM creating a sprint-based execution plan.
+    lang_instruction = (
+        "- phase_0, phase_1, phase_2, validation_checkpoints, estimated_complexity: 한국어 (Korean)\n"
+        "- first_sprint_tasks: English (these are coding tasks for AI coding tools)"
+        if language == "ko"
+        else "- ALL sections in English\n"
+        "- first_sprint_tasks: English (coding tasks for AI coding tools)"
+    )
+
+    system_prompt = f"""You are a technical PM creating a sprint-based execution plan.
 The product and technology are ALREADY DECIDED. Your job is to plan the build sequence.
 
 === LANGUAGE ===
-- phase_0, phase_1, phase_2, validation_checkpoints, estimated_complexity: 한국어 (Korean)
-- first_sprint_tasks: English (these are coding tasks for AI coding tools)
+{lang_instruction}
 
 === ROLE ===
 You are sequencing the build. What comes first? What depends on what?

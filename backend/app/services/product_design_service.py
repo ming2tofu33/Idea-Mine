@@ -34,6 +34,7 @@ async def generate_product_design(
     overview: dict,
     idea: dict,
     source: str = "app",
+    language: str = "ko",
 ) -> dict:
     """제품 설계서 생성: Pipeline v2.
 
@@ -122,6 +123,7 @@ async def generate_product_design(
         overview=overview,
         market_research=market_data,
         depth_guide=depth_guide,
+        language=language,
     )
 
     try:

@@ -29,6 +29,7 @@ async def generate_roadmap(
     product_design: dict,
     blueprint: dict,
     source: str = "app",
+    language: str = "ko",
 ) -> dict:
     """실행 로드맵 생성.
 
@@ -45,6 +46,7 @@ async def generate_roadmap(
         concept=concept,
         product_design=product_design,
         blueprint=blueprint,
+        language=language,
     )
 
     try:
