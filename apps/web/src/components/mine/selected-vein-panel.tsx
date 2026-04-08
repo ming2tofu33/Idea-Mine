@@ -42,6 +42,14 @@ const RARITY_META: Record<
   },
 };
 
+const VEIN_CODENAMES = ["Alpha", "Beta", "Gamma"];
+
+function getVeinDisplayName(vein: Vein) {
+  const codename = VEIN_CODENAMES[vein.slot_index] ?? `Node ${vein.slot_index + 1}`;
+
+  return `Target ${codename}`;
+}
+
 function PanelSkeleton() {
   return (
     <div className="animate-pulse space-y-3 pt-5">
@@ -146,6 +154,7 @@ export function SelectedVeinPanel({
 
   const rarity = RARITY_META[vein.rarity];
   const keywords = vein.keywords.slice(0, 4);
+  const displayName = getVeinDisplayName(vein);
   const primaryKeyword = vein.keywords[0]?.ko ?? "signal";
   const secondaryKeyword = vein.keywords[1]?.ko;
   const instruction = secondaryKeyword
@@ -160,7 +169,7 @@ export function SelectedVeinPanel({
             target analysis
           </p>
           <h2 className="mt-3 text-2xl font-semibold text-text-primary">
-            {primaryKeyword}
+            {displayName}
           </h2>
           <p className="mt-2 text-sm leading-6 text-text-secondary">
             {instruction}
