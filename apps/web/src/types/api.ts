@@ -157,6 +157,14 @@ export interface ApiError {
   retry_after?: number;
 }
 
+// --- Usage Info ---
+
+export interface UsageInfo {
+  tier: string;
+  overviews: { used: number; limit: number };
+  generations: { used: number; limit: number };
+}
+
 // --- User Profile ---
 
 export type UserTier = "free" | "lite" | "pro";

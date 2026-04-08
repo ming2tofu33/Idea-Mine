@@ -11,6 +11,7 @@ import type {
   UserProfile,
   AppraisalDepth,
   FullOverview,
+  UsageInfo,
 } from "@/types/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
@@ -173,6 +174,8 @@ export const labApi = {
     if (error) throw error;
     return (data ?? []) as FullOverview[];
   },
+
+  getUsage: () => apiFetch<UsageInfo>("/lab/usage"),
 
   async deleteFullOverview(fullOverviewId: string): Promise<void> {
     const supabase = (await import("@/lib/supabase/client")).createClient();

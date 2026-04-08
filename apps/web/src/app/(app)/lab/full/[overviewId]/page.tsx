@@ -4,8 +4,9 @@ import { use, useState, useEffect, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Copy, Check, ChevronDown, ChevronUp, Trash2, RefreshCw } from "lucide-react";
+import { Copy, Check, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import { LabBackground } from "@/components/backgrounds/lab-background";
+import { ConfirmCostDialog } from "@/components/shared/confirm-cost-dialog";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { SectionCard } from "@/components/shared/section-card";
 import { labApi } from "@/lib/api";
@@ -738,7 +739,7 @@ export default function FullOverviewPage({
     <div className="relative flex min-h-0 flex-1">
       <LabBackground />
 
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-4xl space-y-6 pb-8">
           {/* Breadcrumb */}
           <Breadcrumb
@@ -748,15 +749,13 @@ export default function FullOverviewPage({
           {/* Header with regenerate button */}
           {latest && !createMutation.isPending && (
             <div className="flex items-center justify-end">
-              <button
-                type="button"
-                onClick={() => createMutation.mutate()}
-                disabled={createMutation.isPending}
-                className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-4 py-2 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/20 hover:shadow-[0_0_20px_rgba(92,205,229,0.1)]"
-              >
-                <RefreshCw className="h-3.5 w-3.5" />
-                재생성
-              </button>
+              <ConfirmCostDialog
+                action="overview"
+                onConfirm={() => createMutation.mutate()}
+                isLoading={createMutation.isPending}
+                label="재생성"
+                message="풀 개요서를 재생성하시겠습니까?"
+              />
             </div>
           )}
 
@@ -808,13 +807,13 @@ export default function FullOverviewPage({
               <p className="mb-4 text-sm text-text-secondary">
                 이 개요의 풀 개요를 AI가 분석하여 생성합니다
               </p>
-              <button
-                type="button"
-                onClick={() => createMutation.mutate()}
-                className="cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-6 py-3 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/20 hover:shadow-[0_0_20px_rgba(92,205,229,0.15)]"
-              >
-                풀 개요 생성
-              </button>
+              <ConfirmCostDialog
+                action="overview"
+                onConfirm={() => createMutation.mutate()}
+                isLoading={createMutation.isPending}
+                label="풀 개요 생성"
+                message="풀 개요서를 생성하시겠습니까?"
+              />
             </div>
           )}
         </div>

@@ -5,7 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ChevronDown, ChevronUp, Trash2, RefreshCw } from "lucide-react";
+import { ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { ConfirmCostDialog } from "@/components/shared/confirm-cost-dialog";
 import { LabBackground } from "@/components/backgrounds/lab-background";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { ProgressSteps } from "@/components/shared/progress-steps";
@@ -448,20 +449,13 @@ function OverviewDisplay({
           감정 요청하기
         </Link>
         {/* Regenerate */}
-        <button
-          type="button"
-          onClick={onRegenerate}
-          disabled={isRegenerating}
-          className={[
-            "inline-flex cursor-pointer items-center gap-2 rounded-lg border px-5 py-2.5 text-sm font-medium transition-all duration-200",
-            isRegenerating
-              ? "cursor-not-allowed border-line-steel/20 bg-surface-2/30 text-text-secondary/50 opacity-50"
-              : "border-cold-cyan/30 bg-cold-cyan/10 text-cold-cyan hover:bg-cold-cyan/20 hover:shadow-[0_0_20px_rgba(92,205,229,0.1)]",
-          ].join(" ")}
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${isRegenerating ? "animate-spin" : ""}`} />
-          {isRegenerating ? "재생성 중..." : "재생성"}
-        </button>
+        <ConfirmCostDialog
+          action="overview"
+          onConfirm={onRegenerate}
+          isLoading={isRegenerating}
+          label="재생성"
+          message="개요서를 재생성하시겠습니까?"
+        />
         {/* Full overview */}
         {latestFullOverview ? (
           <Link
@@ -471,21 +465,13 @@ function OverviewDisplay({
             풀 개요 보기
           </Link>
         ) : (
-          <button
-            type="button"
-            onClick={() => fullOverviewMutation.mutate()}
-            disabled={fullOverviewMutation.isPending}
-            className={[
-              "cursor-pointer rounded-lg border px-5 py-2.5 text-sm font-medium transition-all duration-200",
-              fullOverviewMutation.isPending
-                ? "cursor-not-allowed border-line-steel/20 bg-surface-2/30 text-text-secondary/50 opacity-50"
-                : "border-line-steel/30 bg-surface-2/50 text-text-secondary hover:border-cold-cyan/20 hover:text-text-primary",
-            ].join(" ")}
-          >
-            {fullOverviewMutation.isPending
-              ? "풀 개요 생성 중..."
-              : "풀 개요 생성"}
-          </button>
+          <ConfirmCostDialog
+            action="overview"
+            onConfirm={() => fullOverviewMutation.mutate()}
+            isLoading={fullOverviewMutation.isPending}
+            label="풀 개요 생성"
+            message="풀 개요서를 생성하시겠습니까?"
+          />
         )}
         {/* Tertiary */}
         <Link

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { LabBackground } from "@/components/backgrounds/lab-background";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
+import { ConfirmCostDialog } from "@/components/shared/confirm-cost-dialog";
 import { labApi } from "@/lib/api";
 import type { Appraisal } from "@/types/api";
 
@@ -270,13 +271,13 @@ export default function LabAppraisalPage({
                   ? createMutation.error.message
                   : "알 수 없는 오류"}
               </p>
-              <button
-                type="button"
-                onClick={() => createMutation.mutate()}
-                className="mt-3 cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-5 py-2.5 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/20"
-              >
-                다시 시도
-              </button>
+              <ConfirmCostDialog
+                action="overview"
+                onConfirm={() => createMutation.mutate()}
+                isLoading={createMutation.isPending}
+                label="다시 시도"
+                message="감정을 다시 요청하시겠습니까?"
+              />
             </div>
           ) : hasAppraisals ? (
             <div className="space-y-8">
@@ -290,14 +291,13 @@ export default function LabAppraisalPage({
 
               {/* Request another appraisal */}
               <div className="border-t border-line-steel/20 pt-4">
-                <button
-                  type="button"
-                  onClick={() => createMutation.mutate()}
-                  disabled={createMutation.isPending}
-                  className="cursor-pointer rounded-lg border border-line-steel/30 bg-surface-2/50 px-5 py-2.5 text-sm font-medium text-text-secondary transition-all duration-200 hover:border-cold-cyan/20 hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  추가 감정 요청
-                </button>
+                <ConfirmCostDialog
+                  action="overview"
+                  onConfirm={() => createMutation.mutate()}
+                  isLoading={createMutation.isPending}
+                  label="재감정"
+                  message="감정을 재요청하시겠습니까?"
+                />
               </div>
             </div>
           ) : (
@@ -305,13 +305,13 @@ export default function LabAppraisalPage({
               <p className="mb-4 text-sm text-text-secondary">
                 AI가 아이디어의 시장성, 실현 가능성, 리스크 등을 분석합니다
               </p>
-              <button
-                type="button"
-                onClick={() => createMutation.mutate()}
-                className="cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-6 py-3 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/20 hover:shadow-[0_0_20px_rgba(92,205,229,0.15)]"
-              >
-                감정 요청
-              </button>
+              <ConfirmCostDialog
+                action="overview"
+                onConfirm={() => createMutation.mutate()}
+                isLoading={createMutation.isPending}
+                label="감정 요청"
+                message="감정을 요청하시겠습니까?"
+              />
             </div>
           )}
         </div>

@@ -3,10 +3,38 @@ from pydantic import BaseModel
 from supabase import Client
 from app.dependencies import get_supabase, get_current_user
 from app.services import overview_service, full_overview_service
-from app.services.rate_limiter import check_rate_limit_l1, check_daily_limit_l2, check_cost_limit_l4, increment_daily_count
+from app.services.rate_limiter import check_rate_limit_l1, check_daily_limit_l2, check_cost_limit_l4, increment_daily_count, TIER_LIMITS
 from app.utils import validate_uuid
 
 router = APIRouter(prefix="/lab", tags=["lab"])
+
+
+@router.get("/usage")
+async def get_usage(
+    user: dict = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+):
+    """현재 사용자의 일일 사용량 + 티어별 한도 반환."""
+    effective_tier = user.get("tier", "free")
+    effective_role = user.get("role", "user")
+
+    state = await check_daily_limit_l2(
+        supabase, user["id"], effective_tier, "none", role=effective_role
+    )
+
+    limits = TIER_LIMITS.get(effective_tier, TIER_LIMITS["free"])
+
+    return {
+        "tier": effective_tier,
+        "overviews": {
+            "used": state.get("overviews_used", 0),
+            "limit": limits["overviews"],
+        },
+        "generations": {
+            "used": state.get("generations_used", 0),
+            "limit": limits["generations"],
+        },
+    }
 
 
 class OverviewRequest(BaseModel):
