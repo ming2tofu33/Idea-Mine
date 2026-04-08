@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { MineBackground } from "@/components/backgrounds/mine-background";
+import { MineSupportBlock } from "@/components/mine/mine-support-block";
 import { SectorScanStage } from "@/components/mine/sector-scan-stage";
 import { SelectedVeinPanel } from "@/components/mine/selected-vein-panel";
 import { StatusRail } from "@/components/shared/status-rail";
@@ -120,6 +121,8 @@ export default function MinePage() {
             onReroll={() => rerollMutation.mutate()}
           />
         </div>
+
+        <MineSupportBlock />
       </div>
     </div>
   );
