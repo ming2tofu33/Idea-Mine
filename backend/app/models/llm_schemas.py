@@ -120,3 +120,38 @@ class CritiqueResponse(BaseModel):
     actionability: str
     consistency: str
     feedback: str
+
+
+# --- Product Design (제품 설계서) ---
+
+class ProductDesignResponse(BaseModel):
+    user_flow: list[str]
+    screens: list[str]
+    features_must: list[str]
+    features_should: list[str]
+    features_later: list[str]
+    business_model: str
+    business_rules: list[str]
+    mvp_scope: str
+
+
+# --- Blueprint (기술 청사진) ---
+
+class BlueprintResponse(BaseModel):
+    tech_stack: list[str]
+    data_model_sql: str
+    api_endpoints: list[str]
+    file_structure: str
+    external_services: list[str]
+    auth_flow: list[str]
+
+
+# --- Roadmap (실행 로드맵) ---
+
+class RoadmapResponse(BaseModel):
+    phase_0: list[str]
+    phase_1: list[str]
+    phase_2: list[str]
+    validation_checkpoints: list[str]
+    estimated_complexity: str
+    first_sprint_tasks: list[str]
