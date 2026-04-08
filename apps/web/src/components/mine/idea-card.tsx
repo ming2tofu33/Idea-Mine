@@ -27,7 +27,7 @@ const TIER_CONFIG: Record<
   },
 };
 
-// --- Combo chip colors (matching KeywordChip style) ---
+// --- Combo chip colors (aligned with the quieter keyword tag treatment) ---
 
 const COMBO_COLORS: Record<string, string> = {
   ai: "#FF3B93",
@@ -43,13 +43,20 @@ function ComboChip({ entry }: { entry: KeywordComboEntry }) {
 
   return (
     <span
-      className="inline-block rounded-full px-2 py-0.5 text-[11px] font-medium leading-4 shadow-[inset_0px_1px_rgba(255,255,255,0.05)]"
+      className="inline-flex items-center gap-1.5 rounded-full border border-line-steel/45 bg-[linear-gradient(180deg,rgba(10,16,26,0.96)_0%,rgba(6,11,19,0.92)_100%)] px-2 py-0.5 text-[10px] font-medium leading-4 tracking-[0.16em] text-text-secondary"
       style={{
-        color,
-        backgroundColor: `${color}14`,
-        border: `1px solid ${color}33`,
+        boxShadow:
+          `inset 0px 1px rgba(255,255,255,0.04), 0px 1px 0px rgba(0,0,0,0.32), inset 2px 0px 0px ${color}30`,
       }}
     >
+      <span
+        aria-hidden="true"
+        className="h-1.5 w-1.5 shrink-0 rounded-full"
+        style={{
+          backgroundColor: color,
+          boxShadow: `0 0 0 1px rgba(255,255,255,0.08), 0 0 10px ${color}22`,
+        }}
+      />
       {entry.ko}
     </span>
   );
