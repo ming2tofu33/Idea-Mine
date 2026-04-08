@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { ObservatoryBackground } from "@/components/backgrounds/observatory-background";
+import { CoreLoopPreview } from "@/components/landing/core-loop-preview";
+import { FinalCta } from "@/components/landing/final-cta";
 import { LandingHero } from "@/components/landing/landing-hero";
+import { PositioningBand } from "@/components/landing/positioning-band";
+import { ProductProof } from "@/components/landing/product-proof";
 import { signalButtonClassName } from "@/components/shared/signal-button-styles";
 import { StatusRail } from "@/components/shared/status-rail";
 import { createClient } from "@/lib/supabase/server";
@@ -59,26 +63,10 @@ export default async function Home() {
       </div>
 
       <LandingHero hasUser={Boolean(user)} />
-
-      <section
-        id="core-loop"
-        aria-label="Core loop insertion point"
-        className="relative z-10 readable-container py-3"
-      >
-        <div className="rounded-lg border border-dashed border-line-steel/35 bg-surface-1/30 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-text-secondary/70">
-          Task 3 Target / Core Loop Preview
-        </div>
-      </section>
-
-      <section
-        id="product-proof"
-        aria-label="Product proof insertion point"
-        className="relative z-10 readable-container pb-6"
-      >
-        <div className="rounded-lg border border-dashed border-line-steel/35 bg-surface-1/30 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-text-secondary/70">
-          Task 3 Target / Product & Interface Proof
-        </div>
-      </section>
+      <CoreLoopPreview />
+      <ProductProof />
+      <PositioningBand />
+      <FinalCta hasUser={Boolean(user)} />
     </div>
   );
 }
