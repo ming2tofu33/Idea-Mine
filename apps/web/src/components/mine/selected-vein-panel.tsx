@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import type { Vein, VeinRarity } from "@/types/api";
 import { KeywordChip } from "./keyword-chip";
 import { SignalButton } from "@/components/shared/signal-button";
@@ -85,7 +86,15 @@ export function SelectedVeinPanel({
   if (isLoading && !vein) {
     return (
       <aside className="observatory-panel observatory-frame flex h-full flex-col rounded-[28px] border border-line-steel/55 p-5 lg:sticky lg:top-6">
-        <PanelSkeleton />
+        <motion.div
+          key="loading"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: "easeOut" }}
+          className="h-full"
+        >
+          <PanelSkeleton />
+        </motion.div>
       </aside>
     );
   }
@@ -93,7 +102,13 @@ export function SelectedVeinPanel({
   if (isError && !vein) {
     return (
       <aside className="observatory-panel observatory-frame flex h-full flex-col rounded-[28px] border border-line-steel/55 p-5 lg:sticky lg:top-6">
-        <div className="flex h-full flex-col justify-between">
+        <motion.div
+          key="error"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: "easeOut" }}
+          className="flex h-full flex-col justify-between"
+        >
           <div>
             <p className="text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70">
               scan interrupted
@@ -117,7 +132,7 @@ export function SelectedVeinPanel({
               {isRerolling ? "RESCANNING" : "RESCAN SECTORS"}
             </SignalButton>
           </div>
-        </div>
+        </motion.div>
       </aside>
     );
   }
@@ -125,7 +140,13 @@ export function SelectedVeinPanel({
   if (!vein) {
     return (
       <aside className="observatory-panel observatory-frame flex h-full flex-col rounded-[28px] border border-line-steel/55 p-5 lg:sticky lg:top-6">
-        <div className="flex h-full flex-col justify-between">
+        <motion.div
+          key="empty"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: "easeOut" }}
+          className="flex h-full flex-col justify-between"
+        >
           <div>
             <p className="text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70">
               target analysis
@@ -149,7 +170,7 @@ export function SelectedVeinPanel({
               {isRerolling ? "RESCANNING" : "RESCAN SECTORS"}
             </SignalButton>
           </div>
-        </div>
+        </motion.div>
       </aside>
     );
   }
@@ -165,77 +186,85 @@ export function SelectedVeinPanel({
 
   return (
     <aside className="observatory-panel observatory-frame flex h-full flex-col rounded-[28px] border border-line-steel/55 p-5 lg:sticky lg:top-6">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70">
-            target analysis
-          </p>
-          <h2 className="mt-3 text-2xl font-semibold text-text-primary">
-            {displayName}
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-text-secondary">
-            {instruction}
-          </p>
+      <motion.div
+        key={vein.id}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.28, ease: "easeOut" }}
+        className="flex h-full flex-col"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70">
+              target analysis
+            </p>
+            <h2 className="mt-3 text-2xl font-semibold text-text-primary">
+              {displayName}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-text-secondary">
+              {instruction}
+            </p>
+          </div>
+
+          <span
+            className={[
+              "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-text-secondary/80",
+              rarity.panel,
+            ].join(" ")}
+          >
+            <span className={["h-2 w-2 rounded-full", rarity.accent].join(" ")} />
+            {rarity.label}
+          </span>
         </div>
 
-        <span
-          className={[
-            "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-text-secondary/80",
-            rarity.panel,
-          ].join(" ")}
-        >
-          <span className={["h-2 w-2 rounded-full", rarity.accent].join(" ")} />
-          {rarity.label}
-        </span>
-      </div>
+        <div className="mt-5 flex flex-wrap gap-2">
+          {keywords.map((keyword) => (
+            <KeywordChip key={keyword.id} keyword={keyword} />
+          ))}
+        </div>
 
-      <div className="mt-5 flex flex-wrap gap-2">
-        {keywords.map((keyword) => (
-          <KeywordChip key={keyword.id} keyword={keyword} />
-        ))}
-      </div>
+        {warningMessage && (
+          <div className="mt-5 rounded-2xl border border-cold-cyan/20 bg-[rgba(92,205,229,0.08)] p-3">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70">
+              scan warning
+            </p>
+            <p className="mt-2 text-sm leading-6 text-text-primary/90">
+              {warningMessage}
+            </p>
+          </div>
+        )}
 
-      {warningMessage && (
-        <div className="mt-5 rounded-2xl border border-cold-cyan/20 bg-[rgba(92,205,229,0.08)] p-3">
-          <p className="text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70">
-            scan warning
+        <div className="mt-6 rounded-2xl border border-line-steel/40 bg-surface-1/50 p-4">
+          <p className="text-[11px] uppercase tracking-[0.28em] text-text-secondary/70">
+            scan note
           </p>
           <p className="mt-2 text-sm leading-6 text-text-primary/90">
-            {warningMessage}
+            Open the target to route directly into the idea build.
           </p>
         </div>
-      )}
 
-      <div className="mt-6 rounded-2xl border border-line-steel/40 bg-surface-1/50 p-4">
-        <p className="text-[11px] uppercase tracking-[0.28em] text-text-secondary/70">
-          scan note
-        </p>
-        <p className="mt-2 text-sm leading-6 text-text-primary/90">
-          Open the target to route directly into the idea build.
-        </p>
-      </div>
+        <div className="mt-auto space-y-2 pt-6">
+          <SignalButton
+            type="button"
+            variant="primary"
+            onClick={() => onMine(vein.id)}
+            disabled={!canMine}
+            className="w-full"
+          >
+            {canMine ? "MINE TARGET" : "MINE LOCKED"}
+          </SignalButton>
 
-      <div className="mt-auto space-y-2 pt-6">
-        <SignalButton
-          type="button"
-          variant="primary"
-          onClick={() => onMine(vein.id)}
-          disabled={!canMine}
-          className="w-full"
-        >
-          {canMine ? "MINE TARGET" : "MINE LOCKED"}
-        </SignalButton>
-
-        <SignalButton
-          type="button"
-          variant="secondary"
-          onClick={onReroll}
-          disabled={!canReroll || isRerolling}
-          className="w-full"
-        >
-          {isRerolling ? "RESCANNING" : "RESCAN SECTORS"}
-        </SignalButton>
-      </div>
+          <SignalButton
+            type="button"
+            variant="secondary"
+            onClick={onReroll}
+            disabled={!canReroll || isRerolling}
+            className="w-full"
+          >
+            {isRerolling ? "RESCANNING" : "RESCAN SECTORS"}
+          </SignalButton>
+        </div>
+      </motion.div>
     </aside>
   );
 }

@@ -12,9 +12,9 @@ type VeinSignalNodeProps = {
 };
 
 const POSITION_STYLES: Record<VeinSignalNodeProps["position"], string> = {
-  top: "left-1/2 top-[10%] -translate-x-1/2",
-  left: "left-[4%] bottom-[14%]",
-  right: "right-[6%] bottom-[8%]",
+  top: "lg:left-1/2 lg:top-[10%] lg:-translate-x-1/2",
+  left: "lg:left-[4%] lg:bottom-[14%]",
+  right: "lg:right-[6%] lg:bottom-[8%]",
 };
 
 const POSITION_LABELS: Record<VeinSignalNodeProps["position"], string> = {
@@ -68,10 +68,12 @@ export function VeinSignalNode({
       type="button"
       onClick={() => onSelect(vein.id)}
       aria-pressed={selected}
-      whileHover={{ y: -4, scale: selected ? 1.01 : 1.02 }}
+      whileHover={{ y: -4, scale: selected ? 1.015 : 1.02 }}
       whileTap={{ scale: 0.98 }}
+      animate={{ scale: selected ? 1.015 : 1 }}
+      transition={{ type: "spring", stiffness: 320, damping: 24 }}
       className={[
-        "group absolute z-10 w-[min(270px,46vw)] text-left outline-none focus-visible:ring-2 focus-visible:ring-cold-cyan/30 sm:w-[240px]",
+        "group relative z-10 w-full text-left outline-none focus-visible:ring-2 focus-visible:ring-cold-cyan/30 sm:max-w-[240px] lg:absolute lg:w-[min(270px,46vw)]",
         POSITION_STYLES[position],
       ].join(" ")}
     >
@@ -99,9 +101,9 @@ export function VeinSignalNode({
             <div className="flex items-center gap-2">
               <span
                 className={[
-                "inline-flex h-2.5 w-2.5 shrink-0 rounded-full",
-                rarity.accent,
-                selected
+                  "inline-flex h-2.5 w-2.5 shrink-0 rounded-full",
+                  rarity.accent,
+                  selected
                     ? "shadow-[0_0_12px_rgba(92,205,229,0.55)]"
                     : "shadow-[0_0_8px_rgba(255,255,255,0.08)]",
                 ].join(" ")}

@@ -10,8 +10,8 @@ export function LandingHero({ hasUser }: LandingHeroProps) {
 
   return (
     <section className="relative z-10 readable-container py-8 md:py-10 lg:py-14">
-      <div className="grid gap-8 lg:grid-cols-[45fr_55fr] lg:items-stretch">
-        <div className="observatory-panel observatory-frame flex flex-col justify-between rounded-2xl p-6 sm:p-8">
+      <div className="grid gap-6 md:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:grid-cols-[45fr_55fr] lg:items-stretch lg:gap-8">
+        <div className="observatory-panel observatory-frame flex flex-col justify-between rounded-2xl p-5 sm:p-8 lg:p-9">
           <div className="space-y-5">
             <p className="text-[11px] uppercase tracking-[0.24em] text-cold-cyan/85">
               Idea Exploration Platform
@@ -53,7 +53,7 @@ export function LandingHero({ hasUser }: LandingHeroProps) {
           </div>
         </div>
 
-        <div className="observatory-panel observatory-frame rounded-2xl p-4 sm:p-5">
+        <div className="observatory-panel observatory-frame rounded-2xl p-4 sm:p-5 lg:p-6">
           <div className="observatory-frame rounded-xl border border-line-steel/40 bg-surface-1/55 p-4 sm:p-5">
             <div className="mb-5 flex items-center justify-between">
               <div>
@@ -69,7 +69,7 @@ export function LandingHero({ hasUser }: LandingHeroProps) {
               </span>
             </div>
 
-            <div className="relative min-h-[300px] overflow-hidden rounded-xl border border-line-steel/35 bg-bg-base/80">
+            <div className="relative min-h-[260px] overflow-hidden rounded-xl border border-line-steel/35 bg-bg-base/80 sm:min-h-[320px] lg:min-h-[420px]">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(92,205,229,0.12),transparent_35%),radial-gradient(circle_at_78%_72%,rgba(255,59,147,0.16),transparent_40%)]" />
               <div className="absolute inset-0 opacity-30 [background:linear-gradient(rgba(42,60,88,0.55)_1px,transparent_1px),linear-gradient(90deg,rgba(42,60,88,0.55)_1px,transparent_1px)] [background-size:28px_28px]" />
 
