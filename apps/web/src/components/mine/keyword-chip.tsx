@@ -14,13 +14,20 @@ export function KeywordChip({ keyword }: { keyword: Keyword }) {
 
   return (
     <span
-      className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium leading-5"
+      className="inline-flex items-center gap-1.5 rounded-full border border-line-steel/45 bg-[linear-gradient(180deg,rgba(10,16,26,0.96)_0%,rgba(6,11,19,0.92)_100%)] px-2.5 py-1 text-[10px] font-medium leading-4 tracking-[0.18em] text-text-secondary"
       style={{
-        color,
-        backgroundColor: `${color}14`, // 8% opacity
-        border: `1px solid ${color}33`, // 20% opacity
+        boxShadow:
+          "inset 0px 1px rgba(255,255,255,0.04), 0px 1px 0px rgba(0,0,0,0.32), inset 2px 0px 0px rgba(154,170,192,0.22)",
       }}
     >
+      <span
+        aria-hidden="true"
+        className="h-1.5 w-1.5 shrink-0 rounded-full"
+        style={{
+          backgroundColor: color,
+          boxShadow: `0 0 0 1px rgba(255,255,255,0.08), 0 0 10px ${color}22`,
+        }}
+      />
       {keyword.ko}
     </span>
   );

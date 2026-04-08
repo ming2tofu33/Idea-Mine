@@ -2,7 +2,7 @@
 
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Float, Environment } from "@react-three/drei";
+import { Float } from "@react-three/drei";
 import type { VeinRarity } from "@/types/api";
 import * as THREE from "three";
 
@@ -52,7 +52,7 @@ function Asteroid({ rarity }: { rarity: VeinRarity }) {
         return { baseGeo, wireGeo };
     }, [isLegend]);
 
-    useFrame((state, delta) => {
+    useFrame((_, delta) => {
         if (meshRef.current) {
             meshRef.current.rotation.x += delta * 0.12;
             meshRef.current.rotation.y += delta * 0.18;
@@ -66,11 +66,11 @@ function Asteroid({ rarity }: { rarity: VeinRarity }) {
                 <meshStandardMaterial
                     color={color}
                     emissive={isLegend ? color : "#000000"}
-                    emissiveIntensity={isLegend ? 1.2 : 0}
+                    emissiveIntensity={isLegend ? 0.55 : 0}
                     transparent={isLegend}
-                    opacity={isLegend ? 0.9 : 1}
-                    metalness={0.7}
-                    roughness={0.6}
+                    opacity={isLegend ? 0.88 : 1}
+                    metalness={0.45}
+                    roughness={0.72}
                     flatShading={false}
                 />
             </mesh>
@@ -81,7 +81,7 @@ function Asteroid({ rarity }: { rarity: VeinRarity }) {
                     color={color}
                     wireframe
                     transparent
-                    opacity={isLegend ? 0.3 : 0.1}
+                    opacity={isLegend ? 0.18 : 0.06}
                 />
             </mesh>
         </group>
@@ -89,23 +89,23 @@ function Asteroid({ rarity }: { rarity: VeinRarity }) {
 }
 
 export function Meteorite3D({ rarity }: { rarity: VeinRarity }) {
-    // Moved camera significantly closer to fill the screen/card bounds
     return (
-        <Canvas camera={{ position: [0, 0, 3.2], fov: 45 }} gl={{ alpha: true }}>
-            <ambientLight intensity={0.6} />
-            <directionalLight position={[10, 10, 5]} intensity={1.5} color="#ffffff" />
-            <directionalLight position={[-10, 5, -5]} intensity={0.5} color={RARITY_COLORS[rarity]} />
-            <pointLight position={[0, -10, 0]} intensity={2} color="#FF3B93" distance={20} />
+        <Canvas camera={{ position: [0, 0, 3.1], fov: 42 }} gl={{ alpha: true }}>
+            <ambientLight intensity={0.45} />
+            <directionalLight position={[6, 8, 6]} intensity={1.15} color="#ffffff" />
+            <directionalLight
+                position={[-6, 4, -4]}
+                intensity={0.35}
+                color={RARITY_COLORS[rarity]}
+            />
 
             <Float
-                speed={1.5}
-                rotationIntensity={1.2}
-                floatIntensity={1.5}
+                speed={0.75}
+                rotationIntensity={0.55}
+                floatIntensity={0.45}
             >
                 <Asteroid rarity={rarity} />
             </Float>
-
-            <Environment preset="city" />
         </Canvas>
     );
 }
