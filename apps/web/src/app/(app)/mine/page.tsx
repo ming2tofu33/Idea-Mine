@@ -106,19 +106,19 @@ export default function MinePage() {
         </div>
 
         {/* Reroll button */}
-        <div className="mx-auto mt-6 w-full max-w-4xl text-center">
+        <div className="mx-auto mt-6 w-full max-w-4xl text-center z-10 relative">
           <button
             type="button"
             disabled={!canReroll || rerollMutation.isPending}
             onClick={() => rerollMutation.mutate()}
             className={[
-              "rounded-lg border px-5 py-2.5 text-sm font-medium transition-all duration-200",
+              "rounded-lg border px-5 py-2.5 text-xs font-bold tracking-widest transition-all duration-300 backdrop-blur-sm",
               !canReroll || rerollMutation.isPending
-                ? "cursor-not-allowed border-line-steel/30 bg-surface-2/40 text-text-secondary opacity-40"
-                : "border-line-steel bg-surface-2 text-text-secondary hover:border-signal-pink/30 hover:text-text-primary",
+                ? "cursor-not-allowed border-line-steel/30 bg-surface-1/40 text-text-secondary opacity-50"
+                : "border-line-steel/50 bg-surface-2/60 text-text-secondary hover:border-cold-cyan/50 hover:bg-surface-1/80 hover:text-cold-cyan hover:shadow-[0_0_15px_rgba(92,205,229,0.2)]",
             ].join(" ")}
           >
-            {rerollMutation.isPending ? "새 광맥 탐색 중..." : "다시 파기 🔄"}
+            {rerollMutation.isPending ? "[ SCANNING SECTORS... ]" : "[ 심해 재탐색 ]"}
           </button>
         </div>
       </div>

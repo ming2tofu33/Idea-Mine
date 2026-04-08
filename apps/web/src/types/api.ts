@@ -181,6 +181,58 @@ export interface UserProfile {
   streak_days: number;
 }
 
+// --- Product Design (제품 설계서) ---
+
+export interface ProductDesign {
+  id: string;
+  user_id: string;
+  overview_id: string;
+  user_flow: string[];
+  screens: string[];
+  features_must: string[];
+  features_should: string[];
+  features_later: string[];
+  business_model: string;
+  business_rules: string[];
+  mvp_scope: string;
+  axes: {
+    interface_complexity: string;
+    business_complexity: string;
+    technical_complexity: string;
+  } | null;
+  created_at: string;
+}
+
+// --- Blueprint (기술 청사진) ---
+
+export interface Blueprint {
+  id: string;
+  user_id: string;
+  design_id: string;
+  tech_stack: string[];
+  data_model_sql: string;
+  api_endpoints: string[];
+  file_structure: string;
+  external_services: string[];
+  auth_flow: string[];
+  created_at: string;
+}
+
+// --- Roadmap (실행 로드맵) ---
+
+export interface Roadmap {
+  id: string;
+  user_id: string;
+  blueprint_id: string;
+  phase_0: string[];
+  phase_1: string[];
+  phase_2: string[];
+  validation_checkpoints: string[];
+  estimated_complexity: string;
+  first_sprint_tasks: string[];
+  created_at: string;
+}
+
 // --- Admin Cost Summary ---
 
 export interface CostByFeature {

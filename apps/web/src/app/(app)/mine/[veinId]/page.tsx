@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect, useCallback } from "react";
+import { use, useState, useEffect, useCallback, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { MineBackground } from "@/components/backgrounds/mine-background";
@@ -55,8 +55,11 @@ export default function MiningResultPage({
     mutationFn: () => miningApi.mine(veinId),
   });
 
-  // Trigger mining on mount
+  // Trigger mining on mount (ref prevents Strict Mode double-fire)
+  const hasMined = useRef(false);
   useEffect(() => {
+    if (hasMined.current) return;
+    hasMined.current = true;
     mineMutation.mutate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [veinId]);

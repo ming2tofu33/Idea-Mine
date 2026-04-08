@@ -13,6 +13,9 @@ import type {
   FullOverview,
   UsageInfo,
   CostSummaryResponse,
+  ProductDesign,
+  Blueprint,
+  Roadmap,
 } from "@/types/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
@@ -185,6 +188,85 @@ export const labApi = {
       .delete()
       .eq("id", fullOverviewId);
     if (error) throw error;
+  },
+};
+
+// --- Collection API ---
+
+export const collectionApi = {
+  // 생성
+  createDesign: (overviewId: string) =>
+    apiFetch<ProductDesign>("/lab/design", {
+      method: "POST",
+      body: JSON.stringify({ overview_id: overviewId }),
+    }),
+
+  createBlueprint: (designId: string) =>
+    apiFetch<Blueprint>("/lab/blueprint", {
+      method: "POST",
+      body: JSON.stringify({ design_id: designId }),
+    }),
+
+  createRoadmap: (blueprintId: string) =>
+    apiFetch<Roadmap>("/lab/roadmap", {
+      method: "POST",
+      body: JSON.stringify({ blueprint_id: blueprintId }),
+    }),
+
+  generateAll: (overviewId: string) =>
+    apiFetch<{ design: ProductDesign; blueprint: Blueprint; roadmap: Roadmap }>(
+      "/lab/generate-all",
+      { method: "POST", body: JSON.stringify({ overview_id: overviewId }) },
+    ),
+
+  // 조회
+  async getDesignsByOverview(overviewId: string): Promise<ProductDesign[]> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    const { data, error } = await supabase
+      .from("product_designs")
+      .select("*")
+      .eq("overview_id", overviewId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as ProductDesign[];
+  },
+
+  async getBlueprintsByDesign(designId: string): Promise<Blueprint[]> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    const { data, error } = await supabase
+      .from("blueprints")
+      .select("*")
+      .eq("design_id", designId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as Blueprint[];
+  },
+
+  async getRoadmapsByBlueprint(blueprintId: string): Promise<Roadmap[]> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    const { data, error } = await supabase
+      .from("roadmaps")
+      .select("*")
+      .eq("blueprint_id", blueprintId)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data ?? []) as Roadmap[];
+  },
+
+  // 삭제
+  async deleteDesign(id: string): Promise<void> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    await supabase.from("product_designs").delete().eq("id", id);
+  },
+
+  async deleteBlueprint(id: string): Promise<void> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    await supabase.from("blueprints").delete().eq("id", id);
+  },
+
+  async deleteRoadmap(id: string): Promise<void> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    await supabase.from("roadmaps").delete().eq("id", id);
   },
 };
 

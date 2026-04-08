@@ -48,7 +48,7 @@ function StatusBadge({
 function IdeaRow({ idea }: { idea: Idea }) {
   return (
     <Link
-      href={`/lab/overview/${idea.id}`}
+      href={`/lab/collection/${idea.id}`}
       className="group flex cursor-pointer items-center justify-between rounded-xl border border-line-steel/20 bg-surface-1/40 p-4 transition-all duration-200 hover:border-cold-cyan/20 hover:bg-surface-1/60"
     >
       <div className="min-w-0 flex-1">
@@ -80,7 +80,7 @@ function OverviewRow({
 }) {
   return (
     <Link
-      href={`/lab/overview/${idea.id}`}
+      href={`/lab/collection/${idea.id}`}
       className="group flex cursor-pointer items-center justify-between rounded-xl border border-line-steel/20 bg-surface-1/40 p-4 transition-all duration-200 hover:border-cold-cyan/20 hover:bg-surface-1/60"
     >
       <div className="min-w-0 flex-1">
