@@ -12,6 +12,7 @@ import type {
   AppraisalDepth,
   FullOverview,
   UsageInfo,
+  CostSummaryResponse,
 } from "@/types/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
@@ -218,4 +219,7 @@ export const adminApi = {
 
   regenerateVeins: () =>
     apiFetch<TodayVeinsResponse>("/admin/regenerate-veins", { method: "POST" }),
+
+  getCostsSummary: (days: number = 7) =>
+    apiFetch<CostSummaryResponse>(`/admin/costs/summary?days=${days}`),
 };

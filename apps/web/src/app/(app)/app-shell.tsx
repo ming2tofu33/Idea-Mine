@@ -63,6 +63,14 @@ export function AppShell({
           <span className="text-xs text-text-secondary/70">
             {user.email}
           </span>
+          {profile?.role === "admin" && (
+            <Link
+              href="/admin"
+              className="rounded-md border border-amber-400/20 px-3 py-1 text-xs text-amber-400 transition-all hover:border-amber-400/40 hover:bg-amber-400/5"
+            >
+              Admin
+            </Link>
+          )}
           <button
             onClick={handleSignOut}
             className="rounded-md border border-transparent px-3 py-1 text-xs text-text-secondary transition-all hover:border-line-steel/40 hover:text-text-primary"

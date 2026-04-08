@@ -180,3 +180,40 @@ export interface UserProfile {
   miner_level: number;
   streak_days: number;
 }
+
+// --- Admin Cost Summary ---
+
+export interface CostByFeature {
+  feature_type: string;
+  cost: number;
+  calls: number;
+}
+
+export interface CostByDateFeature {
+  date: string;
+  mining?: number;
+  overview?: number;
+  appraisal?: number;
+  full_overview?: number;
+  [key: string]: string | number | undefined;
+}
+
+export interface CostLogEntry {
+  id: string;
+  feature_type: string;
+  model: string;
+  input_tokens: number;
+  output_tokens: number;
+  total_cost_usd: number;
+  status: string;
+  created_at: string;
+}
+
+export interface CostSummaryResponse {
+  total_cost_usd: number;
+  total_calls: number;
+  avg_cost_per_call: number;
+  by_feature: CostByFeature[];
+  by_date_feature: CostByDateFeature[];
+  recent_logs: CostLogEntry[];
+}

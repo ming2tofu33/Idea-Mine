@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -83,4 +83,70 @@ async def set_persona(
         "status": "ok",
         "persona_tier": body.persona_tier,
         "message": f"페르소나가 {'해제' if body.persona_tier is None else body.persona_tier + ' 모드로 전환'}되었습니다",
+    }
+
+
+@router.get("/costs/summary")
+async def get_costs_summary(
+    days: int = 7,
+    user: dict = Depends(require_admin),
+    supabase: Client = Depends(get_supabase),
+):
+    """AI 비용 요약 (최근 N일). 어드민 전용."""
+    if days < 1 or days > 90:
+        raise HTTPException(status_code=400, detail="days must be 1-90")
+
+    since = (date.today() - timedelta(days=days - 1)).isoformat()
+
+    # 전체 로그 조회 (기간 내)
+    logs_res = supabase.table("ai_usage_logs") \
+        .select("feature_type, total_cost_usd, created_at") \
+        .gte("created_at", since) \
+        .execute()
+
+    # 기능별 집계
+    by_feature: dict[str, dict] = {}
+    for row in logs_res.data:
+        ft = row["feature_type"]
+        if ft not in by_feature:
+            by_feature[ft] = {"feature_type": ft, "cost": 0.0, "calls": 0}
+        by_feature[ft]["cost"] += float(row["total_cost_usd"] or 0)
+        by_feature[ft]["calls"] += 1
+
+    # 일별 집계
+    by_date: dict[str, dict] = {}
+    for row in logs_res.data:
+        d = row.get("created_at", "")[:10]
+        if d not in by_date:
+            by_date[d] = {"date": d, "cost": 0.0, "calls": 0}
+        by_date[d]["cost"] += float(row["total_cost_usd"] or 0)
+        by_date[d]["calls"] += 1
+
+    # 일별 + 기능별 집계 (스택 차트용)
+    by_date_feature: dict[str, dict] = {}
+    for row in logs_res.data:
+        d = row.get("created_at", "")[:10]
+        if d not in by_date_feature:
+            by_date_feature[d] = {"date": d}
+        ft = row["feature_type"]
+        by_date_feature[d][ft] = by_date_feature[d].get(ft, 0.0) + float(row["total_cost_usd"] or 0)
+
+    # 최근 로그 50건
+    recent_res = supabase.table("ai_usage_logs") \
+        .select("id, feature_type, model, input_tokens, output_tokens, total_cost_usd, status, created_at") \
+        .order("created_at", desc=True) \
+        .limit(50) \
+        .execute()
+
+    total_cost = sum(float(r["total_cost_usd"] or 0) for r in logs_res.data)
+    total_calls = len(logs_res.data)
+
+    return {
+        "total_cost_usd": round(total_cost, 6),
+        "total_calls": total_calls,
+        "avg_cost_per_call": round(total_cost / total_calls, 6) if total_calls > 0 else 0,
+        "by_feature": sorted(by_feature.values(), key=lambda x: x["cost"], reverse=True),
+        "by_date": sorted(by_date.values(), key=lambda x: x["date"]),
+        "by_date_feature": sorted(by_date_feature.values(), key=lambda x: x["date"]),
+        "recent_logs": recent_res.data,
     }
