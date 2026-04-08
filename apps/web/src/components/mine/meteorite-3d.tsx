@@ -31,8 +31,11 @@ function Asteroid({ rarity }: { rarity: VeinRarity }) {
             const n1 = Math.sin(v.x * 3 + v.y * 3) * 0.15;
             const n2 = Math.cos(v.z * 4 + v.x * 4) * 0.15;
             const n3 = Math.sin(v.y * 6 + v.z * 6) * 0.1;
-            // sharp random rocky edges
-            const randomNoise = (Math.random() - 0.5) * 0.08;
+            // Deterministic pseudo-noise keeps the rock shape irregular without
+            // introducing render-time randomness.
+            const noiseSeed =
+                Math.sin(v.x * 12.9898 + v.y * 78.233 + v.z * 37.719) * 43758.5453;
+            const randomNoise = (noiseSeed - Math.floor(noiseSeed) - 0.5) * 0.08;
 
             const totalDistortion = n1 + n2 + n3 + randomNoise;
 
