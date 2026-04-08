@@ -40,7 +40,7 @@ export function FinalCta({ hasUser }: { hasUser: boolean }) {
               {hasUser ? "Enter The Mine" : "Start Exploring"}
             </Link>
             <p className="text-xs uppercase tracking-[0.18em] text-text-secondary/70">
-              Same route as the hero CTA.
+              Explore the flow from signal to direction.
             </p>
           </div>
         </div>
