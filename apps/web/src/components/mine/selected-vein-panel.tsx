@@ -12,6 +12,7 @@ type SelectedVeinPanelProps = {
   isLoading: boolean;
   isError: boolean;
   errorMessage?: string;
+  warningMessage?: string;
   onMine: (id: string) => void;
   onReroll: () => void;
 };
@@ -45,7 +46,7 @@ const RARITY_META: Record<
 const VEIN_CODENAMES = ["Alpha", "Beta", "Gamma"];
 
 function getVeinDisplayName(vein: Vein) {
-  const codename = VEIN_CODENAMES[vein.slot_index] ?? `Node ${vein.slot_index + 1}`;
+  const codename = VEIN_CODENAMES[vein.slot_index - 1] ?? `Node ${vein.slot_index}`;
 
   return `Target ${codename}`;
 }
@@ -77,6 +78,7 @@ export function SelectedVeinPanel({
   isLoading,
   isError,
   errorMessage,
+  warningMessage,
   onMine,
   onReroll,
 }: SelectedVeinPanelProps) {
@@ -192,6 +194,17 @@ export function SelectedVeinPanel({
           <KeywordChip key={keyword.id} keyword={keyword} />
         ))}
       </div>
+
+      {warningMessage && (
+        <div className="mt-5 rounded-2xl border border-cold-cyan/20 bg-[rgba(92,205,229,0.08)] p-3">
+          <p className="text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70">
+            scan warning
+          </p>
+          <p className="mt-2 text-sm leading-6 text-text-primary/90">
+            {warningMessage}
+          </p>
+        </div>
+      )}
 
       <div className="mt-6 rounded-2xl border border-line-steel/40 bg-surface-1/50 p-4">
         <p className="text-[11px] uppercase tracking-[0.28em] text-text-secondary/70">

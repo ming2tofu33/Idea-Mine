@@ -48,6 +48,10 @@ export default function MinePage() {
 
   const canReroll = data != null && data.rerolls_used < data.rerolls_max;
   const canMine = data != null && data.generations_used < data.generations_max;
+  const hasUsableVeins = (data?.veins.length ?? 0) > 0;
+  const isFatalScanError = isError && !hasUsableVeins;
+  const scanErrorMessage = error instanceof Error ? error.message : undefined;
+  const scanWarningMessage = isError && hasUsableVeins ? scanErrorMessage : undefined;
   const selectedVeinId =
     selectedVeinIdState != null &&
     data?.veins.some((vein) => vein.id === selectedVeinIdState)
@@ -98,8 +102,9 @@ export default function MinePage() {
             selectedVeinId={selectedVeinId}
             onSelect={(veinId) => setSelectedVeinIdState(veinId)}
             isLoading={isLoading}
-            isError={isError}
-            errorMessage={error instanceof Error ? error.message : undefined}
+            isError={isFatalScanError}
+            errorMessage={scanErrorMessage}
+            warningMessage={scanWarningMessage}
           />
 
           <SelectedVeinPanel
@@ -108,8 +113,9 @@ export default function MinePage() {
             canReroll={canReroll}
             isRerolling={rerollMutation.isPending}
             isLoading={isLoading}
-            isError={isError}
-            errorMessage={error instanceof Error ? error.message : undefined}
+            isError={isFatalScanError}
+            errorMessage={scanErrorMessage}
+            warningMessage={scanWarningMessage}
             onMine={handleMine}
             onReroll={() => rerollMutation.mutate()}
           />

@@ -11,6 +11,7 @@ type SectorScanStageProps = {
   isLoading: boolean;
   isError: boolean;
   errorMessage?: string;
+  warningMessage?: string;
 };
 
 const SLOT_ORDER = ["top", "left", "right"] as const;
@@ -63,8 +64,10 @@ export function SectorScanStage({
   isLoading,
   isError,
   errorMessage,
+  warningMessage,
 }: SectorScanStageProps) {
   const hasTargets = !isLoading && !isError && veins.length > 0;
+  const veinBySlotIndex = new Map(veins.map((vein) => [vein.slot_index, vein]));
 
   return (
     <section className="observatory-panel observatory-frame relative isolate overflow-hidden rounded-[32px] border border-line-steel/55 p-4 sm:p-5 lg:min-h-[680px]">
@@ -111,6 +114,15 @@ export function SectorScanStage({
           </div>
         </div>
 
+        {warningMessage && !isError && (
+          <div className="mt-3 rounded-2xl border border-cold-cyan/20 bg-[rgba(92,205,229,0.07)] px-4 py-3 text-sm leading-6 text-text-primary/90">
+            <span className="mr-2 text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70">
+              scan warning
+            </span>
+            {warningMessage}
+          </div>
+        )}
+
         <div className="relative flex flex-1 items-stretch justify-center overflow-hidden pt-5">
           <div className="pointer-events-none absolute left-1/2 top-1/2 h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cold-cyan/15 shadow-[0_0_0_1px_rgba(92,205,229,0.08)]" />
           <div className="pointer-events-none absolute left-1/2 top-1/2 h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-signal-pink/10" />
@@ -153,7 +165,7 @@ export function SectorScanStage({
           ) : (
             <>
               {SLOT_ORDER.map((position, index) => {
-                const vein = veins[index];
+                const vein = veinBySlotIndex.get(index + 1);
 
                 if (!vein) {
                   return (
