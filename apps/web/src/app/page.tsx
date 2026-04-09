@@ -40,7 +40,7 @@ export default async function Home() {
           right={
             <div className="flex items-center gap-2">
               <Link
-                href={user ? "/vault" : "/auth/sign-in"}
+                href={user ? "/vault" : "/auth/sign-in?next=/mine"}
                 className={signalButtonClassName({
                   variant: "ghost",
                   className: "px-3 py-1.5 text-xs",
@@ -49,13 +49,13 @@ export default async function Home() {
                 {user ? "Open Vault" : "Sign in"}
               </Link>
               <Link
-                href={user ? "/mine" : "/auth/sign-in"}
+                href={user ? "/mine" : "/experience"}
                 className={signalButtonClassName({
                   variant: "default",
                   className: "px-3 py-1.5 text-xs",
                 })}
               >
-                Enter Mine
+                {user ? "Enter Mine" : "Try today's vein"}
               </Link>
             </div>
           }

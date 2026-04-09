@@ -1,8 +1,22 @@
+"use client";
+
 import Link from "next/link";
 import { signalButtonClassName } from "@/components/shared/signal-button-styles";
+import { trackExperienceEvent } from "@/lib/experience-events";
 
 export function FinalCta({ hasUser }: { hasUser: boolean }) {
-  const primaryHref = hasUser ? "/mine" : "/auth/sign-in";
+  const primaryHref = hasUser ? "/mine" : "/experience";
+  const primaryLabel = hasUser ? "Enter The Mine" : "Enter the demo mine";
+
+  const handlePrimaryClick = () => {
+    if (!hasUser) {
+      trackExperienceEvent({
+        eventName: "landing_experience_click",
+        route: "/",
+        metadata: { cta: "final_cta" },
+      });
+    }
+  };
 
   return (
     <section
@@ -31,13 +45,14 @@ export function FinalCta({ hasUser }: { hasUser: boolean }) {
           <div className="flex flex-col items-start gap-3 lg:items-end">
             <Link
               href={primaryHref}
+              onClick={handlePrimaryClick}
               className={signalButtonClassName({
                 variant: "primary",
                 className:
                   "border-signal-pink/65 bg-[rgba(255,59,147,0.14)] px-6 py-3 text-sm shadow-[0_0_24px_rgba(255,59,147,0.16)]",
               })}
             >
-              {hasUser ? "Enter The Mine" : "Start Exploring"}
+              {primaryLabel}
             </Link>
             <p className="text-xs uppercase tracking-[0.18em] text-text-secondary/70">
               Explore the flow from signal to direction.

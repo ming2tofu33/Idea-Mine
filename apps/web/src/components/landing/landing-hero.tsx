@@ -1,12 +1,26 @@
+"use client";
+
 import Link from "next/link";
 import { signalButtonClassName } from "@/components/shared/signal-button-styles";
+import { trackExperienceEvent } from "@/lib/experience-events";
 
 export type LandingHeroProps = {
   hasUser: boolean;
 };
 
 export function LandingHero({ hasUser }: LandingHeroProps) {
-  const primaryHref = hasUser ? "/mine" : "/auth/sign-in";
+  const primaryHref = hasUser ? "/mine" : "/experience";
+  const primaryLabel = hasUser ? "Enter The Mine" : "Try today's vein";
+
+  const handlePrimaryClick = () => {
+    if (!hasUser) {
+      trackExperienceEvent({
+        eventName: "landing_experience_click",
+        route: "/",
+        metadata: { cta: "hero_primary" },
+      });
+    }
+  };
 
   return (
     <section className="relative z-10 readable-container py-8 md:py-10 lg:py-14">
@@ -24,18 +38,24 @@ export function LandingHero({ hasUser }: LandingHeroProps) {
               planning assets. Mine for promising signals, store validated
               outcomes, and refine them into execution-ready directions.
             </p>
+            {!hasUser && (
+              <p className="max-w-xl text-xs leading-5 text-text-secondary/70">
+                로그인 없이 오늘의 광맥을 먼저 체험할 수 있어요. 저장과 전체 탐색은 로그인 후에 열립니다.
+              </p>
+            )}
           </div>
 
           <div className="mt-8 space-y-4">
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 href={primaryHref}
+                onClick={handlePrimaryClick}
                 className={signalButtonClassName({
                   variant: "primary",
                   className: "px-5 py-2.5 text-sm",
                 })}
               >
-                {hasUser ? "Enter The Mine" : "Start Exploring"}
+                {primaryLabel}
               </Link>
               <a
                 href="#product-proof"

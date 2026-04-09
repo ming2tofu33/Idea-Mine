@@ -29,14 +29,18 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 미인증 사용자가 보호 라우트에 접근 시 로그인으로 리다이렉트
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    request.nextUrl.pathname !== "/"
-  ) {
+  // 미인증 사용자도 접근 가능한 퍼블릭 경로
+  const { pathname } = request.nextUrl;
+  const isPublicPath =
+    pathname === "/" ||
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/experience") ||
+    pathname.startsWith("/api/experience-events");
+
+  if (!user && !isPublicPath) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/sign-in";
+    url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
   }
 
