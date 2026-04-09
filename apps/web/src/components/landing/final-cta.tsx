@@ -5,7 +5,7 @@ import { signalButtonClassName } from "@/components/shared/signal-button-styles"
 import { trackExperienceEvent } from "@/lib/experience-events";
 
 export function FinalCta({ hasUser }: { hasUser: boolean }) {
-  const primaryHref = hasUser ? "/mine" : "/experience";
+  const primaryHref = "/mine";
   const primaryLabel = hasUser ? "Enter The Mine" : "Enter the demo mine";
 
   const handlePrimaryClick = () => {

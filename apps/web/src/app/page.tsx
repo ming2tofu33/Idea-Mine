@@ -49,7 +49,7 @@ export default async function Home() {
                 {user ? "Open Vault" : "Sign in"}
               </Link>
               <Link
-                href={user ? "/mine" : "/experience"}
+                href="/mine"
                 className={signalButtonClassName({
                   variant: "default",
                   className: "px-3 py-1.5 text-xs",

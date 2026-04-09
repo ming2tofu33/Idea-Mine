@@ -1,33 +1,14 @@
-import { notFound } from "next/navigation";
-import { ExperienceResult } from "@/components/experience/experience-result";
-import {
-  getExperienceIdeasByVeinId,
-  getExperienceVeinById,
-} from "@/lib/experience-data";
+import { redirect } from "next/navigation";
 
-type PageProps = {
+/**
+ * /experience/[veinId]는 더 이상 사용하지 않음.
+ * 게스트도 /mine에서 데모를 볼 수 있으므로 /mine으로 통합 redirect.
+ */
+export default async function ExperienceVeinRedirect({
+  params,
+}: {
   params: Promise<{ veinId: string }>;
-};
-
-export async function generateMetadata({ params }: PageProps) {
+}) {
   const { veinId } = await params;
-  const vein = getExperienceVeinById(veinId);
-  if (!vein) return { title: "Experience — IDEA MINE" };
-  return {
-    title: `${vein.previewLineKo} — IDEA MINE`,
-    description: `${vein.previewLineKo}에 대한 샘플 아이디어 3개를 미리보기로 확인하세요.`,
-  };
-}
-
-export default async function ExperienceResultPage({ params }: PageProps) {
-  const { veinId } = await params;
-  const vein = getExperienceVeinById(veinId);
-
-  if (!vein) {
-    notFound();
-  }
-
-  const ideas = getExperienceIdeasByVeinId(vein.id);
-
-  return <ExperienceResult vein={vein} ideas={ideas} />;
+  redirect(`/mine?veinId=${veinId}`);
 }

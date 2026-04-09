@@ -9,7 +9,7 @@ export type LandingHeroProps = {
 };
 
 export function LandingHero({ hasUser }: LandingHeroProps) {
-  const primaryHref = hasUser ? "/mine" : "/experience";
+  const primaryHref = "/mine";
   const primaryLabel = hasUser ? "Enter The Mine" : "Try today's vein";
 
   const handlePrimaryClick = () => {

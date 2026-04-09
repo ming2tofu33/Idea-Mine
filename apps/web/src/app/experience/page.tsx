@@ -1,12 +1,10 @@
-import { ExperienceEntry } from "@/components/experience/experience-entry";
-import { getExperienceVeins } from "@/lib/experience-data";
+import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Experience — IDEA MINE",
-  description: "로그인 없이 오늘의 AI 아이디어 광맥을 미리 체험해보세요.",
-};
-
-export default function ExperiencePage() {
-  const veins = getExperienceVeins();
-  return <ExperienceEntry veins={veins} />;
+/**
+ * /experience는 /mine으로 통합됨.
+ * 게스트도 /mine에서 데모 모드를 볼 수 있도록 변경.
+ * 이 라우트는 호환성을 위해 redirect만 수행.
+ */
+export default function ExperienceRedirect() {
+  redirect("/mine");
 }

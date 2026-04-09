@@ -5,6 +5,11 @@
  * 실제 API 호출 없이 정적 데이터를 사용하여 비용과 남용 리스크 제어.
  */
 
+import type {
+  Keyword,
+  TodayVeinsResponse,
+  Vein,
+} from "@/types/api";
 import type { ExperienceIdea, ExperienceVein } from "@/types/experience";
 
 const DEMO_VEINS: ExperienceVein[] = [
@@ -173,4 +178,64 @@ export function getExperienceVeinById(id: string): ExperienceVein | null {
 
 export function getExperienceIdeasByVeinId(id: string): ExperienceIdea[] {
   return DEMO_IDEAS[id] ?? [];
+}
+
+// --- Adapters: ExperienceVein → real Vein shape ---
+// 실제 Mine 컴포넌트(SectorScanStage, SelectedVeinPanel)를 데모에서 그대로
+// 재사용하기 위한 타입 변환. 데모용이므로 id는 데모 prefix 유지.
+
+function experienceKeywordToKeyword(
+  kw: ExperienceVein["keywords"][number],
+  veinId: string,
+  index: number,
+): Keyword {
+  return {
+    id: `${veinId}-kw-${index}`,
+    slug: `${veinId}-kw-${index}`,
+    category: kw.category,
+    ko: kw.ko,
+    en: kw.en,
+    is_premium: false,
+  };
+}
+
+export function experienceVeinToVein(
+  experience: ExperienceVein,
+  slotIndex: number,
+): Vein {
+  // legend는 데모에 없으므로 golden까지만. 타입 캐스트로 호환.
+  const rarity =
+    experience.rarity === "common" ||
+    experience.rarity === "rare" ||
+    experience.rarity === "golden"
+      ? experience.rarity
+      : "common";
+
+  const keywords = experience.keywords.map((kw, i) =>
+    experienceKeywordToKeyword(kw, experience.id, i),
+  );
+
+  return {
+    id: experience.id,
+    slot_index: slotIndex,
+    keyword_ids: keywords.map((k) => k.id),
+    keywords,
+    rarity,
+    is_selected: false,
+  };
+}
+
+/**
+ * 데모용 TodayVeinsResponse 생성. 실제 useQuery 응답과 동일한 모양.
+ * 카운터(rerolls/generations)는 데모에서 의미 없지만 UI 일관성을 위해 0/0으로.
+ */
+export function getDemoTodayVeinsResponse(): TodayVeinsResponse {
+  const veins = DEMO_VEINS.map((v, i) => experienceVeinToVein(v, i + 1));
+  return {
+    veins,
+    rerolls_used: 0,
+    rerolls_max: 0,
+    generations_used: 0,
+    generations_max: 0,
+  };
 }
