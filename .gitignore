@@ -49,3 +49,8 @@ supabase/.branches/
 # Temp
 *.log
 *.tmp
+
+# QA / tooling artifacts
+/*.png
+.codex-review-*/
+.playwright-mcp/
