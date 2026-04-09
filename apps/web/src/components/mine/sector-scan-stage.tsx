@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import type { Vein } from "@/types/api";
+import { usePrefersReducedMotion } from "@/components/shared/use-prefers-reduced-motion";
 import { VeinSignalNode } from "./vein-signal-node";
 
 type SectorScanStageProps = {
@@ -67,22 +67,7 @@ export function SectorScanStage({
   errorMessage,
   warningMessage,
 }: SectorScanStageProps) {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    const updatePreference = () => {
-      setPrefersReducedMotion(mediaQuery.matches);
-    };
-
-    updatePreference();
-    mediaQuery.addEventListener("change", updatePreference);
-
-    return () => {
-      mediaQuery.removeEventListener("change", updatePreference);
-    };
-  }, []);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   const hasTargets = !isLoading && !isError && veins.length > 0;
   const veinBySlotIndex = new Map(veins.map((vein) => [vein.slot_index, vein]));

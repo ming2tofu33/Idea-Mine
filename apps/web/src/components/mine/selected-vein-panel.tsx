@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import type { Vein, VeinRarity } from "@/types/api";
+import { usePrefersReducedMotion } from "@/components/shared/use-prefers-reduced-motion";
 import { KeywordChip } from "./keyword-chip";
 import { SignalButton } from "@/components/shared/signal-button";
 
@@ -84,22 +84,7 @@ export function SelectedVeinPanel({
   onMine,
   onReroll,
 }: SelectedVeinPanelProps) {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    const updatePreference = () => {
-      setPrefersReducedMotion(mediaQuery.matches);
-    };
-
-    updatePreference();
-    mediaQuery.addEventListener("change", updatePreference);
-
-    return () => {
-      mediaQuery.removeEventListener("change", updatePreference);
-    };
-  }, []);
+  const prefersReducedMotion = usePrefersReducedMotion();
 
   if (isLoading && !vein) {
     return (
