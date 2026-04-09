@@ -4,8 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { FlaskConical, Pickaxe, ArrowRight } from "lucide-react";
 import { LabBackground } from "@/components/backgrounds/lab-background";
+import { LAB_LABELS, type LabLanguage } from "@/components/lab/lab-labels";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
+import { useProfile } from "@/hooks/use-profile";
 import { vaultApi } from "@/lib/api";
 import type { Idea, Overview } from "@/types/api";
 
@@ -45,7 +47,10 @@ function StatusBadge({
 
 // --- Idea row for "needs overview" ---
 
-function IdeaRow({ idea }: { idea: Idea }) {
+function IdeaRow({ idea, lang }: { idea: Idea; lang: LabLanguage }) {
+  const title = lang === "en" && idea.title_en ? idea.title_en : idea.title_ko;
+  const summary = lang === "en" && idea.summary_en ? idea.summary_en : idea.summary_ko;
+
   return (
     <Link
       href={`/lab/collection/${idea.id}`}
@@ -53,15 +58,15 @@ function IdeaRow({ idea }: { idea: Idea }) {
     >
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-text-primary transition-colors group-hover:text-cold-cyan">
-          {idea.title_ko}
+          {title}
         </p>
         <p className="mt-0.5 truncate text-xs text-text-secondary">
-          {idea.summary_ko}
+          {summary}
         </p>
       </div>
       <div className="ml-4 flex shrink-0 items-center gap-2">
         <span className="text-xs font-medium text-cold-cyan/70 transition-colors group-hover:text-cold-cyan">
-          개요 생성
+          {LAB_LABELS.generateOverview[lang]}
         </span>
         <ArrowRight className="h-3.5 w-3.5 text-cold-cyan/50 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-cold-cyan" />
       </div>
@@ -74,10 +79,16 @@ function IdeaRow({ idea }: { idea: Idea }) {
 function OverviewRow({
   idea,
   overview,
+  lang,
 }: {
   idea: Idea;
   overview: Overview;
+  lang: LabLanguage;
 }) {
+  const title = lang === "en" && idea.title_en ? idea.title_en : idea.title_ko;
+  const concept =
+    lang === "en" && overview.concept_en ? overview.concept_en : overview.concept_ko;
+
   return (
     <Link
       href={`/lab/collection/${idea.id}`}
@@ -85,14 +96,14 @@ function OverviewRow({
     >
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium text-text-primary transition-colors group-hover:text-cold-cyan">
-          {idea.title_ko}
+          {title}
         </p>
         <p className="mt-0.5 truncate text-xs text-text-secondary">
-          {overview.concept_ko}
+          {concept}
         </p>
       </div>
       <div className="ml-4 flex shrink-0 items-center gap-2">
-        <StatusBadge label="개요" active />
+        <StatusBadge label={LAB_LABELS.overview[lang]} active />
       </div>
     </Link>
   );
@@ -118,6 +129,9 @@ function SectionHeader({
 // --- Page ---
 
 export default function LabPage() {
+  const { profile } = useProfile();
+  const lang: LabLanguage = (profile?.language ?? "ko") as LabLanguage;
+
   // Load all vaulted ideas
   const ideasQuery = useQuery({
     queryKey: ["vaultedIdeas"],
@@ -163,9 +177,9 @@ export default function LabPage() {
         {/* Header */}
         <div className="mx-auto mb-6 w-full max-w-5xl">
           <PageHeader
-            eyebrow="LAB"
-            title="The Lab"
-            subtitle="Analyze and refine the ideas you've collected"
+            eyebrow={LAB_LABELS.eyebrow[lang]}
+            title={LAB_LABELS.title[lang]}
+            subtitle={LAB_LABELS.subtitle[lang]}
           />
         </div>
 
@@ -173,7 +187,7 @@ export default function LabPage() {
           {/* Section: Ideas needing overview */}
           <section className="space-y-3">
             <SectionHeader
-              title="개요 대기"
+              title={LAB_LABELS.pendingOverview[lang]}
               count={isLoading ? 0 : ideasWithoutOverview.length}
             />
             {isLoading ? (
@@ -185,7 +199,7 @@ export default function LabPage() {
             ) : ideasWithoutOverview.length > 0 ? (
               <div className="space-y-2">
                 {ideasWithoutOverview.map((idea) => (
-                  <IdeaRow key={idea.id} idea={idea} />
+                  <IdeaRow key={idea.id} idea={idea} lang={lang} />
                 ))}
               </div>
             ) : (
@@ -193,13 +207,13 @@ export default function LabPage() {
                 icon={<FlaskConical className="h-10 w-10" />}
                 title={
                   ideas.length === 0
-                    ? "아이디어가 없습니다"
-                    : "모든 아이디어에 개요가 생성되었습니다"
+                    ? LAB_LABELS.noIdeasTitle[lang]
+                    : LAB_LABELS.allOverviewsTitle[lang]
                 }
                 description={
                   ideas.length === 0
-                    ? "금고에 아이디어를 먼저 저장해주세요"
-                    : "새로운 아이디어를 채굴해보세요"
+                    ? LAB_LABELS.noIdeasDesc[lang]
+                    : LAB_LABELS.newIdeasDesc[lang]
                 }
                 action={
                   ideas.length === 0 ? (
@@ -208,7 +222,7 @@ export default function LabPage() {
                       className="inline-flex cursor-pointer items-center gap-2 text-xs text-cold-cyan/70 transition-colors duration-200 hover:text-cold-cyan"
                     >
                       <Pickaxe className="h-3.5 w-3.5" />
-                      광산으로 이동
+                      {LAB_LABELS.goToMine[lang]}
                     </Link>
                   ) : undefined
                 }
@@ -219,7 +233,7 @@ export default function LabPage() {
           {/* Section: Recent overviews — always show section, even if empty */}
           <section className="space-y-3">
             <SectionHeader
-              title="최근 문서"
+              title={LAB_LABELS.recentDocuments[lang]}
               count={ideasWithOverview.length}
             />
             {ideasWithOverview.length > 0 ? (
@@ -229,13 +243,14 @@ export default function LabPage() {
                     key={idea.id}
                     idea={idea}
                     overview={overviewMap[idea.id]!}
+                    lang={lang}
                   />
                 ))}
               </div>
             ) : !isLoading ? (
               <div className="rounded-xl border border-dashed border-line-steel/15 bg-surface-1/20 p-6 text-center">
                 <p className="text-xs text-text-secondary/50">
-                  아직 생성된 문서가 없습니다
+                  {LAB_LABELS.noDocumentsYet[lang]}
                 </p>
               </div>
             ) : null}

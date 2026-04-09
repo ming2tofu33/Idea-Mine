@@ -177,4 +177,29 @@ export const MINE_LABELS = {
       en: "A fresh sector will appear here once the scan resolves.",
     },
   },
+
+  // Mining result page (/mine/[veinId])
+  resultEyebrow: { ko: "채굴 결과", en: "MINING RESULT" },
+  resultTitle: { ko: "추출된 아이디어", en: "Extracted ideas" },
+  resultSubtitle: {
+    ko: "마음에 드는 아이디어를 선택해 금고에 반입하세요",
+    en: "Pick the ideas you like and bring them into your vault",
+  },
+  backToMine: { ko: "광산으로 돌아가기", en: "Back to the Mine" },
+  loadingPhase1: { ko: "광맥을 분석하는 중...", en: "Analyzing the vein..." },
+  loadingPhase2: {
+    ko: "결정 구조를 스캔하는 중...",
+    en: "Scanning the crystal structure...",
+  },
+  loadingPhase3: {
+    ko: "아이디어 결정을 추출하는 중...",
+    en: "Extracting idea crystals...",
+  },
+  miningFailed: { ko: "채굴에 실패했습니다", en: "Mining failed" },
+  goBack: { ko: "돌아가기", en: "Go back" },
+  unknownError: { ko: "알 수 없는 오류", en: "Unknown error" },
+  selectedSuffix: { ko: "개 선택됨", en: "selected" },
+  vaulting: { ko: "반입 중...", en: "Vaulting..." },
+  vaultIntake: { ko: "금고에 반입 💎", en: "Vault them 💎" },
+  vaultSuccess: { ko: "금고에 반입 완료!", en: "Saved to the vault!" },
 } as const;

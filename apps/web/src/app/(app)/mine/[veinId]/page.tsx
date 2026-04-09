@@ -5,24 +5,28 @@ import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { MineBackground } from "@/components/backgrounds/mine-background";
 import { IdeaCard } from "@/components/mine/idea-card";
+import { MINE_LABELS, type MineLanguage } from "@/components/mine/mine-labels";
+import { PageHeader } from "@/components/shared/page-header";
+import { useProfile } from "@/hooks/use-profile";
 import { miningApi, ideasApi } from "@/lib/api";
 import type { Idea } from "@/types/api";
 
 // --- Loading text rotation ---
 
-const LOADING_PHASES = [
-  { text: "광맥을 분석하는 중...", delay: 0 },
-  { text: "결정 구조를 스캔하는 중...", delay: 3000 },
-  { text: "아이디어 결정을 추출하는 중...", delay: 6000 },
-];
-
-function LoadingState() {
+function LoadingState({ lang }: { lang: MineLanguage }) {
   const [phaseIndex, setPhaseIndex] = useState(0);
 
+  const phases = [
+    MINE_LABELS.loadingPhase1[lang],
+    MINE_LABELS.loadingPhase2[lang],
+    MINE_LABELS.loadingPhase3[lang],
+  ];
+
   useEffect(() => {
-    const timers = LOADING_PHASES.slice(1).map((phase, i) =>
-      setTimeout(() => setPhaseIndex(i + 1), phase.delay),
-    );
+    const timers = [
+      setTimeout(() => setPhaseIndex(1), 3000),
+      setTimeout(() => setPhaseIndex(2), 6000),
+    ];
     return () => timers.forEach(clearTimeout);
   }, []);
 
@@ -31,7 +35,7 @@ function LoadingState() {
       {/* Pulsing dot */}
       <div className="mb-6 h-3 w-3 animate-pulse rounded-full bg-signal-pink/60" />
       <p className="text-sm text-text-secondary transition-opacity duration-500">
-        {LOADING_PHASES[phaseIndex].text}
+        {phases[phaseIndex]}
       </p>
     </div>
   );
@@ -45,6 +49,8 @@ export default function MiningResultPage({
   params: Promise<{ veinId: string }>;
 }) {
   const { veinId } = use(params);
+  const { profile } = useProfile();
+  const lang: MineLanguage = (profile?.language ?? "ko") as MineLanguage;
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [vaultedIds, setVaultedIds] = useState<Set<string>>(new Set());
@@ -118,19 +124,13 @@ export default function MiningResultPage({
       <MineBackground />
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
-        {/* Top bar */}
-        <div className="mx-auto mb-6 w-full max-w-2xl">
+        {/* Header */}
+        <div className="mx-auto mb-6 w-full max-w-3xl space-y-4">
           <Link
             href="/mine"
-            className="inline-flex items-center gap-1.5 text-sm text-text-secondary transition-colors hover:text-text-primary"
+            className="inline-flex items-center gap-1.5 text-xs uppercase tracking-[0.22em] text-text-secondary/75 transition-colors hover:text-cold-cyan"
           >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 16 16"
-              fill="none"
-              className="text-current"
-            >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
               <path
                 d="M10 12L6 8L10 4"
                 stroke="currentColor"
@@ -139,29 +139,34 @@ export default function MiningResultPage({
                 strokeLinejoin="round"
               />
             </svg>
-            광산으로 돌아가기
+            {MINE_LABELS.backToMine[lang]}
           </Link>
+          <PageHeader
+            eyebrow={MINE_LABELS.resultEyebrow[lang]}
+            title={MINE_LABELS.resultTitle[lang]}
+            subtitle={MINE_LABELS.resultSubtitle[lang]}
+          />
         </div>
 
         {/* Content */}
-        <div className="mx-auto w-full max-w-2xl flex-1">
+        <div className="mx-auto w-full max-w-3xl flex-1">
           {mineMutation.isPending ? (
-            <LoadingState />
+            <LoadingState lang={lang} />
           ) : mineMutation.isError ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <p className="text-sm text-text-secondary">
-                채굴에 실패했습니다
+                {MINE_LABELS.miningFailed[lang]}
               </p>
               <p className="mt-1 text-xs text-text-secondary/60">
                 {mineMutation.error instanceof Error
                   ? mineMutation.error.message
-                  : "알 수 없는 오류"}
+                  : MINE_LABELS.unknownError[lang]}
               </p>
               <Link
                 href="/mine"
                 className="mt-6 rounded-lg border border-line-steel bg-surface-2 px-5 py-2.5 text-sm font-medium text-text-secondary transition-colors hover:border-signal-pink/30 hover:text-text-primary"
               >
-                돌아가기
+                {MINE_LABELS.goBack[lang]}
               </Link>
             </div>
           ) : (
@@ -183,12 +188,12 @@ export default function MiningResultPage({
       {/* Floating vault bar */}
       {selectedIds.size > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-center p-4">
-          <div className="flex w-full max-w-2xl items-center justify-between rounded-2xl border border-white/[0.06] bg-bg-deep/80 px-6 py-4 backdrop-blur-xl">
+          <div className="flex w-full max-w-3xl items-center justify-between rounded-2xl border border-white/[0.06] bg-bg-deep/80 px-6 py-4 backdrop-blur-xl">
             <span className="text-sm text-text-secondary">
               <span className="font-semibold text-text-primary">
                 {selectedIds.size}
-              </span>
-              개 선택됨
+              </span>{" "}
+              {MINE_LABELS.selectedSuffix[lang]}
             </span>
 
             <button
@@ -202,7 +207,9 @@ export default function MiningResultPage({
                   : "bg-signal-pink text-white hover:bg-signal-pink/90 hover:shadow-[0_0_20px_rgba(255,59,147,0.3)]",
               ].join(" ")}
             >
-              {vaultMutation.isPending ? "반입 중..." : "금고에 반입 💎"}
+              {vaultMutation.isPending
+                ? MINE_LABELS.vaulting[lang]
+                : MINE_LABELS.vaultIntake[lang]}
             </button>
           </div>
         </div>
@@ -212,7 +219,7 @@ export default function MiningResultPage({
       {vaultSuccess && (
         <div className="fixed inset-x-0 bottom-24 z-50 flex justify-center">
           <div className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-5 py-2.5 text-sm font-medium text-emerald-400 backdrop-blur-sm">
-            금고에 반입 완료!
+            {MINE_LABELS.vaultSuccess[lang]}
           </div>
         </div>
       )}

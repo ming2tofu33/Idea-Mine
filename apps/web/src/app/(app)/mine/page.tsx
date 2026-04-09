@@ -93,20 +93,22 @@ export default function MinePage() {
                 : "Select one of the detected veins to start mining"
             }
             meta={
-              <>
-                <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.22em] text-text-secondary">
-                  {MINE_LABELS.rerolls[lang]}{" "}
-                  <span className="text-text-primary">
-                    {data?.rerolls_used ?? "--"}/{data?.rerolls_max ?? "--"}
+              data && !isError ? (
+                <>
+                  <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.22em] text-text-secondary">
+                    {MINE_LABELS.rerolls[lang]}{" "}
+                    <span className="text-text-primary">
+                      {data.rerolls_used}/{data.rerolls_max}
+                    </span>
                   </span>
-                </span>
-                <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.22em] text-text-secondary">
-                  {MINE_LABELS.generations[lang]}{" "}
-                  <span className="text-text-primary">
-                    {data?.generations_used ?? "--"}/{data?.generations_max ?? "--"}
+                  <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.22em] text-text-secondary">
+                    {MINE_LABELS.generations[lang]}{" "}
+                    <span className="text-text-primary">
+                      {data.generations_used}/{data.generations_max}
+                    </span>
                   </span>
-                </span>
-              </>
+                </>
+              ) : undefined
             }
           />
         </div>
