@@ -18,7 +18,7 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-56 flex-col border-r border-white/[0.06] bg-bg-deep/80 backdrop-blur-xl">
+    <aside className="sticky top-0 flex h-screen w-56 flex-col border-r border-white/[0.06] bg-bg-deep/80 backdrop-blur-xl">
       {/* Header */}
       <div className="border-b border-white/[0.06] px-4 py-4">
         <h1 className="text-sm font-semibold tracking-wide text-amber-400">

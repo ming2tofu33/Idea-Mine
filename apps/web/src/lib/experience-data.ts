@@ -6,7 +6,10 @@
  */
 
 import type {
+  Idea,
   Keyword,
+  KeywordComboEntry,
+  Overview,
   TodayVeinsResponse,
   Vein,
 } from "@/types/api";
@@ -238,4 +241,91 @@ export function getDemoTodayVeinsResponse(): TodayVeinsResponse {
     generations_used: 0,
     generations_max: 0,
   };
+}
+
+// --- Adapters: ExperienceIdea → real Idea / Overview ---
+
+/**
+ * ExperienceIdea를 실제 Idea 타입으로 변환.
+ * keyword_combo는 해당 vein의 키워드 4개를 사용.
+ */
+export function experienceIdeaToIdea(
+  exp: ExperienceIdea,
+  veinId: string,
+  sortOrder: number,
+): Idea {
+  const vein = getExperienceVeinById(veinId);
+  const keyword_combo: KeywordComboEntry[] =
+    vein?.keywords.slice(0, 4).map((kw) => ({
+      category: kw.category,
+      slug: kw.ko,
+      ko: kw.ko,
+      en: kw.en,
+    })) ?? [];
+
+  return {
+    id: exp.id,
+    title_ko: exp.titleKo,
+    title_en: exp.titleEn,
+    summary_ko: exp.summaryKo,
+    summary_en: exp.summaryEn,
+    keyword_combo,
+    tier_type: "stable",
+    sort_order: sortOrder,
+    is_vaulted: true,
+  };
+}
+
+/**
+ * 데모용 금고 아이디어 목록 — 9개 (3 vein × 3 idea).
+ * Vault와 Lab 페이지가 공유.
+ */
+export function getDemoVaultedIdeas(): Idea[] {
+  return DEMO_VEINS.flatMap((vein) =>
+    (DEMO_IDEAS[vein.id] ?? []).map((exp, i) =>
+      experienceIdeaToIdea(exp, vein.id, i),
+    ),
+  );
+}
+
+/**
+ * 데모용 overview map — 9개 idea 중 4개에만 가짜 overview 부여.
+ * Lab의 "Pending overview" vs "Recent documents" 섹션을 자연스럽게 채움.
+ * concept은 idea의 summary 재사용, 나머지 필드는 빈 문자열.
+ */
+export function getDemoOverviewMap(): Record<string, Overview | null> {
+  const ideas = getDemoVaultedIdeas();
+  const withOverviewIndices = new Set([0, 2, 5, 7]);
+  const map: Record<string, Overview | null> = {};
+
+  ideas.forEach((idea, i) => {
+    if (withOverviewIndices.has(i)) {
+      const now = new Date().toISOString();
+      map[idea.id] = {
+        id: `${idea.id}-ov`,
+        idea_id: idea.id,
+        user_id: "demo",
+        concept_ko: idea.summary_ko,
+        concept_en: idea.summary_en,
+        problem_ko: "",
+        problem_en: "",
+        target_ko: "",
+        target_en: "",
+        features_ko: "",
+        features_en: "",
+        differentiator_ko: "",
+        differentiator_en: "",
+        revenue_ko: "",
+        revenue_en: "",
+        mvp_scope_ko: "",
+        mvp_scope_en: "",
+        created_at: now,
+        updated_at: now,
+      };
+    } else {
+      map[idea.id] = null;
+    }
+  });
+
+  return map;
 }

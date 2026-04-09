@@ -40,4 +40,18 @@ export const LAB_LABELS = {
     ko: "아직 생성된 문서가 없습니다",
     en: "No documents generated yet",
   },
+
+  // Demo mode notices (guest at /lab)
+  demoSampleNotice: {
+    ko: "이건 샘플 실험실입니다",
+    en: "This is a sample lab",
+  },
+  demoFreshNotice: {
+    ko: "진짜 실험실은 내가 채굴한 아이디어의 개요와 감정으로 채워집니다",
+    en: "Your real lab fills with overviews and appraisals of your own ideas",
+  },
+  demoMyLabCta: {
+    ko: "내 실험실 보러 가기 →",
+    en: "Open my lab →",
+  },
 } as const;

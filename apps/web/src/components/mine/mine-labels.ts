@@ -178,6 +178,20 @@ export const MINE_LABELS = {
     },
   },
 
+  // Demo mode notices (guest at /mine)
+  demoSampleNotice: {
+    ko: "이 광맥은 샘플입니다",
+    en: "This is a sample vein",
+  },
+  demoFreshNotice: {
+    ko: "진짜 광맥은 로그인 후 매일 새로 열립니다",
+    en: "Real veins open every day after you sign in",
+  },
+  demoMyVeinsCta: {
+    ko: "내 광맥 보러 가기 →",
+    en: "See my veins →",
+  },
+
   // Mining result page (/mine/[veinId])
   resultEyebrow: { ko: "채굴 결과", en: "MINING RESULT" },
   resultTitle: { ko: "추출된 아이디어", en: "Extracted ideas" },

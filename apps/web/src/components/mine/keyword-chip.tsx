@@ -1,4 +1,5 @@
 import type { Keyword } from "@/types/api";
+import type { MineLanguage } from "./mine-labels";
 
 const CATEGORY_COLORS: Record<Keyword["category"], string> = {
   ai: "#FF3B93",
@@ -9,8 +10,14 @@ const CATEGORY_COLORS: Record<Keyword["category"], string> = {
   money: "#FF7AAD",
 };
 
-export function KeywordChip({ keyword }: { keyword: Keyword }) {
+type KeywordChipProps = {
+  keyword: Keyword;
+  lang?: MineLanguage;
+};
+
+export function KeywordChip({ keyword, lang = "ko" }: KeywordChipProps) {
   const color = CATEGORY_COLORS[keyword.category];
+  const label = lang === "en" && keyword.en ? keyword.en : keyword.ko;
 
   return (
     <span
@@ -28,7 +35,7 @@ export function KeywordChip({ keyword }: { keyword: Keyword }) {
           boxShadow: `0 0 0 1px rgba(255,255,255,0.08), 0 0 10px ${color}22`,
         }}
       />
-      {keyword.ko}
+      {label}
     </span>
   );
 }

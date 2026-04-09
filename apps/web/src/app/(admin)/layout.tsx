@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { QueryProvider } from "@/lib/query-provider";
 
 export default async function AdminRootLayout({
   children,
@@ -26,5 +25,5 @@ export default async function AdminRootLayout({
     redirect("/mine");
   }
 
-  return <QueryProvider>{children}</QueryProvider>;
+  return <>{children}</>;
 }

@@ -224,7 +224,7 @@ export function SelectedVeinPanel({
 
         <div className="mt-5 flex flex-wrap gap-2">
           {keywords.map((keyword) => (
-            <KeywordChip key={keyword.id} keyword={keyword} />
+            <KeywordChip key={keyword.id} keyword={keyword} lang={lang} />
           ))}
         </div>
 

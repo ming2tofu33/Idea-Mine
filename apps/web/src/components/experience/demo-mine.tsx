@@ -3,10 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { MineBackground } from "@/components/backgrounds/mine-background";
+import { MINE_LABELS } from "@/components/mine/mine-labels";
 import { MineSupportBlock } from "@/components/mine/mine-support-block";
 import { SectorScanStage } from "@/components/mine/sector-scan-stage";
 import { SelectedVeinPanel } from "@/components/mine/selected-vein-panel";
 import { PageHeader } from "@/components/shared/page-header";
+import { useLanguage } from "@/hooks/use-language";
 import { getDemoTodayVeinsResponse } from "@/lib/experience-data";
 import { trackExperienceEvent } from "@/lib/experience-events";
 
@@ -20,6 +22,7 @@ import { trackExperienceEvent } from "@/lib/experience-events";
  * soft gate로 연결된다.
  */
 export function DemoMine() {
+  const { lang } = useLanguage();
   const data = useMemo(() => getDemoTodayVeinsResponse(), []);
   const [selectedVeinIdState, setSelectedVeinIdState] = useState<string | null>(
     data.veins[0]?.id ?? null,
@@ -73,8 +76,12 @@ export function DemoMine() {
         <div className="mx-auto mb-6 w-full max-w-7xl">
           <PageHeader
             eyebrow="MINE"
-            title="오늘의 광맥"
-            subtitle="탐지된 광맥 중 하나를 선택해 채굴하세요"
+            title={lang === "ko" ? "오늘의 광맥" : "Today's veins"}
+            subtitle={
+              lang === "ko"
+                ? "탐지된 광맥 중 하나를 선택해 채굴하세요"
+                : "Select one of the detected veins to start mining"
+            }
           />
         </div>
 
@@ -86,6 +93,7 @@ export function DemoMine() {
             onSelect={handleSelect}
             isLoading={false}
             isError={false}
+            lang={lang}
           />
 
           <SelectedVeinPanel
@@ -99,6 +107,7 @@ export function DemoMine() {
             onMine={handleMineGate}
             onRetry={() => {}}
             onReroll={handleRerollGate}
+            lang={lang}
           />
         </div>
 
@@ -106,20 +115,22 @@ export function DemoMine() {
         <div className="mx-auto mt-6 w-full max-w-7xl">
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-cold-cyan/15 bg-[rgba(92,205,229,0.04)] px-5 py-4 text-center sm:flex-row sm:justify-between sm:text-left">
             <p className="text-xs leading-5 text-text-secondary sm:text-sm">
-              <span className="font-semibold text-cold-cyan">이 광맥은 샘플입니다</span>
+              <span className="font-semibold text-cold-cyan">
+                {MINE_LABELS.demoSampleNotice[lang]}
+              </span>
               <span className="mx-2 text-text-secondary/40">·</span>
-              진짜 광맥은 로그인 후 매일 새로 열립니다
+              {MINE_LABELS.demoFreshNotice[lang]}
             </p>
             <Link
               href="/auth/sign-in?next=/mine"
               className="shrink-0 rounded-lg border border-cold-cyan/40 bg-cold-cyan/15 px-4 py-2 text-xs font-medium text-cold-cyan transition-all hover:bg-cold-cyan/25"
             >
-              내 광맥 보러 가기 →
+              {MINE_LABELS.demoMyVeinsCta[lang]}
             </Link>
           </div>
         </div>
 
-        <MineSupportBlock status="ready" />
+        <MineSupportBlock status="ready" lang={lang} />
       </div>
     </div>
   );

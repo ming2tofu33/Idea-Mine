@@ -45,4 +45,18 @@ export const VAULT_LABELS = {
     en: "Mine some ideas you like and bring them into the vault",
   },
   goToMine: { ko: "광산으로 가기", en: "Go to the Mine" },
+
+  // Demo mode notices (guest at /vault)
+  demoSampleNotice: {
+    ko: "이건 샘플 금고입니다",
+    en: "This is a sample vault",
+  },
+  demoFreshNotice: {
+    ko: "진짜 금고는 로그인 후 내가 채굴한 아이디어로 채워집니다",
+    en: "Your real vault fills up with the ideas you mine after signing in",
+  },
+  demoMyVaultCta: {
+    ko: "내 금고 보러 가기 →",
+    en: "Open my vault →",
+  },
 } as const;

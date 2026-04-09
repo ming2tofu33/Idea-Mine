@@ -30,13 +30,16 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // 미인증 사용자도 접근 가능한 퍼블릭 경로.
-  // /mine은 게스트에게 데모 모드를 보여주므로 퍼블릭.
+  // /mine, /vault, /lab은 게스트에게 데모 모드를 보여주므로 퍼블릭.
+  // 디테일 페이지(/mine/[veinId], /vault/[ideaId] 등)는 여전히 보호.
   // /experience는 호환성을 위해 유지 (page.tsx에서 /mine으로 redirect).
   const { pathname } = request.nextUrl;
   const isPublicPath =
     pathname === "/" ||
     pathname.startsWith("/auth") ||
     pathname === "/mine" ||
+    pathname === "/vault" ||
+    pathname === "/lab" ||
     pathname.startsWith("/experience") ||
     pathname.startsWith("/api/experience-events");
 
