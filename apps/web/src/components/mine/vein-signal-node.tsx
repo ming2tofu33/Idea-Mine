@@ -61,6 +61,7 @@ export function VeinSignalNode({
   position,
 }: VeinSignalNodeProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const animateMotion = prefersReducedMotion === false;
   const rarity = RARITY_STYLES[vein.rarity];
   const primaryKeyword = vein.keywords[0]?.ko ?? "signal";
   const secondaryKeyword = vein.keywords[1]?.ko;
@@ -70,15 +71,11 @@ export function VeinSignalNode({
       type="button"
       onClick={() => onSelect(vein.id)}
       aria-pressed={selected}
-      whileHover={
-        prefersReducedMotion ? undefined : { y: -4, scale: selected ? 1.015 : 1.02 }
-      }
-      whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
-      animate={prefersReducedMotion ? undefined : { scale: selected ? 1.015 : 1 }}
+      whileHover={animateMotion ? { y: -4, scale: selected ? 1.015 : 1.02 } : undefined}
+      whileTap={animateMotion ? { scale: 0.98 } : undefined}
+      animate={animateMotion ? { scale: selected ? 1.015 : 1 } : undefined}
       transition={
-        prefersReducedMotion
-          ? undefined
-          : { type: "spring", stiffness: 320, damping: 24 }
+        animateMotion ? { type: "spring", stiffness: 320, damping: 24 } : undefined
       }
       className={[
         "group relative z-10 w-full text-left outline-none focus-visible:ring-2 focus-visible:ring-cold-cyan/30 sm:max-w-[240px] lg:absolute lg:w-[min(270px,46vw)]",

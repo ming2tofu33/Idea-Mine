@@ -68,15 +68,16 @@ export function SectorScanStage({
   warningMessage,
 }: SectorScanStageProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
+  const animateMotion = prefersReducedMotion === false;
 
   const hasTargets = !isLoading && !isError && veins.length > 0;
   const veinBySlotIndex = new Map(veins.map((vein) => [vein.slot_index, vein]));
 
   return (
     <motion.section
-      initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
-      animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-      transition={prefersReducedMotion ? undefined : { duration: 0.45, ease: "easeOut" }}
+      initial={animateMotion ? { opacity: 0, y: 18 } : false}
+      animate={animateMotion ? { opacity: 1, y: 0 } : undefined}
+      transition={animateMotion ? { duration: 0.45, ease: "easeOut" } : undefined}
       className="observatory-panel observatory-frame relative isolate overflow-hidden rounded-[32px] border border-line-steel/55 p-4 sm:p-5"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_42%,rgba(92,205,229,0.1)_0%,transparent_30%),radial-gradient(circle_at_50%_50%,rgba(255,59,147,0.05)_0%,transparent_54%),linear-gradient(180deg,rgba(255,255,255,0.02)_0%,transparent_22%,rgba(255,255,255,0.015)_100%)]" />

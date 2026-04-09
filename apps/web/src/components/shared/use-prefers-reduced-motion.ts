@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+type ReducedMotionPreference = boolean | null;
 
 function subscribe(callback: () => void) {
   const mediaQuery = window.matchMedia(REDUCED_MOTION_QUERY);
@@ -17,8 +18,8 @@ function getSnapshot() {
   return window.matchMedia(REDUCED_MOTION_QUERY).matches;
 }
 
-function getServerSnapshot() {
-  return false;
+function getServerSnapshot(): ReducedMotionPreference {
+  return null;
 }
 
 export function usePrefersReducedMotion() {
