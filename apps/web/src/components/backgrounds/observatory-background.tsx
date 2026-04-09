@@ -275,8 +275,8 @@ export function ObservatoryBackground({
         if (px < -20 || px > w + 20 || py < -20 || py > h + 20) continue;
 
         const twinkle = animateMotion
-          ? 0
-          : Math.sin(t * star.twinkleSpeed + star.phase) * star.twinkleAmplitude;
+          ? Math.sin(t * star.twinkleSpeed + star.phase) * star.twinkleAmplitude
+          : 0;
         const opacity = Math.max(
           0.02,
           Math.min(1, star.baseOpacity * star.z + twinkle),
