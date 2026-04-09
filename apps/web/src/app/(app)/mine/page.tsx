@@ -19,8 +19,10 @@ export default function MinePage() {
   const {
     data,
     isLoading,
+    isFetching,
     isError,
     error,
+    refetch,
   } = useQuery({
     queryKey: ["todayVeins"],
     queryFn: miningApi.getTodayVeins,
@@ -120,11 +122,13 @@ export default function MinePage() {
             canMine={canMine}
             canReroll={canReroll}
             isRerolling={rerollMutation.isPending}
+            isRefetching={isFetching}
             isLoading={isLoading}
             isError={isFatalScanError}
             errorMessage={scanErrorMessage}
             warningMessage={scanWarningMessage}
             onMine={handleMine}
+            onRetry={refetch}
             onReroll={() => rerollMutation.mutate()}
           />
         </div>

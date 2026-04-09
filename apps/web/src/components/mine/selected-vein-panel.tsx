@@ -11,11 +11,13 @@ type SelectedVeinPanelProps = {
   canMine: boolean;
   canReroll: boolean;
   isRerolling: boolean;
+  isRefetching: boolean;
   isLoading: boolean;
   isError: boolean;
   errorMessage?: string;
   warningMessage?: string;
   onMine: (id: string) => void;
+  onRetry: () => void;
   onReroll: () => void;
 };
 
@@ -77,11 +79,13 @@ export function SelectedVeinPanel({
   canMine,
   canReroll,
   isRerolling,
+  isRefetching,
   isLoading,
   isError,
   errorMessage,
   warningMessage,
   onMine,
+  onRetry,
   onReroll,
 }: SelectedVeinPanelProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
@@ -129,11 +133,11 @@ export function SelectedVeinPanel({
             <SignalButton
               type="button"
               variant="secondary"
-              onClick={onReroll}
-              disabled={!canReroll || isRerolling}
+              onClick={onRetry}
+              disabled={isRefetching}
               className="w-full"
             >
-              {isRerolling ? "RESCANNING" : "RESCAN SECTORS"}
+              {isRefetching ? "RETRYING" : "RETRY SCAN"}
             </SignalButton>
           </div>
         </motion.div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { usePrefersReducedMotion } from "@/components/shared/use-prefers-reduced-motion";
 
 interface Star {
   x: number;
@@ -135,7 +136,8 @@ export function ObservatoryBackground({
   intensity = "default",
   className = "",
 }: ObservatoryBackgroundProps) {
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const animateMotion = prefersReducedMotion === false;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const starsRef = useRef<Star[]>([]);
   const rafRef = useRef<number>(0);
@@ -147,21 +149,6 @@ export function ObservatoryBackground({
   const preset = INTENSITY_PRESETS[intensity];
   const starCount = Math.round(BASE_STAR_COUNT * preset.starMultiplier);
   const parallaxStrength = BASE_PARALLAX_STRENGTH * preset.parallaxMultiplier;
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    const updatePreference = () => {
-      setPrefersReducedMotion(mediaQuery.matches);
-    };
-
-    updatePreference();
-    mediaQuery.addEventListener("change", updatePreference);
-
-    return () => {
-      mediaQuery.removeEventListener("change", updatePreference);
-    };
-  }, []);
 
   const nebulaBackground = useMemo(() => {
     if (variant === "landing") {
@@ -220,7 +207,7 @@ export function ObservatoryBackground({
         starsRef.current.length = starCount;
       }
 
-      if (prefersReducedMotion) {
+      if (!animateMotion) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = requestAnimationFrame(animate);
       }
@@ -247,7 +234,7 @@ export function ObservatoryBackground({
 
       let mx = 0;
       let my = 0;
-      if (!prefersReducedMotion) {
+      if (animateMotion) {
         smoothMouseRef.current.x +=
           (mouseRef.current.x - smoothMouseRef.current.x) * 0.025;
         smoothMouseRef.current.y +=
@@ -260,9 +247,9 @@ export function ObservatoryBackground({
       }
 
       if (nebulaRef.current) {
-        nebulaRef.current.style.transform = prefersReducedMotion
-          ? "translate(0px, 0px)"
-          : `translate(${mx * -8}px, ${my * -8}px)`;
+        nebulaRef.current.style.transform = animateMotion
+          ? `translate(${mx * -8}px, ${my * -8}px)`
+          : "translate(0px, 0px)";
       }
 
       ctx.save();
@@ -270,7 +257,7 @@ export function ObservatoryBackground({
       ctx.clearRect(0, 0, w, h);
 
       for (const star of starsRef.current) {
-        if (!prefersReducedMotion) {
+        if (animateMotion) {
           star.z += DRIFT_SPEED * (0.2 + star.z * star.z * 3);
         }
 
@@ -287,7 +274,7 @@ export function ObservatoryBackground({
 
         if (px < -20 || px > w + 20 || py < -20 || py > h + 20) continue;
 
-        const twinkle = prefersReducedMotion
+        const twinkle = animateMotion
           ? 0
           : Math.sin(t * star.twinkleSpeed + star.phase) * star.twinkleAmplitude;
         const opacity = Math.max(
@@ -317,7 +304,7 @@ export function ObservatoryBackground({
       }
 
       ctx.restore();
-      if (!prefersReducedMotion) {
+      if (animateMotion) {
         rafRef.current = requestAnimationFrame(animate);
       }
     }
@@ -326,7 +313,7 @@ export function ObservatoryBackground({
     rafRef.current = requestAnimationFrame(animate);
 
     window.addEventListener("resize", resize);
-    if (!prefersReducedMotion) {
+    if (animateMotion) {
       window.addEventListener("mousemove", handleMouseMove);
     }
 
@@ -342,12 +329,12 @@ export function ObservatoryBackground({
     return () => {
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", resize);
-      if (!prefersReducedMotion) {
+      if (animateMotion) {
         window.removeEventListener("mousemove", handleMouseMove);
       }
       document.removeEventListener("visibilitychange", handleVisibility);
     };
-  }, [parallaxStrength, prefersReducedMotion, starCount]);
+  }, [animateMotion, parallaxStrength, starCount]);
 
   return (
     <div
@@ -367,9 +354,7 @@ export function ObservatoryBackground({
         className="absolute inset-0"
         style={{
           opacity: preset.pinkPulseOpacity,
-          animation: prefersReducedMotion
-            ? "none"
-            : "observatoryGlowPulse 12s ease-in-out infinite",
+          animation: animateMotion ? "observatoryGlowPulse 12s ease-in-out infinite" : "none",
           background: pinkPulseBackground,
         }}
       />

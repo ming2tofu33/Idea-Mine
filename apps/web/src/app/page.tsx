@@ -40,13 +40,13 @@ export default async function Home() {
           right={
             <div className="flex items-center gap-2">
               <Link
-                href="/auth/sign-in"
+                href={user ? "/vault" : "/auth/sign-in"}
                 className={signalButtonClassName({
                   variant: "ghost",
                   className: "px-3 py-1.5 text-xs",
                 })}
               >
-                Sign in
+                {user ? "Open Vault" : "Sign in"}
               </Link>
               <Link
                 href={user ? "/mine" : "/auth/sign-in"}
