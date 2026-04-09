@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import type { Vein, VeinRarity } from "@/types/api";
 import { Meteorite3D } from "./meteorite-3d";
@@ -59,19 +60,41 @@ export function VeinSignalNode({
   onSelect,
   position,
 }: VeinSignalNodeProps) {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const rarity = RARITY_STYLES[vein.rarity];
   const primaryKeyword = vein.keywords[0]?.ko ?? "signal";
   const secondaryKeyword = vein.keywords[1]?.ko;
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const updatePreference = () => {
+      setPrefersReducedMotion(mediaQuery.matches);
+    };
+
+    updatePreference();
+    mediaQuery.addEventListener("change", updatePreference);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updatePreference);
+    };
+  }, []);
 
   return (
     <motion.button
       type="button"
       onClick={() => onSelect(vein.id)}
       aria-pressed={selected}
-      whileHover={{ y: -4, scale: selected ? 1.015 : 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      animate={{ scale: selected ? 1.015 : 1 }}
-      transition={{ type: "spring", stiffness: 320, damping: 24 }}
+      whileHover={
+        prefersReducedMotion ? undefined : { y: -4, scale: selected ? 1.015 : 1.02 }
+      }
+      whileTap={prefersReducedMotion ? undefined : { scale: 0.98 }}
+      animate={prefersReducedMotion ? undefined : { scale: selected ? 1.015 : 1 }}
+      transition={
+        prefersReducedMotion
+          ? undefined
+          : { type: "spring", stiffness: 320, damping: 24 }
+      }
       className={[
         "group relative z-10 w-full text-left outline-none focus-visible:ring-2 focus-visible:ring-cold-cyan/30 sm:max-w-[240px] lg:absolute lg:w-[min(270px,46vw)]",
         POSITION_STYLES[position],

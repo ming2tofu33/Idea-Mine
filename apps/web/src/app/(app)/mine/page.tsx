@@ -60,6 +60,13 @@ export default function MinePage() {
       : data?.veins[0]?.id ?? null;
   const selectedVein =
     data?.veins.find((vein) => vein.id === selectedVeinId) ?? data?.veins[0] ?? null;
+  const supportStatus = isLoading
+    ? "loading"
+    : isFatalScanError
+      ? "error"
+      : hasUsableVeins
+        ? "ready"
+        : "empty";
 
   function handleMine(veinId: string) {
     router.push(`/mine/${veinId}`);
@@ -122,7 +129,7 @@ export default function MinePage() {
           />
         </div>
 
-        <MineSupportBlock />
+        <MineSupportBlock status={supportStatus} />
       </div>
     </div>
   );

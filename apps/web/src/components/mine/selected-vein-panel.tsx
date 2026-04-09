@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import type { Vein, VeinRarity } from "@/types/api";
 import { KeywordChip } from "./keyword-chip";
@@ -83,14 +84,31 @@ export function SelectedVeinPanel({
   onMine,
   onReroll,
 }: SelectedVeinPanelProps) {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const updatePreference = () => {
+      setPrefersReducedMotion(mediaQuery.matches);
+    };
+
+    updatePreference();
+    mediaQuery.addEventListener("change", updatePreference);
+
+    return () => {
+      mediaQuery.removeEventListener("change", updatePreference);
+    };
+  }, []);
+
   if (isLoading && !vein) {
     return (
       <aside className="observatory-panel observatory-frame flex h-full flex-col rounded-[28px] border border-line-steel/55 p-5 lg:sticky lg:top-6">
         <motion.div
           key="loading"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: "easeOut" }}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+          animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+          transition={prefersReducedMotion ? undefined : { duration: 0.28, ease: "easeOut" }}
           className="h-full"
         >
           <PanelSkeleton />
@@ -104,9 +122,9 @@ export function SelectedVeinPanel({
       <aside className="observatory-panel observatory-frame flex h-full flex-col rounded-[28px] border border-line-steel/55 p-5 lg:sticky lg:top-6">
         <motion.div
           key="error"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: "easeOut" }}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+          animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+          transition={prefersReducedMotion ? undefined : { duration: 0.28, ease: "easeOut" }}
           className="flex h-full flex-col justify-between"
         >
           <div>
@@ -142,9 +160,9 @@ export function SelectedVeinPanel({
       <aside className="observatory-panel observatory-frame flex h-full flex-col rounded-[28px] border border-line-steel/55 p-5 lg:sticky lg:top-6">
         <motion.div
           key="empty"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.28, ease: "easeOut" }}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+          animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+          transition={prefersReducedMotion ? undefined : { duration: 0.28, ease: "easeOut" }}
           className="flex h-full flex-col justify-between"
         >
           <div>
@@ -188,9 +206,9 @@ export function SelectedVeinPanel({
     <aside className="observatory-panel observatory-frame flex h-full flex-col rounded-[28px] border border-line-steel/55 p-5 lg:sticky lg:top-6">
       <motion.div
         key={vein.id}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.28, ease: "easeOut" }}
+        initial={prefersReducedMotion ? false : { opacity: 0, y: 10 }}
+        animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+        transition={prefersReducedMotion ? undefined : { duration: 0.28, ease: "easeOut" }}
         className="flex h-full flex-col"
       >
         <div className="flex items-start justify-between gap-3">

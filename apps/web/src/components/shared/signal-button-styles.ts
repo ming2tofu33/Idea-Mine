@@ -34,7 +34,7 @@ export function signalButtonClassName({
     "inline-flex items-center justify-center gap-2 rounded-lg border px-3.5 py-2 text-sm font-medium",
     "transition-[transform,border-color,background-color,color,box-shadow] duration-200 backdrop-blur-md",
     "focus-visible:outline-none focus-visible:ring-2",
-    "disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:shadow-none",
+    "disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:shadow-none disabled:hover:translate-y-0 disabled:hover:scale-100 disabled:active:translate-y-0 disabled:active:scale-100",
     VARIANT_CLASSES[variant],
     className,
   ].join(" ");
