@@ -17,6 +17,31 @@ import type {
   Blueprint,
   Roadmap,
 } from "@/types/api";
+import {
+  mockMiningApi,
+  mockIdeasApi,
+  mockVaultApi,
+  mockLabApi,
+  mockCollectionApi,
+  mockProfileApi,
+  mockAdminApi,
+} from "./mock-data";
+
+// --- Mock mode toggle (runtime) ---
+
+let _mockMode = false;
+export function isMockMode(): boolean { return _mockMode; }
+export function setMockMode(on: boolean): void { _mockMode = on; }
+
+// --- Proxy: dispatches to mock or real at call time ---
+
+function proxy<T extends Record<string, (...args: any[]) => any>>(real: T, mock: T): T {
+  return new Proxy(real, {
+    get(_, prop: string) {
+      return (...args: any[]) => (_mockMode ? mock : real)[prop](...args);
+    },
+  });
+}
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL!;
 
@@ -71,7 +96,7 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 
 // --- Mining API ---
 
-export const miningApi = {
+const realMiningApi = {
   getTodayVeins: () =>
     apiFetch<TodayVeinsResponse>("/mining/veins/today"),
 
@@ -82,9 +107,11 @@ export const miningApi = {
     apiFetch<MineResponse>(`/mining/veins/${veinId}/mine`, { method: "POST" }),
 };
 
+export const miningApi = proxy(realMiningApi, mockMiningApi);
+
 // --- Ideas API ---
 
-export const ideasApi = {
+const realIdeasApi = {
   vault: (ideaIds: string[], veinId: string) =>
     apiFetch<VaultResponse>("/ideas/vault", {
       method: "PATCH",
@@ -92,9 +119,11 @@ export const ideasApi = {
     }),
 };
 
+export const ideasApi = proxy(realIdeasApi, mockIdeasApi);
+
 // --- Vault API (Supabase direct read) ---
 
-export const vaultApi = {
+const realVaultApi = {
   async getVaultedIdeas(): Promise<Idea[]> {
     const supabase = (await import("@/lib/supabase/client")).createClient();
     const { data, error } = await supabase
@@ -136,9 +165,11 @@ export const vaultApi = {
   },
 };
 
+export const vaultApi = proxy(realVaultApi, mockVaultApi);
+
 // --- Lab API ---
 
-export const labApi = {
+const realLabApi = {
   createOverview: (ideaId: string) =>
     apiFetch<Overview>("/lab/overview", {
       method: "POST",
@@ -191,10 +222,11 @@ export const labApi = {
   },
 };
 
+export const labApi = proxy(realLabApi, mockLabApi);
+
 // --- Collection API ---
 
-export const collectionApi = {
-  // 생성
+const realCollectionApi = {
   createDesign: (overviewId: string) =>
     apiFetch<ProductDesign>("/lab/design", {
       method: "POST",
@@ -219,7 +251,6 @@ export const collectionApi = {
       { method: "POST", body: JSON.stringify({ overview_id: overviewId }) },
     ),
 
-  // 조회
   async getDesignsByOverview(overviewId: string): Promise<ProductDesign[]> {
     const supabase = (await import("@/lib/supabase/client")).createClient();
     const { data, error } = await supabase
@@ -253,7 +284,6 @@ export const collectionApi = {
     return (data ?? []) as Roadmap[];
   },
 
-  // 삭제
   async deleteDesign(id: string): Promise<void> {
     const supabase = (await import("@/lib/supabase/client")).createClient();
     await supabase.from("product_designs").delete().eq("id", id);
@@ -270,9 +300,11 @@ export const collectionApi = {
   },
 };
 
+export const collectionApi = proxy(realCollectionApi, mockCollectionApi);
+
 // --- Profile API ---
 
-export const profileApi = {
+const realProfileApi = {
   async getProfile(): Promise<UserProfile> {
     const supabase = (await import("@/lib/supabase/client")).createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -285,11 +317,24 @@ export const profileApi = {
     if (error) throw error;
     return data as UserProfile;
   },
+
+  async updateLanguage(language: "ko" | "en"): Promise<void> {
+    const supabase = (await import("@/lib/supabase/client")).createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Not authenticated");
+    const { error } = await supabase
+      .from("profiles")
+      .update({ language })
+      .eq("id", user.id);
+    if (error) throw error;
+  },
 };
+
+export const profileApi = proxy(realProfileApi, mockProfileApi);
 
 // --- Admin API ---
 
-export const adminApi = {
+const realAdminApi = {
   setPersona: (personaTier: string | null) =>
     apiFetch<{ status: string; persona_tier: string | null }>("/admin/persona", {
       method: "POST",
@@ -305,3 +350,5 @@ export const adminApi = {
   getCostsSummary: (days: number = 7) =>
     apiFetch<CostSummaryResponse>(`/admin/costs/summary?days=${days}`),
 };
+
+export const adminApi = proxy(realAdminApi, mockAdminApi);

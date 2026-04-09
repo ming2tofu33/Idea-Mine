@@ -9,14 +9,15 @@ import { MINE_LABELS, type MineLanguage } from "@/components/mine/mine-labels";
 import { SectorScanStage } from "@/components/mine/sector-scan-stage";
 import { SelectedVeinPanel } from "@/components/mine/selected-vein-panel";
 import { StatusRail } from "@/components/shared/status-rail";
+import { useProfile } from "@/hooks/use-profile";
 import { miningApi } from "@/lib/api";
 import type { TodayVeinsResponse } from "@/types/api";
-
-const lang: MineLanguage = "ko";
 
 export default function MinePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { profile } = useProfile();
+  const lang: MineLanguage = (profile?.language ?? "ko") as MineLanguage;
   const [selectedVeinIdState, setSelectedVeinIdState] = useState<string | null>(null);
 
   const {

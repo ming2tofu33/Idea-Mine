@@ -7,6 +7,7 @@ import { AdminFab } from "@/components/admin/admin-fab";
 import { PersonaBadge } from "@/components/admin/persona-badge";
 import { SignalButton } from "@/components/shared/signal-button";
 import { StatusRail } from "@/components/shared/status-rail";
+import { useProfile } from "@/hooks/use-profile";
 import { createClient } from "@/lib/supabase/client";
 import type { UserProfile } from "@/types/api";
 
@@ -18,7 +19,7 @@ const NAV_ITEMS = [
 
 export function AppShell({
   user,
-  profile,
+  profile: serverProfile,
   children,
 }: {
   user: User;
@@ -27,12 +28,21 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { profile: clientProfile, updateLanguage, isUpdatingLanguage } = useProfile();
+
+  // 클라이언트 프로필이 있으면 우선, 없으면 서버 SSR 프로필
+  const profile = clientProfile ?? serverProfile;
+  const currentLang = profile?.language ?? "ko";
 
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
     router.push("/");
     router.refresh();
+  }
+
+  function handleToggleLanguage() {
+    updateLanguage(currentLang === "ko" ? "en" : "ko");
   }
 
   return (
@@ -72,6 +82,17 @@ export function AppShell({
           right={
             <div className="flex items-center gap-2.5">
               {profile && <PersonaBadge profile={profile} />}
+              <button
+                type="button"
+                onClick={handleToggleLanguage}
+                disabled={isUpdatingLanguage}
+                title={currentLang === "ko" ? "Switch to English" : "한국어로 전환"}
+                className="cursor-pointer rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-text-secondary transition-all hover:border-cold-cyan/40 hover:text-cold-cyan disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span className={currentLang === "ko" ? "text-cold-cyan" : ""}>한</span>
+                <span className="mx-1 text-text-secondary/40">/</span>
+                <span className={currentLang === "en" ? "text-cold-cyan" : ""}>EN</span>
+              </button>
               <span className="hidden max-w-[220px] truncate text-xs text-text-secondary/70 md:inline">
                 {user.email}
               </span>
