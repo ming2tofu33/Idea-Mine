@@ -8,7 +8,7 @@ import { MineSupportBlock } from "@/components/mine/mine-support-block";
 import { MINE_LABELS, type MineLanguage } from "@/components/mine/mine-labels";
 import { SectorScanStage } from "@/components/mine/sector-scan-stage";
 import { SelectedVeinPanel } from "@/components/mine/selected-vein-panel";
-import { StatusRail } from "@/components/shared/status-rail";
+import { PageHeader } from "@/components/shared/page-header";
 import { useProfile } from "@/hooks/use-profile";
 import { miningApi } from "@/lib/api";
 import type { TodayVeinsResponse } from "@/types/api";
@@ -83,29 +83,30 @@ export default function MinePage() {
       <MineBackground />
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-4 w-full max-w-7xl">
-          <StatusRail
-            variant="app"
-            left={
-              <span className="text-xs uppercase tracking-[0.28em] text-text-secondary/75">
-                {MINE_LABELS.rerolls[lang]}{" "}
-                <span className="text-text-primary">
-                  {data?.rerolls_used ?? "--"}/{data?.rerolls_max ?? "--"}
-                </span>
-              </span>
+        <div className="mx-auto mb-6 w-full max-w-7xl">
+          <PageHeader
+            eyebrow="MINE"
+            title={lang === "ko" ? "오늘의 광맥" : "Today's veins"}
+            subtitle={
+              lang === "ko"
+                ? "탐지된 광맥 중 하나를 선택해 채굴하세요"
+                : "Select one of the detected veins to start mining"
             }
-            center={
-              <span className="hidden text-[11px] uppercase tracking-[0.24em] text-cold-cyan/75 lg:inline">
-                {selectedVein?.keywords[0]?.[lang] ?? selectedVein?.keywords[0]?.ko ?? MINE_LABELS.sectorScanActive[lang]}
-              </span>
-            }
-            right={
-              <span className="text-xs uppercase tracking-[0.28em] text-text-secondary/75">
-                {MINE_LABELS.generations[lang]}{" "}
-                <span className="text-text-primary">
-                  {data?.generations_used ?? "--"}/{data?.generations_max ?? "--"}
+            meta={
+              <>
+                <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.22em] text-text-secondary">
+                  {MINE_LABELS.rerolls[lang]}{" "}
+                  <span className="text-text-primary">
+                    {data?.rerolls_used ?? "--"}/{data?.rerolls_max ?? "--"}
+                  </span>
                 </span>
-              </span>
+                <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.22em] text-text-secondary">
+                  {MINE_LABELS.generations[lang]}{" "}
+                  <span className="text-text-primary">
+                    {data?.generations_used ?? "--"}/{data?.generations_max ?? "--"}
+                  </span>
+                </span>
+              </>
             }
           />
         </div>

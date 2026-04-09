@@ -2,10 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { FlaskConical, Pickaxe, FileText, ArrowRight } from "lucide-react";
+import { FlaskConical, Pickaxe, ArrowRight } from "lucide-react";
 import { LabBackground } from "@/components/backgrounds/lab-background";
-import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
 import { vaultApi } from "@/lib/api";
 import type { Idea, Overview } from "@/types/api";
 
@@ -161,17 +161,15 @@ export default function LabPage() {
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mx-auto mb-8 w-full max-w-2xl space-y-3">
-          <Breadcrumb items={[{ label: "Lab" }]} />
-          <div>
-            <h2 className="text-xl font-bold text-text-primary">The Lab</h2>
-            <p className="mt-1 text-sm text-text-secondary">
-              아이디어를 분석하고 정제하는 공간
-            </p>
-          </div>
+        <div className="mx-auto mb-6 w-full max-w-5xl">
+          <PageHeader
+            eyebrow="LAB"
+            title="The Lab"
+            subtitle="Analyze and refine the ideas you've collected"
+          />
         </div>
 
-        <div className="mx-auto w-full max-w-2xl flex-1 space-y-8">
+        <div className="mx-auto w-full max-w-5xl flex-1 space-y-8">
           {/* Section: Ideas needing overview */}
           <section className="space-y-3">
             <SectionHeader

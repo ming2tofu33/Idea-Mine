@@ -4,7 +4,6 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { MineBackground } from "@/components/backgrounds/mine-background";
-import { StatusRail } from "@/components/shared/status-rail";
 import { SignalButton } from "@/components/shared/signal-button";
 import { usePrefersReducedMotion } from "@/components/shared/use-prefers-reduced-motion";
 import { trackExperienceEvent } from "@/lib/experience-events";
@@ -114,33 +113,31 @@ export function ExperienceEntry({ veins }: ExperienceEntryProps) {
   }, []);
 
   return (
-    <div className="relative flex min-h-0 flex-1">
+    <div className="relative flex min-h-0 flex-1 flex-col">
       <MineBackground />
 
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-4 w-full max-w-7xl">
-          <StatusRail
-            variant="app"
-            left={
-              <span className="text-xs uppercase tracking-[0.28em] text-text-secondary/75">
-                public demo
-              </span>
-            }
-            center={
-              <span className="hidden text-[11px] uppercase tracking-[0.22em] text-cold-cyan/75 lg:inline">
-                오늘의 광맥 미리보기
-              </span>
-            }
-            right={
-              <Link
-                href="/auth/sign-in?next=/mine"
-                className="rounded-md border border-cold-cyan/30 bg-cold-cyan/10 px-3 py-1.5 text-xs text-cold-cyan transition-all hover:bg-cold-cyan/20"
-              >
-                Sign in
-              </Link>
-            }
-          />
+      {/* Sticky guest header — matches AppShell sticky pattern */}
+      <header className="sticky top-0 z-30 border-b border-line-steel/20 bg-bg-deep/70 px-4 py-3 backdrop-blur-xl sm:px-6">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3">
+          <Link
+            href="/"
+            className="text-sm font-semibold tracking-[0.16em] text-text-primary hover:text-cold-cyan"
+          >
+            IDEA MINE
+          </Link>
+          <span className="hidden text-[11px] uppercase tracking-[0.22em] text-cold-cyan/75 lg:inline">
+            public demo
+          </span>
+          <Link
+            href="/auth/sign-in?next=/mine"
+            className="rounded-md border border-cold-cyan/30 bg-cold-cyan/10 px-3 py-1.5 text-xs text-cold-cyan transition-all hover:bg-cold-cyan/20"
+          >
+            Sign in
+          </Link>
         </div>
+      </header>
+
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
 
         <motion.section
           initial={animateMotion ? { opacity: 0, y: 18 } : false}

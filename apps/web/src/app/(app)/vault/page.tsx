@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { Lock, Pickaxe, Trash2 } from "lucide-react";
 import { VaultBackground } from "@/components/backgrounds/vault-background";
-import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { EmptyState } from "@/components/shared/empty-state";
+import { PageHeader } from "@/components/shared/page-header";
 import { vaultApi } from "@/lib/api";
 import type { Idea } from "@/types/api";
 
@@ -182,25 +182,23 @@ export default function VaultPage() {
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mx-auto mb-6 w-full max-w-4xl space-y-3">
-          <Breadcrumb items={[{ label: "Vault" }]} />
-          <div className="flex items-baseline justify-between">
-            <div>
-              <h2 className="text-xl font-bold text-text-primary">The Vault</h2>
-              <p className="mt-1 text-sm text-text-secondary">
-                채굴한 아이디어를 보관하고 관리하는 공간
-              </p>
-            </div>
-            {ideas && ideas.length > 0 && (
-              <span className="text-xs text-text-secondary/60">
-                {ideas.length}개의 아이디어
-              </span>
-            )}
-          </div>
+        <div className="mx-auto mb-6 w-full max-w-5xl">
+          <PageHeader
+            eyebrow="VAULT"
+            title="The Vault"
+            subtitle="Store and manage the ideas you've mined"
+            meta={
+              ideas && ideas.length > 0 ? (
+                <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.22em] text-text-secondary">
+                  <span className="text-text-primary">{ideas.length}</span> ideas
+                </span>
+              ) : undefined
+            }
+          />
         </div>
 
         {/* Content */}
-        <div className="mx-auto w-full max-w-4xl flex-1">
+        <div className="mx-auto w-full max-w-5xl flex-1">
           {isLoading ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               <SkeletonCard />

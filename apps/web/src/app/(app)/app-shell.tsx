@@ -4,9 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
 import { AdminFab } from "@/components/admin/admin-fab";
-import { PersonaBadge } from "@/components/admin/persona-badge";
-import { SignalButton } from "@/components/shared/signal-button";
 import { StatusRail } from "@/components/shared/status-rail";
+import { UserMenu } from "@/components/shared/user-menu";
 import { useProfile } from "@/hooks/use-profile";
 import { createClient } from "@/lib/supabase/client";
 import type { UserProfile } from "@/types/api";
@@ -47,7 +46,7 @@ export function AppShell({
 
   return (
     <div className="flex min-h-full flex-col">
-      <header className="relative z-20 px-4 py-3 sm:px-6">
+      <header className="sticky top-0 z-30 border-b border-line-steel/20 bg-bg-deep/70 px-4 py-3 backdrop-blur-xl sm:px-6">
         <StatusRail
           variant="app"
           left={
@@ -80,38 +79,23 @@ export function AppShell({
             </span>
           }
           right={
-            <div className="flex items-center gap-2.5">
-              {profile && <PersonaBadge profile={profile} />}
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleToggleLanguage}
                 disabled={isUpdatingLanguage}
-                title={currentLang === "ko" ? "Switch to English" : "한국어로 전환"}
+                title={currentLang === "ko" ? "Switch to English" : "Switch to Korean"}
                 className="cursor-pointer rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-text-secondary transition-all hover:border-cold-cyan/40 hover:text-cold-cyan disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <span className={currentLang === "ko" ? "text-cold-cyan" : ""}>한</span>
+                <span className={currentLang === "ko" ? "text-cold-cyan" : ""}>KO</span>
                 <span className="mx-1 text-text-secondary/40">/</span>
                 <span className={currentLang === "en" ? "text-cold-cyan" : ""}>EN</span>
               </button>
-              <span className="hidden max-w-[220px] truncate text-xs text-text-secondary/70 md:inline">
-                {user.email}
-              </span>
-              {profile?.role === "admin" && (
-                <Link
-                  href="/admin"
-                  className="rounded-md border border-amber-400/25 px-2.5 py-1 text-xs text-amber-300 transition-all hover:border-amber-300/45 hover:bg-amber-400/8"
-                >
-                  Admin
-                </Link>
-              )}
-              <SignalButton
-                type="button"
-                variant="ghost"
-                onClick={handleSignOut}
-                className="px-2.5 py-1 text-xs"
-              >
-                Sign out
-              </SignalButton>
+              <UserMenu
+                email={user.email ?? ""}
+                profile={profile}
+                onSignOut={handleSignOut}
+              />
             </div>
           }
         />
