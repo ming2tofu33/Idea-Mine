@@ -5,11 +5,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { MineBackground } from "@/components/backgrounds/mine-background";
 import { MineSupportBlock } from "@/components/mine/mine-support-block";
+import { MINE_LABELS, type MineLanguage } from "@/components/mine/mine-labels";
 import { SectorScanStage } from "@/components/mine/sector-scan-stage";
 import { SelectedVeinPanel } from "@/components/mine/selected-vein-panel";
 import { StatusRail } from "@/components/shared/status-rail";
 import { miningApi } from "@/lib/api";
 import type { TodayVeinsResponse } from "@/types/api";
+
+const lang: MineLanguage = "ko";
 
 export default function MinePage() {
   const router = useRouter();
@@ -84,7 +87,7 @@ export default function MinePage() {
             variant="app"
             left={
               <span className="text-xs uppercase tracking-[0.28em] text-text-secondary/75">
-                rerolls{" "}
+                {MINE_LABELS.rerolls[lang]}{" "}
                 <span className="text-text-primary">
                   {data?.rerolls_used ?? "--"}/{data?.rerolls_max ?? "--"}
                 </span>
@@ -92,12 +95,12 @@ export default function MinePage() {
             }
             center={
               <span className="hidden text-[11px] uppercase tracking-[0.24em] text-cold-cyan/75 lg:inline">
-                {selectedVein?.keywords[0]?.ko ?? "sector scan active"}
+                {selectedVein?.keywords[0]?.[lang] ?? selectedVein?.keywords[0]?.ko ?? MINE_LABELS.sectorScanActive[lang]}
               </span>
             }
             right={
               <span className="text-xs uppercase tracking-[0.28em] text-text-secondary/75">
-                generations{" "}
+                {MINE_LABELS.generations[lang]}{" "}
                 <span className="text-text-primary">
                   {data?.generations_used ?? "--"}/{data?.generations_max ?? "--"}
                 </span>
@@ -115,6 +118,7 @@ export default function MinePage() {
             isError={isFatalScanError}
             errorMessage={scanErrorMessage}
             warningMessage={scanWarningMessage}
+            lang={lang}
           />
 
           <SelectedVeinPanel
@@ -130,10 +134,11 @@ export default function MinePage() {
             onMine={handleMine}
             onRetry={refetch}
             onReroll={() => rerollMutation.mutate()}
+            lang={lang}
           />
         </div>
 
-        <MineSupportBlock status={supportStatus} />
+        <MineSupportBlock status={supportStatus} lang={lang} />
       </div>
     </div>
   );

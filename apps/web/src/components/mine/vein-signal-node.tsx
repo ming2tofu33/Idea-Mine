@@ -4,50 +4,42 @@ import { motion } from "framer-motion";
 import type { Vein, VeinRarity } from "@/types/api";
 import { usePrefersReducedMotion } from "@/components/shared/use-prefers-reduced-motion";
 import { Meteorite3D } from "./meteorite-3d";
+import { MINE_LABELS, type MineLanguage } from "./mine-labels";
 
 type VeinSignalNodeProps = {
   vein: Vein;
   selected: boolean;
   onSelect: (id: string) => void;
   position: "top" | "left" | "right";
+  lang?: MineLanguage;
 };
 
 const POSITION_STYLES: Record<VeinSignalNodeProps["position"], string> = {
-  top: "lg:left-1/2 lg:top-[10%] lg:-translate-x-1/2",
-  left: "lg:left-[4%] lg:bottom-[14%]",
-  right: "lg:right-[6%] lg:bottom-[8%]",
-};
-
-const POSITION_LABELS: Record<VeinSignalNodeProps["position"], string> = {
-  top: "apex return",
-  left: "lateral echo",
-  right: "edge echo",
+  top: "lg:left-1/2 lg:top-[6%] lg:-translate-x-1/2",
+  left: "lg:left-[2%] lg:bottom-[6%]",
+  right: "lg:right-[2%] lg:bottom-[6%]",
 };
 
 const RARITY_STYLES: Record<
   VeinRarity,
-  { label: string; glow: string; rim: string; accent: string }
+  { glow: string; rim: string; accent: string }
 > = {
   common: {
-    label: "Common",
     glow: "shadow-[0_0_26px_rgba(154,170,192,0.14)]",
     rim: "border-line-steel/45",
     accent: "bg-text-secondary",
   },
   rare: {
-    label: "Rare",
     glow: "shadow-[0_0_30px_rgba(139,92,246,0.2)]",
     rim: "border-[#8B5CF6]/45",
     accent: "bg-[#8B5CF6]",
   },
   golden: {
-    label: "Golden",
     glow: "shadow-[0_0_34px_rgba(196,176,122,0.22)]",
     rim: "border-[#C4B07A]/45",
     accent: "bg-[#C4B07A]",
   },
   legend: {
-    label: "Legend",
     glow: "shadow-[0_0_38px_rgba(92,205,229,0.24)]",
     rim: "border-cold-cyan/45",
     accent: "bg-cold-cyan",
@@ -59,12 +51,15 @@ export function VeinSignalNode({
   selected,
   onSelect,
   position,
+  lang = "ko",
 }: VeinSignalNodeProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const animateMotion = prefersReducedMotion === false;
   const rarity = RARITY_STYLES[vein.rarity];
-  const primaryKeyword = vein.keywords[0]?.ko ?? "signal";
-  const secondaryKeyword = vein.keywords[1]?.ko;
+  const rarityLabel = MINE_LABELS.rarity[vein.rarity][lang];
+  const primaryKeyword = vein.keywords[0]?.[lang] ?? vein.keywords[0]?.ko ?? "signal";
+  const secondaryKeyword = vein.keywords[1]?.[lang] ?? vein.keywords[1]?.ko;
+  const positionLabel = MINE_LABELS.positionLabels[position][lang];
 
   return (
     <motion.button
@@ -78,7 +73,7 @@ export function VeinSignalNode({
         animateMotion ? { type: "spring", stiffness: 320, damping: 24 } : undefined
       }
       className={[
-        "group relative z-10 w-full text-left outline-none focus-visible:ring-2 focus-visible:ring-cold-cyan/30 sm:max-w-[240px] lg:absolute lg:w-[min(270px,46vw)]",
+        "group relative z-10 w-full text-left outline-none focus-visible:ring-2 focus-visible:ring-cold-cyan/30 sm:max-w-[280px] lg:absolute lg:w-[min(300px,42vw)]",
         POSITION_STYLES[position],
       ].join(" ")}
     >
@@ -114,22 +109,22 @@ export function VeinSignalNode({
                 ].join(" ")}
               />
               <span className="text-[10px] uppercase tracking-[0.3em] text-text-secondary/70">
-                {POSITION_LABELS[position]}
+                {positionLabel}
               </span>
             </div>
 
             <h3 className="mt-2 truncate text-base font-semibold text-text-primary">
               {primaryKeyword}
             </h3>
-            <p className="mt-1 max-h-10 overflow-hidden text-xs leading-5 text-text-secondary/80">
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-text-secondary/80">
               {secondaryKeyword
                 ? `${primaryKeyword} / ${secondaryKeyword}`
-                : `Locked ${rarity.label.toLowerCase()} signal`}
+                : rarityLabel}
             </p>
           </div>
 
           <span className="mt-1 rounded-full border border-line-steel/45 bg-surface-1/70 px-2.5 py-1 text-[10px] uppercase tracking-[0.22em] text-text-secondary/70">
-            {rarity.label}
+            {rarityLabel}
           </span>
         </div>
 
@@ -141,13 +136,13 @@ export function VeinSignalNode({
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(92,205,229,0.06)_50%,transparent_100%)]" />
           <div className="pointer-events-none absolute inset-0 rounded-[22px] ring-1 ring-inset ring-white/5" />
           <div className="absolute left-3 top-3 rounded-full border border-line-steel/40 bg-surface-1/65 px-2 py-1 text-[10px] uppercase tracking-[0.24em] text-text-secondary/80">
-            {vein.keywords.length} signals
+            {MINE_LABELS.signals[lang](vein.keywords.length)}
           </div>
         </div>
 
         <div className="relative mt-3 flex items-center justify-between text-[10px] uppercase tracking-[0.28em] text-text-secondary/70">
-          <span>detected target</span>
-          <span>{selected ? "locked" : "available"}</span>
+          <span>{MINE_LABELS.detectedTarget[lang]}</span>
+          <span>{selected ? MINE_LABELS.locked[lang] : MINE_LABELS.available[lang]}</span>
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import type { Vein } from "@/types/api";
 import { usePrefersReducedMotion } from "@/components/shared/use-prefers-reduced-motion";
 import { VeinSignalNode } from "./vein-signal-node";
+import { MINE_LABELS, type MineLanguage } from "./mine-labels";
 
 type SectorScanStageProps = {
   veins: Vein[];
@@ -13,27 +14,30 @@ type SectorScanStageProps = {
   isError: boolean;
   errorMessage?: string;
   warningMessage?: string;
+  lang?: MineLanguage;
 };
 
 const SLOT_ORDER = ["top", "left", "right"] as const;
 
 const SLOT_STYLES: Record<(typeof SLOT_ORDER)[number], string> = {
-  top: "lg:left-1/2 lg:top-[10%] lg:-translate-x-1/2",
-  left: "lg:left-[4%] lg:bottom-[14%]",
-  right: "lg:right-[6%] lg:bottom-[8%]",
+  top: "lg:left-1/2 lg:top-[6%] lg:-translate-x-1/2",
+  left: "lg:left-[2%] lg:bottom-[6%]",
+  right: "lg:right-[2%] lg:bottom-[6%]",
 };
 
 function ScanGhostNode({
   position,
   label,
+  lang,
 }: {
   position: (typeof SLOT_ORDER)[number];
   label: string;
+  lang: MineLanguage;
 }) {
   return (
     <div
       className={[
-        "relative w-full sm:max-w-[240px] lg:absolute lg:w-[min(270px,46vw)]",
+        "relative w-full sm:max-w-[280px] lg:absolute lg:w-[min(300px,42vw)]",
         SLOT_STYLES[position],
       ].join(" ")}
     >
@@ -51,7 +55,7 @@ function ScanGhostNode({
         </div>
         <div className="relative mt-3 flex items-center justify-between text-[10px] uppercase tracking-[0.26em] text-text-secondary/60">
           <span>{label}</span>
-          <span>awaiting lock</span>
+          <span>{MINE_LABELS.awaitingLock[lang]}</span>
         </div>
       </div>
     </div>
@@ -66,6 +70,7 @@ export function SectorScanStage({
   isError,
   errorMessage,
   warningMessage,
+  lang = "ko",
 }: SectorScanStageProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const animateMotion = prefersReducedMotion === false;
@@ -85,68 +90,68 @@ export function SectorScanStage({
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(2,5,13,0.02)_0%,rgba(2,5,13,0.14)_55%,rgba(2,5,13,0.42)_100%)]" />
 
       <div className="absolute inset-0 hidden lg:block">
-        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cold-cyan/12" />
-        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[320px] w-[320px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cold-cyan/15" />
-        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[220px] w-[220px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-signal-pink/10" />
-        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[120px] w-[120px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-[radial-gradient(circle,rgba(92,205,229,0.1)_0%,transparent_68%)]" />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[300px] w-[300px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cold-cyan/12" />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[230px] w-[230px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cold-cyan/15" />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[160px] w-[160px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-signal-pink/10" />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[90px] w-[90px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10 bg-[radial-gradient(circle,rgba(92,205,229,0.1)_0%,transparent_68%)]" />
       </div>
 
       <div className="relative z-10 flex min-h-0 flex-col lg:min-h-[680px]">
         <div className="flex items-center justify-between gap-3 border-b border-line-steel/30 pb-4">
           <div>
             <p className="text-[11px] uppercase tracking-[0.3em] text-text-secondary/70">
-              sector scan shell
+              {MINE_LABELS.sectorScanShell[lang]}
             </p>
             <p className="mt-1 text-xs text-text-secondary/60">
               {isLoading
-                ? "acquiring signatures"
+                ? MINE_LABELS.acquiringSignatures[lang]
                 : isError
-                  ? "signal loss"
-                  : `${veins.length} detected targets`}
+                  ? MINE_LABELS.signalLoss[lang]
+                  : MINE_LABELS.detectedTargets[lang](veins.length)}
             </p>
           </div>
 
           <div className="rounded-full border border-line-steel/40 bg-surface-1/60 px-3 py-1.5 text-[10px] uppercase tracking-[0.24em] text-text-secondary/70">
-            {hasTargets ? "target map stable" : "scan pending"}
+            {hasTargets ? MINE_LABELS.targetMapStable[lang] : MINE_LABELS.scanPending[lang]}
           </div>
         </div>
 
         {warningMessage && !isError && (
           <div className="mt-3 rounded-2xl border border-cold-cyan/20 bg-[rgba(92,205,229,0.07)] px-4 py-3 text-sm leading-6 text-text-primary/90">
             <span className="mr-2 text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70">
-              scan warning
+              {MINE_LABELS.scanWarning[lang]}
             </span>
             {warningMessage}
           </div>
         )}
 
         <div className="relative flex flex-1 items-start justify-center pt-5">
-          <div className="relative flex w-full max-w-[560px] flex-col items-center gap-3 lg:block lg:max-w-none">
+          <div className="relative flex w-full max-w-[560px] flex-col items-center gap-3 lg:absolute lg:inset-0 lg:block lg:max-w-none">
             {isLoading ? (
               <>
-                <ScanGhostNode position="top" label="apex return" />
-                <ScanGhostNode position="left" label="lateral echo" />
-                <ScanGhostNode position="right" label="edge echo" />
+                <ScanGhostNode position="top" label={MINE_LABELS.positionLabels.top[lang]} lang={lang} />
+                <ScanGhostNode position="left" label={MINE_LABELS.positionLabels.left[lang]} lang={lang} />
+                <ScanGhostNode position="right" label={MINE_LABELS.positionLabels.right[lang]} lang={lang} />
 
                 <div className="mx-auto rounded-full border border-cold-cyan/20 bg-surface-1/60 px-4 py-2 text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70 backdrop-blur-md lg:absolute lg:left-1/2 lg:top-[53%] lg:-translate-x-1/2">
-                  locking target
+                  {MINE_LABELS.lockingTarget[lang]}
                 </div>
               </>
             ) : isError ? (
               <>
-                <ScanGhostNode position="top" label="apex return" />
-                <ScanGhostNode position="left" label="lateral echo" />
-                <ScanGhostNode position="right" label="edge echo" />
+                <ScanGhostNode position="top" label={MINE_LABELS.positionLabels.top[lang]} lang={lang} />
+                <ScanGhostNode position="left" label={MINE_LABELS.positionLabels.left[lang]} lang={lang} />
+                <ScanGhostNode position="right" label={MINE_LABELS.positionLabels.right[lang]} lang={lang} />
 
                 <div className="mx-auto max-w-sm rounded-2xl border border-line-steel/45 bg-surface-1/75 px-5 py-4 text-center backdrop-blur-md lg:absolute lg:left-1/2 lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2">
                   <p className="text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70">
-                    scan interrupted
+                    {MINE_LABELS.scanInterrupted[lang]}
                   </p>
                   <p className="mt-2 text-sm text-text-primary">
-                    Target acquisition failed.
+                    {MINE_LABELS.targetAcquisitionFailed[lang]}
                   </p>
                   <p className="mt-2 max-w-sm text-xs leading-5 text-text-secondary">
-                    {errorMessage ?? "The sector feed dropped before the scan could lock."}
+                    {errorMessage ?? MINE_LABELS.sectorFeedDropped[lang]}
                   </p>
                 </div>
               </>
@@ -160,13 +165,8 @@ export function SectorScanStage({
                       <ScanGhostNode
                         key={position}
                         position={position}
-                        label={
-                          position === "top"
-                            ? "apex return"
-                            : position === "left"
-                              ? "lateral echo"
-                              : "edge echo"
-                        }
+                        label={MINE_LABELS.positionLabels[position][lang]}
+                        lang={lang}
                       />
                     );
                   }
@@ -178,6 +178,7 @@ export function SectorScanStage({
                       position={position}
                       selected={vein.id === selectedVeinId}
                       onSelect={onSelect}
+                      lang={lang}
                     />
                   );
                 })}

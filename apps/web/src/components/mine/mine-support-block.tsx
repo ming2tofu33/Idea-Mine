@@ -1,3 +1,9 @@
+"use client";
+
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { MINE_LABELS, type MineLanguage } from "./mine-labels";
+
 type MineSupportStatus = "loading" | "error" | "empty" | "ready";
 
 function SupportTile({
@@ -19,44 +25,19 @@ function SupportTile({
 
 type MineSupportBlockProps = {
   status: MineSupportStatus;
+  lang?: MineLanguage;
 };
 
-const SUPPORT_COPY: Record<
-  MineSupportStatus,
-  { eyebrow: string; title: string; intro: string; primary: string; secondary: string }
-> = {
-  loading: {
-    eyebrow: "Support",
-    title: "Scan guidance and system notes.",
-    intro: "The field is warming up. Use this block for orientation while the stage resolves.",
-    primary: "How it works",
-    secondary: "Wait for the sector scan to settle before choosing a target.",
-  },
-  error: {
-    eyebrow: "Support",
-    title: "Scan guidance and recovery notes.",
-    intro: "The field lost signal. This block stays calm and only explains the next safe step.",
-    primary: "How it works",
-    secondary: "Use reroll to recover the sector, then reassess the targets.",
-  },
-  empty: {
-    eyebrow: "Support",
-    title: "Scan guidance and system notes.",
-    intro: "No target is available yet. Keep this block as orientation while the sector repopulates.",
-    primary: "How it works",
-    secondary: "Wait for a fresh sector before selecting a target.",
-  },
-  ready: {
-    eyebrow: "Support",
-    title: "Scan guidance and system notes.",
-    intro: "Quiet guidance for the current sector. Keep the main stage in focus and use this block for orientation only.",
-    primary: "How it works",
-    secondary: "Select a target, review the detail panel, and reroll only when you need a fresh sector.",
-  },
+const STATUS_KEY: Record<MineSupportStatus, "supportLoading" | "supportError" | "supportEmpty" | "supportReady"> = {
+  loading: "supportLoading",
+  error: "supportError",
+  empty: "supportEmpty",
+  ready: "supportReady",
 };
 
-export function MineSupportBlock({ status }: MineSupportBlockProps) {
-  const copy = SUPPORT_COPY[status];
+export function MineSupportBlock({ status, lang = "ko" }: MineSupportBlockProps) {
+  const [collapsed, setCollapsed] = useState(true);
+  const copy = MINE_LABELS[STATUS_KEY[status]];
 
   return (
     <section
@@ -64,33 +45,44 @@ export function MineSupportBlock({ status }: MineSupportBlockProps) {
       className="mx-auto w-full max-w-7xl px-4 pb-6 sm:px-6 lg:px-8"
     >
       <div className="observatory-panel observatory-frame rounded-2xl border border-line-steel/40 px-4 py-4 sm:px-5 sm:py-5">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.24em] text-cold-cyan/75">{copy.eyebrow}</p>
-            <h3 className="mt-1 text-sm font-semibold text-text-primary sm:text-base">
-              {copy.title}
-            </h3>
+        <button
+          type="button"
+          onClick={() => setCollapsed(!collapsed)}
+          className="flex w-full cursor-pointer items-start justify-between gap-3 text-left"
+          aria-expanded={!collapsed}
+        >
+          <div className="flex flex-wrap items-end justify-between gap-3 flex-1">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.24em] text-cold-cyan/75">
+                {MINE_LABELS.supportEyebrow[lang]}
+              </p>
+              <h3 className="mt-1 text-sm font-semibold text-text-primary sm:text-base">
+                {copy.title[lang]}
+              </h3>
+            </div>
+            <p className="max-w-md text-xs leading-5 text-text-secondary/75 sm:text-sm">
+              {copy.intro[lang]}
+            </p>
           </div>
-          <p className="max-w-md text-xs leading-5 text-text-secondary/75 sm:text-sm">
-            {copy.intro}
-          </p>
-        </div>
-
-        <div className="grid gap-3 md:grid-cols-2">
-          <SupportTile title={copy.primary} copy={copy.secondary} />
-          <SupportTile
-            title="System note"
-            copy={
-              status === "ready"
-                ? "Pink signal energy stays concentrated on the selected vein and the primary mine action."
-                : status === "loading"
-                  ? "No target is locked yet, so the support block stays informational."
-                  : status === "error"
-                    ? "Use reroll to recover the sector before trying another selection."
-                    : "A fresh sector will appear here once the scan resolves."
-            }
+          <ChevronDown
+            className={`h-5 w-5 shrink-0 text-text-secondary/70 transition-transform duration-200 ${
+              !collapsed ? "rotate-180" : ""
+            }`}
           />
-        </div>
+        </button>
+
+        {!collapsed && (
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <SupportTile
+              title={MINE_LABELS.supportHowItWorks[lang]}
+              copy={copy.primary[lang]}
+            />
+            <SupportTile
+              title={MINE_LABELS.supportSystemNote[lang]}
+              copy={copy.secondary[lang]}
+            />
+          </div>
+        )}
       </div>
     </section>
   );

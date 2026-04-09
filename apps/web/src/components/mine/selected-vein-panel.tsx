@@ -5,6 +5,7 @@ import type { Vein, VeinRarity } from "@/types/api";
 import { usePrefersReducedMotion } from "@/components/shared/use-prefers-reduced-motion";
 import { KeywordChip } from "./keyword-chip";
 import { SignalButton } from "@/components/shared/signal-button";
+import { MINE_LABELS, type MineLanguage } from "./mine-labels";
 
 type SelectedVeinPanelProps = {
   vein: Vein | null;
@@ -19,40 +20,34 @@ type SelectedVeinPanelProps = {
   onMine: (id: string) => void;
   onRetry: () => void;
   onReroll: () => void;
+  lang?: MineLanguage;
 };
 
 const RARITY_META: Record<
   VeinRarity,
-  { label: string; accent: string; panel: string }
+  { accent: string; panel: string }
 > = {
   common: {
-    label: "Common",
     accent: "bg-text-secondary",
     panel: "border-line-steel/45 bg-surface-1/55",
   },
   rare: {
-    label: "Rare",
     accent: "bg-[#8B5CF6]",
     panel: "border-[#8B5CF6]/35 bg-[rgba(139,92,246,0.06)]",
   },
   golden: {
-    label: "Golden",
     accent: "bg-[#C4B07A]",
     panel: "border-[#C4B07A]/35 bg-[rgba(196,176,122,0.08)]",
   },
   legend: {
-    label: "Legend",
     accent: "bg-cold-cyan",
     panel: "border-cold-cyan/35 bg-[rgba(92,205,229,0.08)]",
   },
 };
 
-const VEIN_CODENAMES = ["Alpha", "Beta", "Gamma"];
-
-function getVeinDisplayName(vein: Vein) {
-  const codename = VEIN_CODENAMES[vein.slot_index - 1] ?? `Node ${vein.slot_index}`;
-
-  return `Target ${codename}`;
+function getVeinDisplayName(vein: Vein, lang: MineLanguage) {
+  const codenames = MINE_LABELS.veinCodenames[lang];
+  return codenames[vein.slot_index - 1] ?? codenames[0];
 }
 
 function PanelSkeleton() {
@@ -87,6 +82,7 @@ export function SelectedVeinPanel({
   onMine,
   onRetry,
   onReroll,
+  lang = "ko",
 }: SelectedVeinPanelProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const animateMotion = prefersReducedMotion === false;
@@ -119,13 +115,13 @@ export function SelectedVeinPanel({
         >
           <div>
             <p className="text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70">
-              scan interrupted
+              {MINE_LABELS.scanInterrupted[lang]}
             </p>
             <h2 className="mt-3 text-2xl font-semibold text-text-primary">
-              Target lost.
+              {MINE_LABELS.targetLost[lang]}
             </h2>
             <p className="mt-3 text-sm leading-6 text-text-secondary">
-              {errorMessage ?? "The sector feed dropped before a target could be locked."}
+              {errorMessage ?? MINE_LABELS.targetLostDesc[lang]}
             </p>
           </div>
 
@@ -137,7 +133,7 @@ export function SelectedVeinPanel({
               disabled={isRefetching}
               className="w-full"
             >
-              {isRefetching ? "RETRYING" : "RETRY SCAN"}
+              {isRefetching ? MINE_LABELS.retrying[lang] : MINE_LABELS.retryScan[lang]}
             </SignalButton>
           </div>
         </motion.div>
@@ -157,13 +153,13 @@ export function SelectedVeinPanel({
         >
           <div>
             <p className="text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70">
-              target analysis
+              {MINE_LABELS.targetAnalysis[lang]}
             </p>
             <h2 className="mt-3 text-2xl font-semibold text-text-primary">
-              Awaiting lock.
+              {MINE_LABELS.awaitingLockTitle[lang]}
             </h2>
             <p className="mt-3 text-sm leading-6 text-text-secondary">
-              The scan shell is waiting for a vein to resolve.
+              {MINE_LABELS.awaitingLockDesc[lang]}
             </p>
           </div>
 
@@ -175,7 +171,7 @@ export function SelectedVeinPanel({
               disabled={!canReroll || isRerolling}
               className="w-full"
             >
-              {isRerolling ? "RESCANNING" : "RESCAN SECTORS"}
+              {isRerolling ? MINE_LABELS.rescanning[lang] : MINE_LABELS.rescanSectors[lang]}
             </SignalButton>
           </div>
         </motion.div>
@@ -184,13 +180,14 @@ export function SelectedVeinPanel({
   }
 
   const rarity = RARITY_META[vein.rarity];
+  const rarityLabel = MINE_LABELS.rarity[vein.rarity][lang];
   const keywords = vein.keywords.slice(0, 4);
-  const displayName = getVeinDisplayName(vein);
-  const primaryKeyword = vein.keywords[0]?.ko ?? "signal";
-  const secondaryKeyword = vein.keywords[1]?.ko;
+  const displayName = getVeinDisplayName(vein, lang);
+  const primaryKeyword = vein.keywords[0]?.[lang] ?? vein.keywords[0]?.ko ?? "signal";
+  const secondaryKeyword = vein.keywords[1]?.[lang] ?? vein.keywords[1]?.ko;
   const instruction = secondaryKeyword
-    ? `Use ${primaryKeyword} with ${secondaryKeyword} to open the next idea path.`
-    : `Use this signal to open the next idea path.`;
+    ? MINE_LABELS.instructionWithSecondary[lang](primaryKeyword, secondaryKeyword)
+    : MINE_LABELS.instructionSingle[lang];
 
   return (
     <aside className="observatory-panel observatory-frame flex h-full flex-col rounded-[28px] border border-line-steel/55 p-5 lg:sticky lg:top-6">
@@ -204,7 +201,7 @@ export function SelectedVeinPanel({
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70">
-              target analysis
+              {MINE_LABELS.targetAnalysis[lang]}
             </p>
             <h2 className="mt-3 text-2xl font-semibold text-text-primary">
               {displayName}
@@ -221,7 +218,7 @@ export function SelectedVeinPanel({
             ].join(" ")}
           >
             <span className={["h-2 w-2 rounded-full", rarity.accent].join(" ")} />
-            {rarity.label}
+            {rarityLabel}
           </span>
         </div>
 
@@ -234,7 +231,7 @@ export function SelectedVeinPanel({
         {warningMessage && (
           <div className="mt-5 rounded-2xl border border-cold-cyan/20 bg-[rgba(92,205,229,0.08)] p-3">
             <p className="text-[11px] uppercase tracking-[0.28em] text-cold-cyan/70">
-              scan warning
+              {MINE_LABELS.scanWarning[lang]}
             </p>
             <p className="mt-2 text-sm leading-6 text-text-primary/90">
               {warningMessage}
@@ -244,10 +241,10 @@ export function SelectedVeinPanel({
 
         <div className="mt-6 rounded-2xl border border-line-steel/40 bg-surface-1/50 p-4">
           <p className="text-[11px] uppercase tracking-[0.28em] text-text-secondary/70">
-            scan note
+            {MINE_LABELS.scanNote[lang]}
           </p>
           <p className="mt-2 text-sm leading-6 text-text-primary/90">
-            Open the target to route directly into the idea build.
+            {MINE_LABELS.scanNoteContent[lang]}
           </p>
         </div>
 
@@ -259,7 +256,7 @@ export function SelectedVeinPanel({
             disabled={!canMine}
             className="w-full"
           >
-            {canMine ? "MINE TARGET" : "MINE LOCKED"}
+            {canMine ? MINE_LABELS.mineTarget[lang] : MINE_LABELS.mineLocked[lang]}
           </SignalButton>
 
           <SignalButton
@@ -269,7 +266,7 @@ export function SelectedVeinPanel({
             disabled={!canReroll || isRerolling}
             className="w-full"
           >
-            {isRerolling ? "RESCANNING" : "RESCAN SECTORS"}
+            {isRerolling ? MINE_LABELS.rescanning[lang] : MINE_LABELS.rescanSectors[lang]}
           </SignalButton>
         </div>
       </motion.div>
