@@ -5,7 +5,7 @@ def build_overview_prompt(
     market_research: str,
     concept: dict,
 ) -> tuple[str, str]:
-    """Step 2: 개요서 생성 프롬프트 v5.
+    """Step 2: 개요서 생성 프롬프트 v6.
 
     변경 이력:
     - v1~v3.2: 단일 프롬프트
@@ -16,6 +16,9 @@ def build_overview_prompt(
     - v5: system/user 분리, Pydantic structured output 전환,
           JSON 템플릿 제거 (스키마가 구조 보장),
           anti-pattern 8→5 축소, verification loop 강화.
+    - v6: concept echo 명확화 (copy exactly),
+          market research 섹션별 활용 가이드 추가,
+          verification을 섹션별로 구체화 (관련 테스트만 적용).
     """
     kw_by_role: dict[str, str] = {}
     for kw in keywords:
@@ -61,9 +64,28 @@ Before writing each sentence, ask yourself these 3 tests:
 - SOLUTION IN PROBLEM: Problem section mentions the product or its solution → Problem describes ONLY the current state and pain
 - BUZZWORD PADDING: Empty adjectives ("AI-powered", "혁신적인", "종합적인 솔루션") → Delete any adjective that can be removed without changing the meaning
 
-=== VERIFICATION ===
+=== USING MARKET RESEARCH ===
 
-Before outputting, run each section through the 3 quality tests. Fix any that fail.
+Extract from the market context and use in specific sections:
+- PROBLEM: Pain frequency, current behavior patterns (if data exists)
+- TARGET USER: Demographic context, usage timing
+- DIFFERENTIATOR: Actual competitor names from the research (do NOT invent competitors)
+- BUSINESS MODEL: Competitor price benchmarks with actual $ amounts
+
+If a section has no relevant market data, rely on concrete user scenarios — NEVER invent statistics.
+
+=== VERIFICATION (run RELEVANT tests per section) ===
+
+Before outputting, apply only the tests that make sense for each section:
+
+1. PROBLEM: SPECIFICITY + HUMAN tests (no Screen Test — no UI exists yet)
+2. TARGET USER: SPECIFICITY + HUMAN tests
+3. CORE FEATURES: SCREEN + SPECIFICITY + HUMAN tests (all 3 — this is where UI matters)
+4. DIFFERENTIATOR: HUMAN test ("could a real user say this out loud?")
+5. BUSINESS MODEL: SPECIFICITY test (must have 2+ specific dollar amounts)
+6. MVP SCOPE: HUMAN test + "does the cheapest test actually fit this product type?"
+
+Fix any section that fails its relevant tests before outputting.
 
 === RULES ===
 
@@ -152,6 +174,6 @@ Every section below MUST describe a product that matches this concept exactly.
      * Hardware/IoT → Wizard-of-Oz test with manual backend
      Do NOT default to "Google Form survey" for every idea.
 
-Provide concept_ko and concept_en echoing the fixed concept."""
+For concept_en and concept_ko, copy the FIXED CONCEPT values exactly as-is. Do NOT paraphrase or rewrite them."""
 
     return system_prompt, user_prompt

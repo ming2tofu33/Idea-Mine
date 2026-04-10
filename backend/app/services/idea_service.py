@@ -10,7 +10,7 @@ from app.services.combo_builder import build_keyword_combos
 _openai: OpenAI | None = None
 
 MODEL = "gpt-5-nano"
-PROMPT_VERSION = "v4"
+PROMPT_VERSION = "v5"
 
 COST_PER_1K_INPUT = 0.00005
 COST_PER_1K_OUTPUT = 0.0004

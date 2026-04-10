@@ -1,5 +1,5 @@
 def build_mining_prompt(combos: list[dict]) -> tuple[str, str]:
-    """v4: Split into system/user prompts for structured output.
+    """v5: Added TITLE QUALITY rubric with 4 diverse examples + visual/memory verification.
 
     변경 이력:
     - v1: 기본 프롬프트
@@ -8,6 +8,8 @@ def build_mining_prompt(combos: list[dict]) -> tuple[str, str]:
     - v4: system/user 분리, Pydantic structured output 전환,
           anti-pattern 4개로 축소, verification loop 추가,
           JSON 템플릿 제거 (스키마가 구조 보장)
+    - v5: TITLE QUALITY 루브릭 추가 — 길이/형식/금지어/카테고리별 예시 4개,
+          visual test + memory test verification loop 강화
     """
 
     # ── System prompt (CTCO: Context + Constraints) ──
@@ -43,7 +45,50 @@ For EACH summary, self-check:
 - Did I mention what's different from existing tools?
 - Did I include at least one concrete detail (number, time, frequency)?
 
-=== ANTI-PATTERNS ===
+=== TITLE QUALITY RUBRIC ===
+
+STRUCTURE:
+- title_ko: 6-14 characters, noun-phrase (NOT a sentence ending in ~다/~요/~습니다)
+- title_en: 3-7 words, noun-phrase
+
+MUST CONTAIN:
+- At least one CONCRETE element from the keywords
+  (a user action, a specific domain object, or a concrete technology — not buzzwords)
+- Something the user would still REMEMBER 10 seconds later
+
+FORBIDDEN (generates instant BAD title):
+- Generic AI/SaaS buzzwords: "AI 기반", "맞춤형", "혁신적", "스마트", "종합", "플랫폼", "솔루션"
+- Empty English adjectives: "AI-powered", "Smart", "Intelligent", "Advanced", "Comprehensive"
+- Sentence endings: "~합니다", "~해요", "~해드립니다", "~입니다"
+- Marketing slogans: "당신의 ~를 ~하세요", "Transform your ~"
+
+EXAMPLES BY CATEGORY (learn the diverse styles):
+
+[Consumer App] WHO: 자취생, DOMAIN: 요리
+GOOD (한): "냉장고 재료로 15분 요리"
+GOOD (en): "Fridge-to-Recipe in 15 Minutes"
+BAD  (한): "AI 기반 맞춤형 요리 추천 서비스"
+BAD  (en): "Smart Cooking Assistant for Everyone"
+
+[SaaS B2B] WHO: 소상공인, DOMAIN: 재고
+GOOD (한): "매장 진열대 사진으로 발주"
+GOOD (en): "Shelf Photo to Restock Order"
+BAD  (한): "AI 기반 종합 재고 관리 플랫폼"
+BAD  (en): "Intelligent Inventory Management Platform"
+
+[API/Developer Tool] WHO: 개발자, TECH: API
+GOOD (한): "한국어 오타 교정 API 한 줄"
+GOOD (en): "One-Line Korean Typo Fixer API"
+BAD  (한): "개발자를 위한 AI 언어 처리 솔루션"
+BAD  (en): "AI-Powered Language Processing for Developers"
+
+[Content/Media] WHO: 직장인, DOMAIN: 투자
+GOOD (한): "매일 아침 3분 투자 뉴스레터"
+GOOD (en): "3-Minute Morning Investing Newsletter"
+BAD  (한): "개인 맞춤형 금융 정보 큐레이션"
+BAD  (en): "Personalized Financial Content Curation"
+
+=== ANTI-PATTERNS (for summary) ===
 
 - SYSTEM VOICE: "제공합니다", "활용합니다", "지원합니다" → Describe what the USER does, not the system
 - BUZZWORD: "AI 기반", "맞춤형", "혁신적", "종합적" → Delete if removing changes nothing
@@ -60,9 +105,20 @@ For EACH summary, self-check:
 6. Every idea must describe a real service that real users would pay for
 7. Every idea must be implementable — no fantasy technology
 
-=== VERIFICATION ===
+=== VERIFICATION (run for EACH idea before finalizing) ===
 
-Before outputting, re-read each idea. Verify it has all 3 summary elements and violates no anti-pattern. Fix any that fail."""
+For title_ko and title_en:
+1. VISUAL TEST: Reading the title, can I picture a specific moment/object/action? (If only abstract concepts → fail)
+2. MEMORY TEST: Would I still remember this title 10 minutes later? (If generic → fail)
+3. BLACKLIST TEST: Does it contain ANY forbidden word from the FORBIDDEN list? (If yes → rewrite)
+4. LENGTH TEST: title_ko is 6-14 chars? title_en is 3-7 words? (If not → trim or expand)
+
+For summary_ko and summary_en:
+5. 3-ELEMENT TEST: Does it contain WHO+ACTION, DIFFERENCE, and OUTCOME? (If missing any → add)
+6. ANTI-PATTERN TEST: Any SYSTEM VOICE / BUZZWORD / FAKE STATS / MONEY AS FEATURE? (If yes → rewrite)
+
+If any test fails, rewrite that field before moving to the next idea.
+Do NOT output until all 10 ideas pass all 6 tests."""
 
     # ── User prompt (Task + dynamic data) ──
 

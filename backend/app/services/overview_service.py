@@ -20,7 +20,7 @@ OVERVIEW_MODEL = "gpt-5-mini"
 OVERVIEW_COST_INPUT = 0.00075
 OVERVIEW_COST_OUTPUT = 0.0045
 
-PROMPT_VERSION = "overview-v5-pipeline"
+PROMPT_VERSION = "overview-v7-pipeline"  # concept v3 + overview v6
 
 
 def get_openai() -> OpenAI:
