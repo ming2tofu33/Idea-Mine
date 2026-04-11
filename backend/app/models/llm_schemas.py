@@ -52,6 +52,89 @@ class OverviewResponse(BaseModel):
     mvp_scope_en: str
 
 
+class OverviewProjectIntro(BaseModel):
+    summary: str
+
+
+class OverviewUserAndProblem(BaseModel):
+    target_user: str
+    problem_situation: str
+    why_it_matters: str
+
+
+class OverviewWhyNow(BaseModel):
+    reason_to_try: str
+    gap_in_existing_options: str
+    why_small_prototype_is_enough: str
+
+
+class OverviewSmallestPrototype(BaseModel):
+    prototype_description: str
+    core_experience: str
+    not_in_scope: list[str]
+
+
+class OverviewFirstUserExperience(BaseModel):
+    entry_point: str
+    first_actions: list[str]
+    initial_value: str
+
+
+class OverviewKeyAssumption(BaseModel):
+    assumption: str
+    why_it_matters: str
+    risk_if_wrong: str
+
+
+class OverviewRisksAndOpenQuestions(BaseModel):
+    main_risks: list[str]
+    open_questions: list[str]
+
+
+class OverviewValidationPlan(BaseModel):
+    what_to_build: str
+    who_to_test_with: str
+    signals_to_watch: list[str]
+    next_step_if_positive: str
+
+
+class OverviewSections(BaseModel):
+    project_intro: OverviewProjectIntro
+    user_and_problem: OverviewUserAndProblem
+    why_now: OverviewWhyNow
+    smallest_prototype: OverviewSmallestPrototype
+    first_user_experience: OverviewFirstUserExperience
+    key_assumptions: list[OverviewKeyAssumption]
+    risks_and_open_questions: OverviewRisksAndOpenQuestions
+    validation_plan: OverviewValidationPlan
+
+
+class OverviewClaim(BaseModel):
+    text: str
+    type: Literal["idea", "assumption", "needs_check"]
+    status: Literal["kept", "softened", "moved_to_assumption", "unresolved"]
+
+
+class OverviewConsistencyChecks(BaseModel):
+    same_user: bool
+    same_product: bool
+    no_major_contradiction: bool
+
+
+class OverviewInternalMeta(BaseModel):
+    claims: list[OverviewClaim]
+    consistency_checks: OverviewConsistencyChecks
+    quality_notes: list[str]
+
+
+class OverviewDocumentResponse(BaseModel):
+    title: str
+    one_liner: str
+    language: str
+    content: OverviewSections
+    internal_meta: OverviewInternalMeta
+
+
 # --- Appraisal ---
 
 class AppraisalBasicFreeResponse(BaseModel):

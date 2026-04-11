@@ -55,20 +55,11 @@ class OverviewOut(BaseModel):
     id: str
     idea_id: str
     user_id: str
-    concept_ko: str
-    concept_en: str
-    problem_ko: str
-    problem_en: str
-    target_ko: str
-    target_en: str
-    features_ko: str
-    features_en: str
-    differentiator_ko: str
-    differentiator_en: str
-    revenue_ko: str
-    revenue_en: str
-    mvp_scope_ko: str
-    mvp_scope_en: str
+    title: str
+    one_liner: str
+    language: str
+    content: dict
+    internal_meta: dict
     created_at: str
     updated_at: str
 
