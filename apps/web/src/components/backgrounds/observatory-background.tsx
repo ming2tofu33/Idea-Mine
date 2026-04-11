@@ -38,25 +38,25 @@ const COLOR_MAP = {
 
 const INTENSITY_PRESETS = {
   hero: {
-    starMultiplier: 1.25,
-    parallaxMultiplier: 1.2,
-    nebulaOpacity: 1,
-    pinkPulseOpacity: 1,
-    vignetteOpacity: 0.3,
+    starMultiplier: 1.18,
+    parallaxMultiplier: 1.15,
+    nebulaOpacity: 0.72,
+    pinkPulseOpacity: 0.34,
+    vignetteOpacity: 0.52,
   },
   default: {
     starMultiplier: 1,
     parallaxMultiplier: 1,
-    nebulaOpacity: 0.9,
-    pinkPulseOpacity: 0.8,
-    vignetteOpacity: 0.35,
+    nebulaOpacity: 0.64,
+    pinkPulseOpacity: 0.24,
+    vignetteOpacity: 0.56,
   },
   quiet: {
     starMultiplier: 0.72,
     parallaxMultiplier: 0.72,
-    nebulaOpacity: 0.62,
-    pinkPulseOpacity: 0.5,
-    vignetteOpacity: 0.45,
+    nebulaOpacity: 0.46,
+    pinkPulseOpacity: 0.12,
+    vignetteOpacity: 0.64,
   },
 } as const;
 
@@ -153,32 +153,32 @@ export function ObservatoryBackground({
   const nebulaBackground = useMemo(() => {
     if (variant === "landing") {
       return [
-        "radial-gradient(ellipse 85% 65% at 16% 20%, rgba(12, 21, 36, 0.58) 0%, transparent 72%)",
-        "radial-gradient(ellipse 70% 58% at 82% 24%, rgba(18, 29, 49, 0.42) 0%, transparent 68%)",
-        "radial-gradient(ellipse 95% 65% at 52% 90%, rgba(12, 21, 36, 0.34) 0%, transparent 58%)",
-        "radial-gradient(ellipse 45% 40% at 72% 72%, rgba(18, 29, 49, 0.28) 0%, transparent 62%)",
+        "radial-gradient(ellipse 85% 65% at 16% 20%, rgba(9, 17, 28, 0.42) 0%, transparent 72%)",
+        "radial-gradient(ellipse 70% 58% at 82% 24%, rgba(13, 23, 36, 0.28) 0%, transparent 68%)",
+        "radial-gradient(ellipse 95% 65% at 52% 90%, rgba(9, 17, 28, 0.22) 0%, transparent 58%)",
+        "radial-gradient(ellipse 45% 40% at 72% 72%, rgba(13, 23, 36, 0.16) 0%, transparent 62%)",
       ].join(", ");
     }
 
     return [
-      "radial-gradient(ellipse 80% 60% at 18% 25%, rgba(12, 21, 36, 0.5) 0%, transparent 70%)",
-      "radial-gradient(ellipse 60% 50% at 82% 72%, rgba(18, 29, 49, 0.4) 0%, transparent 65%)",
-      "radial-gradient(ellipse 100% 70% at 50% 90%, rgba(12, 21, 36, 0.3) 0%, transparent 55%)",
-      "radial-gradient(ellipse 40% 35% at 65% 20%, rgba(18, 29, 49, 0.2) 0%, transparent 60%)",
+      "radial-gradient(ellipse 80% 60% at 18% 25%, rgba(9, 17, 28, 0.34) 0%, transparent 70%)",
+      "radial-gradient(ellipse 60% 50% at 82% 72%, rgba(13, 23, 36, 0.24) 0%, transparent 65%)",
+      "radial-gradient(ellipse 100% 70% at 50% 90%, rgba(9, 17, 28, 0.18) 0%, transparent 55%)",
+      "radial-gradient(ellipse 40% 35% at 65% 20%, rgba(13, 23, 36, 0.12) 0%, transparent 60%)",
     ].join(", ");
   }, [variant]);
 
   const pinkPulseBackground = useMemo(() => {
     if (variant === "landing") {
       return [
-        "radial-gradient(circle 460px at 20% 32%, rgba(255, 59, 147, 0.1) 0%, transparent 74%)",
-        "radial-gradient(circle 360px at 76% 24%, rgba(255, 59, 147, 0.075) 0%, transparent 72%)",
+        "radial-gradient(circle 460px at 20% 32%, rgba(255, 59, 147, 0.05) 0%, transparent 74%)",
+        "radial-gradient(circle 360px at 76% 24%, rgba(255, 59, 147, 0.032) 0%, transparent 72%)",
       ].join(", ");
     }
 
     return [
-      "radial-gradient(circle 400px at 22% 35%, rgba(255, 59, 147, 0.08) 0%, transparent 70%)",
-      "radial-gradient(circle 300px at 78% 68%, rgba(255, 59, 147, 0.06) 0%, transparent 70%)",
+      "radial-gradient(circle 400px at 22% 35%, rgba(255, 59, 147, 0.04) 0%, transparent 70%)",
+      "radial-gradient(circle 300px at 78% 68%, rgba(255, 59, 147, 0.028) 0%, transparent 70%)",
     ].join(", ");
   }, [variant]);
 
@@ -364,7 +364,7 @@ export function ObservatoryBackground({
       <div
         className="pointer-events-none absolute inset-0"
         style={{
-          background: `radial-gradient(ellipse 85% 80% at 50% 50%, transparent 0%, rgba(2, 5, 13, ${preset.vignetteOpacity}) 100%)`,
+          background: `radial-gradient(ellipse 85% 80% at 50% 50%, transparent 0%, rgba(1, 3, 7, ${preset.vignetteOpacity}) 100%)`,
         }}
       />
     </div>

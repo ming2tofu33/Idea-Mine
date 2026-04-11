@@ -1,12 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import {
+  LANDING_LABELS,
+  type LandingLanguage,
+} from "@/components/landing/landing-labels";
 import { signalButtonClassName } from "@/components/shared/signal-button-styles";
 import { trackExperienceEvent } from "@/lib/experience-events";
 
-export function FinalCta({ hasUser }: { hasUser: boolean }) {
+export function FinalCta({
+  hasUser,
+  lang,
+}: {
+  hasUser: boolean;
+  lang: LandingLanguage;
+}) {
   const primaryHref = "/mine";
-  const primaryLabel = hasUser ? "Enter The Mine" : "Enter the demo mine";
+  const primaryLabel = hasUser
+    ? LANDING_LABELS.finalCta.primaryCta.member[lang]
+    : LANDING_LABELS.finalCta.primaryCta.guest[lang];
 
   const handlePrimaryClick = () => {
     if (!hasUser) {
@@ -22,42 +34,27 @@ export function FinalCta({ hasUser }: { hasUser: boolean }) {
     <section
       id="final-cta"
       aria-label="Final call to action"
-      className="relative z-10 readable-container py-4 pb-10 md:py-5 md:pb-14"
+      className="relative z-10 readable-container py-3 pb-10 md:py-4 md:pb-14"
     >
-      <div className="observatory-panel observatory-frame relative overflow-hidden rounded-[28px] border border-signal-pink/25 p-6 sm:p-8 lg:p-9">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_18%,rgba(255,59,147,0.22),transparent_36%),radial-gradient(circle_at_82%_82%,rgba(92,205,229,0.12),transparent_32%)]" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-signal-pink/60 to-transparent" />
-
-        <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_auto] lg:items-center">
-          <div className="space-y-3">
-            <p className="text-[10px] uppercase tracking-[0.24em] text-signal-pink/80">
-              Ready to enter
-            </p>
-            <h2 className="max-w-xl text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
-              Start with one signal. Carry it through the whole system.
+      <div className="border-t border-line-steel/16 pt-4 sm:pt-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h2 className="max-w-[12ch] text-[1.5rem] font-semibold leading-[1] tracking-[-0.03em] text-balance text-text-primary sm:text-[1.8rem]">
+              {LANDING_LABELS.finalCta.title[lang]}
             </h2>
-            <p className="max-w-2xl text-sm leading-relaxed text-text-secondary sm:text-base">
-              Move from Mine to Vault to Lab without losing context, momentum, or
-              the original thread.
-            </p>
           </div>
 
-          <div className="flex flex-col items-start gap-3 lg:items-end">
-            <Link
-              href={primaryHref}
-              onClick={handlePrimaryClick}
-              className={signalButtonClassName({
-                variant: "primary",
-                className:
-                  "border-signal-pink/65 bg-[rgba(255,59,147,0.14)] px-6 py-3 text-sm shadow-[0_0_24px_rgba(255,59,147,0.16)]",
-              })}
-            >
-              {primaryLabel}
-            </Link>
-            <p className="text-xs uppercase tracking-[0.18em] text-text-secondary/70">
-              Explore the flow from signal to direction.
-            </p>
-          </div>
+          <Link
+            href={primaryHref}
+            onClick={handlePrimaryClick}
+            className={signalButtonClassName({
+              variant: "primary",
+              className:
+                "min-h-11 w-full px-5 py-2.5 text-[13px] sm:min-h-12 sm:w-fit sm:px-6 sm:py-3 sm:text-sm",
+            })}
+          >
+            {primaryLabel}
+          </Link>
         </div>
       </div>
     </section>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { User } from "@supabase/supabase-js";
@@ -15,6 +16,21 @@ const NAV_ITEMS = [
   { href: "/vault", label: "Vault" },
   { href: "/lab", label: "Lab" },
 ] as const;
+
+const HEADER_LABELS = {
+  center: {
+    ko: "관측소 연결됨",
+    en: "observatory online",
+  },
+  toggleTitle: {
+    ko: "영어로 전환",
+    en: "한국어로 전환",
+  },
+  signIn: {
+    ko: "로그인",
+    en: "Sign in",
+  },
+} as const;
 
 type AppHeaderProps = {
   user: User | null;
@@ -33,11 +49,16 @@ export function AppHeader({ user, profile: serverProfile }: AppHeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { profile: clientProfile } = useProfile();
+  const isLanding = pathname === "/";
 
   // 클라이언트 프로필이 있으면 우선 사용 (optimistic update 반영)
   const profile = clientProfile ?? serverProfile;
   const { lang, toggle, isUpdating } = useLanguage(profile);
   const isGuest = !user;
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -58,7 +79,7 @@ export function AppHeader({ user, profile: serverProfile }: AppHeaderProps) {
             >
               IDEA MINE
             </Link>
-            <nav className="flex items-center gap-1">
+            <nav className={isLanding ? "hidden items-center gap-1 sm:flex" : "flex items-center gap-1"}>
               {NAV_ITEMS.map(({ href, label }) => {
                 const isActive = pathname.startsWith(href);
                 return (
@@ -83,8 +104,8 @@ export function AppHeader({ user, profile: serverProfile }: AppHeaderProps) {
           </div>
         }
         center={
-          <span className="hidden text-[11px] uppercase tracking-[0.22em] text-text-secondary/70 lg:inline">
-            observatory online
+          <span className="hidden text-[11px] tracking-[0.18em] text-text-secondary/70 lg:inline">
+            {HEADER_LABELS.center[lang]}
           </span>
         }
         right={
@@ -93,7 +114,7 @@ export function AppHeader({ user, profile: serverProfile }: AppHeaderProps) {
               type="button"
               onClick={toggle}
               disabled={isUpdating}
-              title={lang === "ko" ? "Switch to English" : "Switch to Korean"}
+              title={HEADER_LABELS.toggleTitle[lang]}
               className="cursor-pointer rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-text-secondary transition-all hover:border-cold-cyan/40 hover:text-cold-cyan disabled:cursor-not-allowed disabled:opacity-50"
             >
               <span className={lang === "ko" ? "text-cold-cyan" : ""}>KO</span>
@@ -105,7 +126,7 @@ export function AppHeader({ user, profile: serverProfile }: AppHeaderProps) {
                 href="/auth/sign-in?next=/mine"
                 className="rounded-md border border-cold-cyan/40 bg-cold-cyan/15 px-3 py-1.5 text-xs font-medium text-cold-cyan transition-all hover:bg-cold-cyan/25"
               >
-                Sign in
+                {HEADER_LABELS.signIn[lang]}
               </Link>
             ) : (
               <UserMenu

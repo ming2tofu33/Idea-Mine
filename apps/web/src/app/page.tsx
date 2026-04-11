@@ -1,9 +1,5 @@
 import { ObservatoryBackground } from "@/components/backgrounds/observatory-background";
-import { CoreLoopPreview } from "@/components/landing/core-loop-preview";
-import { FinalCta } from "@/components/landing/final-cta";
-import { LandingHero } from "@/components/landing/landing-hero";
-import { PositioningBand } from "@/components/landing/positioning-band";
-import { ProductProof } from "@/components/landing/product-proof";
+import { LandingContent } from "@/components/landing/landing-content";
 import { AppHeader } from "@/components/shared/app-header";
 import { createClient } from "@/lib/supabase/server";
 import type { UserProfile } from "@/types/api";
@@ -30,11 +26,7 @@ export default async function Home() {
 
       <AppHeader user={user} profile={profile} />
 
-      <LandingHero hasUser={Boolean(user)} />
-      <CoreLoopPreview />
-      <ProductProof />
-      <PositioningBand />
-      <FinalCta hasUser={Boolean(user)} />
+      <LandingContent hasUser={Boolean(user)} profile={profile} />
     </div>
   );
 }

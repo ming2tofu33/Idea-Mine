@@ -1,81 +1,76 @@
-function PanelChrome({
-  label,
+"use client";
+
+import {
+  LANDING_LABELS,
+  type LandingLanguage,
+} from "@/components/landing/landing-labels";
+
+function FlowStep({
+  id,
   title,
-  count,
+  copy,
+  outcome,
 }: {
-  label: string;
+  id: string;
   title: string;
-  count?: string;
+  copy: string;
+  outcome: string;
 }) {
   return (
-    <div className="mb-4 flex items-center justify-between gap-3">
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.24em] text-text-secondary/70">
-          {label}
-        </p>
-        <h3 className="mt-1 text-base font-semibold tracking-tight text-text-primary">
+    <article className="grid gap-3 border-t border-line-steel/16 py-3.5 first:border-t-0 first:pt-0 last:pb-0 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-start sm:gap-4">
+      <span className="w-fit font-mono text-[10px] tracking-[0.16em] text-cold-cyan/72 sm:text-[11px]">
+        {id}
+      </span>
+      <div className="space-y-1.5">
+        <h3 className="text-[1rem] font-medium tracking-[-0.02em] text-text-primary sm:text-[1.08rem]">
           {title}
         </h3>
+        <p className="max-w-[32rem] text-[13px] leading-6 text-pretty text-text-secondary sm:text-sm">
+          {copy}
+        </p>
       </div>
-      {count ? (
-        <span className="rounded-full border border-line-steel/45 bg-bg-deep/50 px-2.5 py-1 text-[10px] font-medium tracking-[0.18em] text-text-secondary">
-          {count}
-        </span>
-      ) : null}
-    </div>
+      <span className="w-fit rounded-full border border-line-steel/22 bg-surface-1/42 px-2.5 py-1 text-[10px] font-medium tracking-[0.06em] text-text-secondary sm:justify-self-end">
+        {outcome}
+      </span>
+    </article>
   );
 }
 
-function MineSlice() {
-  return (
-    <div className="observatory-frame rounded-2xl border border-line-steel/35 bg-surface-1/55 p-4">
-      <PanelChrome label="Mine Slice" title="Vein scan" count="3 active" />
+function DocumentsRail({
+  label,
+  docs,
+}: {
+  label: string;
+  docs: string[];
+}) {
+  const [leadDoc, ...secondaryDocs] = docs;
 
-      <div className="space-y-3">
-        <div className="rounded-xl border border-line-steel/30 bg-bg-base/70 p-3">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-[10px] uppercase tracking-[0.22em] text-cold-cyan/75">
-              Sector scan
-            </span>
-            <span className="text-[10px] text-text-secondary/60">92% stable</span>
-          </div>
-          <div className="space-y-2">
-            {[
-              { label: "Neon Relay", tone: "High confidence" },
-              { label: "Signal Drift", tone: "Needs review" },
-              { label: "Field Notes", tone: "Low noise" },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center justify-between rounded-lg border border-line-steel/20 bg-surface-1/55 px-3 py-2"
-              >
-                <div>
-                  <p className="text-sm font-medium text-text-primary">
-                    {item.label}
-                  </p>
-                  <p className="text-xs text-text-secondary">{item.tone}</p>
-                </div>
-                <span className="rounded-full border border-cold-cyan/25 bg-cold-cyan/10 px-2 py-0.5 text-[10px] text-cold-cyan">
-                  Open
-                </span>
-              </div>
-            ))}
-          </div>
+  return (
+    <div className="border-t border-line-steel/16 pt-4">
+      <p className="text-[10px] font-medium tracking-[0.12em] text-text-secondary/56 sm:text-[11px]">
+        {label}
+      </p>
+      <div className="mt-3 space-y-3">
+        <div className="border-l border-cold-cyan/24 pl-3">
+          <p className="font-mono text-[10px] tracking-[0.14em] text-cold-cyan/68 sm:text-[11px]">
+            01
+          </p>
+          <p className="mt-1.5 text-[1rem] font-medium tracking-[-0.02em] text-text-primary sm:text-[1.08rem]">
+            {leadDoc}
+          </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          {["Reroll", "Mine", "Review"].map((label, index) => (
-            <div
-              key={label}
-              className={[
-                "rounded-lg border px-2 py-2 text-center text-[10px] uppercase tracking-[0.2em]",
-                index === 1
-                  ? "border-signal-pink/35 bg-signal-pink/10 text-signal-pink"
-                  : "border-line-steel/30 bg-surface-2/40 text-text-secondary",
-              ].join(" ")}
-            >
-              {label}
-            </div>
+        <div className="space-y-1.5">
+          {secondaryDocs.map((doc, index) => (
+          <div
+            key={doc}
+            className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 border-t border-line-steel/14 py-2 first:border-t-0 first:pt-0 last:pb-0"
+          >
+            <span className="font-mono text-[10px] tracking-[0.14em] text-text-secondary/46 sm:text-[11px]">
+              0{index + 2}
+            </span>
+            <span className="text-[13px] text-text-primary sm:text-sm">{doc}</span>
+          </div>
           ))}
         </div>
       </div>
@@ -83,133 +78,52 @@ function MineSlice() {
   );
 }
 
-function VaultSlice() {
-  return (
-    <div className="observatory-frame rounded-2xl border border-line-steel/35 bg-surface-1/55 p-4">
-      <PanelChrome label="Vault Slice" title="Archived ideas" count="6 cards" />
+export function ProductProof({ lang }: { lang: LandingLanguage }) {
+  const labels = LANDING_LABELS.flow;
 
-      <div className="space-y-2">
-        {[
-          {
-            title: "Idea Atlas",
-            meta: "Strategy / selected / later",
-            chips: ["Found", "Kept", "Ready"],
-          },
-          {
-            title: "Signal Index",
-            meta: "Product / validated / pinned",
-            chips: ["Mature", "Tagged", "Shared"],
-          },
-          {
-            title: "Relay Drafts",
-            meta: "Ops / watchlist / queued",
-            chips: ["Draft", "Context", "Review"],
-          },
-        ].map((item) => (
-          <div
-            key={item.title}
-            className="rounded-xl border border-line-steel/25 bg-bg-deep/65 p-3"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-text-primary">
-                  {item.title}
-                </p>
-                <p className="mt-0.5 truncate text-xs text-text-secondary">
-                  {item.meta}
-                </p>
-              </div>
-              <span className="mt-0.5 rounded-full border border-cold-cyan/25 bg-cold-cyan/10 px-2 py-0.5 text-[10px] text-cold-cyan">
-                Saved
-              </span>
+  return (
+    <section
+      id="idea-flow"
+      aria-label="Idea to document flow"
+      className="relative z-10 readable-container py-3 md:py-4"
+    >
+      <div className="border-t border-line-steel/16 pt-3.5 sm:pt-4">
+        <div className="grid gap-5 lg:grid-cols-[minmax(0,1.18fr)_minmax(15rem,0.82fr)] lg:gap-7">
+          <div>
+            <div className="space-y-2">
+              <h2 className="max-w-[13ch] text-[1.55rem] font-semibold leading-[0.98] tracking-[-0.03em] text-balance text-text-primary sm:text-[1.78rem]">
+                {labels.title[lang]}
+              </h2>
+              <p className="max-w-[28rem] text-[12px] leading-5.5 text-pretty text-text-secondary sm:text-[13px] sm:leading-6">
+                {labels.copy[lang]}
+              </p>
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {item.chips.map((chip) => (
-                <span
-                  key={chip}
-                  className="rounded-full border border-line-steel/30 bg-surface-1/55 px-2 py-1 text-[10px] text-text-secondary"
-                >
-                  {chip}
-                </span>
+            <div className="mt-4 border-t border-line-steel/16 pt-3 sm:mt-5 sm:pt-3.5">
+              {labels.steps.map((step) => (
+                <FlowStep
+                  key={step.id}
+                  id={step.id}
+                  title={step.title[lang]}
+                  copy={step.copy[lang]}
+                  outcome={step.outcome[lang]}
+                />
               ))}
             </div>
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
-function LabSlice() {
-  return (
-    <div className="observatory-frame rounded-2xl border border-line-steel/35 bg-surface-1/55 p-4">
-      <PanelChrome label="Lab Slice" title="Overview queue" count="2 live" />
-
-      <div className="space-y-2">
-        {[
-          {
-            title: "Aurora pricing note",
-            detail: "Overview ready",
-            state: "Lab",
-          },
-          {
-            title: "Retention loop sketch",
-            detail: "Needs refinement",
-            state: "Queue",
-          },
-        ].map((item) => (
-          <div
-            key={item.title}
-            className="flex items-center justify-between rounded-xl border border-line-steel/25 bg-bg-deep/65 p-3"
-          >
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-text-primary">
-                {item.title}
+          <aside className="border-t border-line-steel/16 pt-4 lg:border-t-0 lg:border-l lg:pl-7 lg:pt-0">
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-medium tracking-[0.12em] text-text-secondary/56 sm:text-[11px]">
+                {labels.selectedIdeaLabel[lang]}
               </p>
-              <p className="mt-0.5 text-xs text-text-secondary">{item.detail}</p>
+              <h3 className="max-w-[15rem] text-[1.1rem] font-medium leading-[1.24] tracking-[-0.025em] text-balance text-text-primary sm:text-[1.22rem]">
+                {labels.selectedIdeaTitle[lang]}
+              </h3>
             </div>
-            <span className="shrink-0 rounded-full border border-signal-pink/25 bg-signal-pink/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-signal-pink">
-              {item.state}
-            </span>
-          </div>
-        ))}
 
-        <div className="rounded-xl border border-dashed border-line-steel/30 bg-surface-2/20 px-3 py-2 text-xs text-text-secondary">
-          Lab turns selected ideas into working direction.
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function ProductProof() {
-  return (
-    <section
-      id="product-proof"
-      aria-label="Product proof"
-      className="relative z-10 readable-container py-4 md:py-5"
-    >
-      <div className="observatory-panel observatory-frame rounded-3xl p-5 sm:p-6 lg:p-7">
-        <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.24em] text-cold-cyan/80">
-              Product Proof
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-text-primary">
-              Real UI slices, not mock marketing.
-            </h2>
-          </div>
-          <p className="max-w-md text-sm leading-relaxed text-text-secondary">
-            These frames mirror the density of the app: status, lists, chips, and
-            action surfaces.
-          </p>
-        </div>
-
-        <div className="grid gap-4 lg:grid-cols-3">
-          <MineSlice />
-          <VaultSlice />
-          <LabSlice />
+            <DocumentsRail label={labels.docsLabel[lang]} docs={labels.docs[lang]} />
+          </aside>
         </div>
       </div>
     </section>
