@@ -20,7 +20,7 @@ OVERVIEW_MODEL = "gpt-5-mini"
 OVERVIEW_COST_INPUT = 0.00075
 OVERVIEW_COST_OUTPUT = 0.0045
 
-PROMPT_VERSION = "overview-v7-pipeline"  # concept v3 + overview v6
+PROMPT_VERSION = "overview-v9-one-liner-anchor"  # concept/overview anchored on selected one-line idea
 
 
 def get_openai() -> OpenAI:
@@ -39,6 +39,8 @@ async def generate_overview(
 ) -> dict:
     session_id = str(uuid.uuid4())
     client = get_openai()
+    idea_line_en = idea.get("idea_line_en") or idea["summary_en"]
+    idea_line_ko = idea.get("idea_line_ko") or idea.get("summary_ko") or idea_line_en
 
     # ── Step 0: Tavily 시장 조사 ──
     market_data = await research_market(
@@ -52,6 +54,8 @@ async def generate_overview(
         title_en=idea["title_en"],
         summary_en=idea["summary_en"],
         keywords=idea["keyword_combo"],
+        idea_line_en=idea_line_en,
+        idea_line_ko=idea_line_ko,
     )
 
     step1_start = time.time()
@@ -101,6 +105,8 @@ async def generate_overview(
         keywords=idea["keyword_combo"],
         market_research=market_data,
         concept=concept,
+        idea_line_en=idea_line_en,
+        idea_line_ko=idea_line_ko,
     )
 
     step2_start = time.time()

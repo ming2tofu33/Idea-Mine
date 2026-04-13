@@ -2,6 +2,8 @@ def build_concept_prompt(
     title_en: str,
     summary_en: str,
     keywords: list[dict],
+    idea_line_en: str = "",
+    idea_line_ko: str = "",
 ) -> tuple[str, str]:
     """Step 1: 제품 컨셉 생성 프롬프트 v3.
 
@@ -79,13 +81,19 @@ If any test fails, revise before outputting."""
 
     user_prompt = f"""=== INPUT ===
 
-Idea: {title_en}
+Title: {title_en}
 Summary: {summary_en}
+One-line idea EN: {idea_line_en}
+One-line idea KO: {idea_line_ko}
 
 Keywords:
 {kw_block}
 
 === TASK ===
+
+The selected one-line idea is the source of truth.
+Title is only a label. Summary is supporting context.
+If title, summary, and one-line idea conflict, follow the one-line idea.
 
 Generate a product concept with these 4 outputs:
 

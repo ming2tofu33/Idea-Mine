@@ -4,6 +4,8 @@ def build_overview_prompt(
     keywords: list[dict],
     market_research: str,
     concept: dict,
+    idea_line_en: str = "",
+    idea_line_ko: str = "",
 ) -> tuple[str, str]:
     """Step 2: 개요서 생성 프롬프트 v6.
 
@@ -32,9 +34,12 @@ def build_overview_prompt(
     kw_block = "\n".join(kw_lines)
 
     concept_en = concept.get("concept_en", "")
+    concept_ko = concept.get("concept_ko", "")
     product_type = concept.get("product_type", "B2C")
-    primary_user = concept.get("primary_user_en", "")
-    core_experience = concept.get("core_experience_en", "")
+    primary_user_en = concept.get("primary_user_en", "")
+    primary_user_ko = concept.get("primary_user_ko", "")
+    core_experience_en = concept.get("core_experience_en", "")
+    core_experience_ko = concept.get("core_experience_ko", "")
 
     # ── System prompt (Context + Constraints) ──
 
@@ -91,6 +96,8 @@ Fix any section that fails its relevant tests before outputting.
 
 - Korean: Write as a PM would speak in a team meeting. Natural, conversational.
 - English: Same content, professional but natural.
+- Every Korean field must stay in Korean. Only keep English for unavoidable proper nouns or product names from market research.
+- Every English field must stay in English.
 - features: • bullet points with \\n separators.
 - NEVER fabricate statistics. Use market research data only.
 - No scores, no ratings, no evaluations.
@@ -98,14 +105,29 @@ Fix any section that fails its relevant tests before outputting.
 
     # ── User prompt (Task + dynamic data) ──
 
-    user_prompt = f"""=== FIXED CONCEPT (do NOT change this) ===
+    user_prompt = f"""=== SELECTED IDEA (source of truth) ===
 
-Concept: {concept_en}
+Selected one-line idea EN: {idea_line_en}
+Selected one-line idea KO: {idea_line_ko}
+Title: {title_en}
+Summary: {summary_en}
+
+The selected one-line idea is the source of truth for what product was chosen.
+Do not broaden, rename, or swap the product described by the one-line idea.
+
+=== FIXED CONCEPT (do NOT change this) ===
+
+Concept EN: {concept_en}
+Concept KO: {concept_ko}
 Product type: {product_type}
-Primary user: {primary_user}
-Core experience: {core_experience}
+Primary user EN: {primary_user_en}
+Primary user KO: {primary_user_ko}
+Core experience EN: {core_experience_en}
+Core experience KO: {core_experience_ko}
 
 Every section below MUST describe a product that matches this concept exactly.
+Every English section must match the English anchors above.
+Every Korean section must match the Korean anchors above.
 
 === KEYWORDS ===
 
@@ -174,6 +196,9 @@ Every section below MUST describe a product that matches this concept exactly.
      * Hardware/IoT → Wizard-of-Oz test with manual backend
      Do NOT default to "Google Form survey" for every idea.
 
-For concept_en and concept_ko, copy the FIXED CONCEPT values exactly as-is. Do NOT paraphrase or rewrite them."""
+For concept_en, copy Concept EN exactly as-is.
+For concept_ko, copy Concept KO exactly as-is.
+Every Korean section must stay in Korean unless a proper noun must remain in English.
+Do NOT paraphrase or rewrite the concept fields."""
 
     return system_prompt, user_prompt
