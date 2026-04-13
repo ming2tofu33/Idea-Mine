@@ -103,9 +103,12 @@ const TIER_TYPES: Array<"stable" | "expansion" | "pivot" | "rare"> = [
 ];
 
 function makeIdeas(veinId: string): Idea[] {
+  void veinId;
   const shuffled = [...IDEA_TEMPLATES].sort(() => Math.random() - 0.5);
   return shuffled.map((t, i) => ({
     id: `idea-${randomId()}`,
+    idea_line_ko: t.summary,
+    idea_line_en: t.summary,
     title_ko: t.title,
     title_en: t.title,
     summary_ko: t.summary,
@@ -355,6 +358,7 @@ export const mockMiningApi = {
 
 export const mockIdeasApi = {
   async vault(ideaIds: string[], veinId: string): Promise<VaultResponse> {
+    void veinId;
     await delay(300);
     const toVault = lastMinedIdeas.filter((i) => ideaIds.includes(i.id));
     for (const idea of toVault) {

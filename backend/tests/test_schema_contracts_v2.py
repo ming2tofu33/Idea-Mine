@@ -542,6 +542,8 @@ def test_ideas_contract(schema):
         "id",
         "user_id",
         "vein_id",
+        "idea_line_ko",
+        "idea_line_en",
         "title_ko",
         "title_en",
         "summary_ko",
@@ -560,6 +562,10 @@ def test_ideas_contract(schema):
     assert details["user_id"]["is_nullable"] is False
     assert details["vein_id"]["data_type"] == "uuid"
     assert details["vein_id"]["is_nullable"] is False
+    assert details["idea_line_ko"]["data_type"] == "text"
+    assert details["idea_line_ko"]["is_nullable"] is False
+    assert details["idea_line_en"]["data_type"] == "text"
+    assert details["idea_line_en"]["is_nullable"] is False
     assert details["title_ko"]["data_type"] == "text"
     assert details["title_ko"]["is_nullable"] is False
     assert details["title_en"]["data_type"] == "text"
@@ -610,6 +616,16 @@ def test_ideas_contract(schema):
         and "jsonb_array_length" in item
         for item in constraint_definitions
     )
+
+    idea_triggers = schema.trigger_names("public", "ideas")
+    assert "sync_idea_one_liners_before_write" in idea_triggers
+    idea_trigger_details = schema.trigger_details("public", "ideas")
+    assert idea_trigger_details["sync_idea_one_liners_before_write"]["action_timing"] == "BEFORE"
+    sync_one_liners_definition = schema.function_definition("public", "sync_idea_one_liners")
+    assert "new.idea_line_ko" in sync_one_liners_definition.lower()
+    assert "new.idea_line_en" in sync_one_liners_definition.lower()
+    assert "new.summary_ko" in sync_one_liners_definition.lower()
+    assert "new.summary_en" in sync_one_liners_definition.lower()
 
     assert schema.row_count("ideas") == 0
 

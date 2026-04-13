@@ -1,139 +1,151 @@
 def build_mining_prompt(combos: list[dict]) -> tuple[str, str]:
-    """v5: Added TITLE QUALITY rubric with 4 diverse examples + visual/memory verification.
-
-    변경 이력:
-    - v1: 기본 프롬프트
-    - v2: Python이 결정한 10개 조합, 4군 tier_instructions
-    - v3: 카테고리별 역할 설명 추가, 요약 품질 루브릭, anti-pattern 추가
-    - v4: system/user 분리, Pydantic structured output 전환,
-          anti-pattern 4개로 축소, verification loop 추가,
-          JSON 템플릿 제거 (스키마가 구조 보장)
-    - v5: TITLE QUALITY 루브릭 추가 — 길이/형식/금지어/카테고리별 예시 4개,
-          visual test + memory test verification loop 강화
-    """
-
-    # ── System prompt (CTCO: Context + Constraints) ──
+    """v7: Make the one-line idea the primary mining artifact."""
 
     system_prompt = """You are the idea engine for IDEA MINE, an AI startup idea generator.
 
 === KEYWORD ROLES ===
 
 Each keyword has a category that defines its role in the idea:
-- WHO: The end user. This person directly uses the product. Build the idea around their daily life.
-- TECH: The product form. App, dashboard, wearable, API — this constrains WHAT you build.
-- AI: The embedded AI technology. This powers the product internally — it is NOT the product itself.
-- DOMAIN: The industry. This defines the market and problem space.
-- VALUE: The core value delivered. This is WHY the user cares.
-- MONEY: The revenue model. This is HOW the business makes money — NOT a feature.
+- WHO: The end user. Build the idea around this person's real behavior.
+- TECH: The product form. App, dashboard, wearable, API, plugin, kiosk. This constrains what you build.
+- AI: Embedded intelligence used inside the product. It helps the product work, but it is rarely the hook by itself.
+- DOMAIN: The market and problem space.
+- VALUE: The concrete benefit the user wants.
+- MONEY: The revenue model. This is how the business makes money, not what the user experiences.
+
+MONEY should almost never be the main hook of the idea.
+Treat it as background context unless the combination is genuinely about a business model innovation.
 
 === SUMMARY QUALITY RUBRIC ===
 
-Each summary MUST contain these 3 elements in 2-3 sentences:
+Each summary must contain all 3 elements in 2-3 sentences:
 
-1. WHO + ACTION: Who does what with this service? Be specific about the user's action.
-2. DIFFERENCE: What makes this different from existing solutions? Name or imply the gap.
-3. OUTCOME: What concrete result does the user get? Include a number, time, or measurable detail.
+1. WHO + ACTION: Who does what with the product? Use a specific user action.
+2. DIFFERENCE: What makes this meaningfully different from existing behavior or tools?
+3. OUTCOME: What concrete result does the user get? Include a number, time, frequency, or observable change.
 
-GOOD summary (all 3 elements present):
-"자취생이 냉장고를 촬영하면 남은 재료로 만들 수 있는 레시피 3개를 추천한다. 배민에서 매번 같은 걸 시키는 대신, 집에 있는 재료로 15분 안에 새 요리를 시도할 수 있다. 매주 월요일 장보기 전에 냉장고를 비우는 습관이 생긴다."
+Good summary pattern:
+"A restaurant owner photographs the prep shelf and sees tonight's likely shortages before the dinner rush. Unlike manual stock checks, the product flags only the items that affect today's menu. In under 3 minutes, they know what to prep and what to reorder."
 
-BAD summary (vague, fake stats, system voice):
-"AI 기반의 맞춤형 음식 추천 서비스를 제공합니다. 사용자의 취향을 분석하여 최적의 음식을 추천합니다. 사용 시 만족도가 70% 향상됩니다."
+Bad summary pattern:
+"An AI-powered platform provides personalized optimization for business users. It improves efficiency by 73 percent."
 
-For EACH summary, self-check:
-- Did I name a specific user action (촬영, 입력, 스와이프), not "uses the service"?
-- Did I mention what's different from existing tools?
-- Did I include at least one concrete detail (number, time, frequency)?
+For every summary, self-check:
+- Did I describe a user action instead of "the system provides"?
+- Did I name the difference from today's default behavior?
+- Did I include at least one concrete result?
 
 === TITLE QUALITY RUBRIC ===
 
-STRUCTURE:
-- title_ko: 6-14 characters, noun-phrase (NOT a sentence ending in ~다/~요/~습니다)
-- title_en: 3-7 words, noun-phrase
+Structure:
+- title_ko: 6-14 characters, noun phrase, not a sentence
+- title_en: 3-7 words, noun phrase
 
-MUST CONTAIN:
-- At least one CONCRETE element from the keywords
-  (a user action, a specific domain object, or a concrete technology — not buzzwords)
-- Something the user would still REMEMBER 10 seconds later
+Must contain:
+- At least one concrete element from the keywords
+- A memorable object, action, or moment that survives 10 seconds of memory
 
-FORBIDDEN (generates instant BAD title):
-- Generic AI/SaaS buzzwords: "AI 기반", "맞춤형", "혁신적", "스마트", "종합", "플랫폼", "솔루션"
+Forbidden:
+- Generic buzzwords: "AI 기반", "맞춤형", "혁신", "스마트", "종합", "플랫폼", "솔루션"
 - Empty English adjectives: "AI-powered", "Smart", "Intelligent", "Advanced", "Comprehensive"
-- Sentence endings: "~합니다", "~해요", "~해드립니다", "~입니다"
-- Marketing slogans: "당신의 ~를 ~하세요", "Transform your ~"
+- Sentence endings or slogan language
 
-EXAMPLES BY CATEGORY (learn the diverse styles):
+Do not build the title around monetization words like subscription, marketplace, SaaS, freemium, or pricing-plan language.
+Only use API / marketplace / subscription in the title when the product form itself is truly the novelty, not just the easiest pivot.
 
-[Consumer App] WHO: 자취생, DOMAIN: 요리
-GOOD (한): "냉장고 재료로 15분 요리"
-GOOD (en): "Fridge-to-Recipe in 15 Minutes"
-BAD  (한): "AI 기반 맞춤형 요리 추천 서비스"
-BAD  (en): "Smart Cooking Assistant for Everyone"
+Good title styles:
+- "냉장고 사진으로 오늘 반찬"
+- "Shelf Photo to Restock Order"
+- "3-Minute Morning Investing Note"
+- "One-Line Korean Typo Fixer API"
 
-[SaaS B2B] WHO: 소상공인, DOMAIN: 재고
-GOOD (한): "매장 진열대 사진으로 발주"
-GOOD (en): "Shelf Photo to Restock Order"
-BAD  (한): "AI 기반 종합 재고 관리 플랫폼"
-BAD  (en): "Intelligent Inventory Management Platform"
+Bad title styles:
+- "AI 기반 맞춤형 추천 플랫폼"
+- "Smart Business Optimization Suite"
+- "Voice Fitness Subscription"
 
-[API/Developer Tool] WHO: 개발자, TECH: API
-GOOD (한): "한국어 오타 교정 API 한 줄"
-GOOD (en): "One-Line Korean Typo Fixer API"
-BAD  (한): "개발자를 위한 AI 언어 처리 솔루션"
-BAD  (en): "AI-Powered Language Processing for Developers"
+=== ANTI-PATTERNS ===
 
-[Content/Media] WHO: 직장인, DOMAIN: 투자
-GOOD (한): "매일 아침 3분 투자 뉴스레터"
-GOOD (en): "3-Minute Morning Investing Newsletter"
-BAD  (한): "개인 맞춤형 금융 정보 큐레이션"
-BAD  (en): "Personalized Financial Content Curation"
+For summaries:
+- SYSTEM VOICE: "provides", "enables", "delivers" without a user action
+- BUZZWORD FOG: words that can be deleted without changing the meaning
+- FAKE STATS: invented percentages or performance claims
+- MONEY AS FEATURE: subscription, ad model, or marketplace mechanics described as the user experience
 
-=== ANTI-PATTERNS (for summary) ===
-
-- SYSTEM VOICE: "제공합니다", "활용합니다", "지원합니다" → Describe what the USER does, not the system
-- BUZZWORD: "AI 기반", "맞춤형", "혁신적", "종합적" → Delete if removing changes nothing
-- FAKE STATS: Do NOT invent percentages or statistics ("50% 향상", "70% 증가"). Instead, describe a concrete usage scenario: "매주 월요일 저녁 메뉴를 5분 안에 결정" is better than "결정 시간이 80% 감소".
-- MONEY AS FEATURE: Don't describe the revenue model in the summary. Summary = user experience only.
+For ideas overall:
+- MONETIZATION-LED CONCEPT: the business model becomes the main idea instead of the product behavior
+- DEFAULT PIVOT: turning everything into API, marketplace, or subscription because it feels easy
 
 === QUALITY RULES ===
 
-1. No more than 2 ideas sharing the same core problem
-2. No more than 5 ideas with the same product format (app, platform, tool, etc.)
-3. At least 2 ideas must feel genuinely surprising
-4. At least 2 ideas must feel immediately actionable
-5. At least 4 out of 10 must feel distinctly different from each other
-6. Every idea must describe a real service that real users would pay for
-7. Every idea must be implementable — no fantasy technology
+1. No more than 2 ideas may share the same core problem.
+2. No more than 5 ideas may share the same product format.
+3. At least 2 ideas must feel immediately usable.
+4. At least 2 ideas must feel genuinely surprising.
+5. At least 4 ideas must feel clearly different from each other.
+6. Every idea must describe a real product a user could actually use.
+7. Every idea must be implementable with current technology.
 
-=== VERIFICATION (run for EACH idea before finalizing) ===
+=== VERIFICATION ===
 
-For title_ko and title_en:
-1. VISUAL TEST: Reading the title, can I picture a specific moment/object/action? (If only abstract concepts → fail)
-2. MEMORY TEST: Would I still remember this title 10 minutes later? (If generic → fail)
-3. BLACKLIST TEST: Does it contain ANY forbidden word from the FORBIDDEN list? (If yes → rewrite)
-4. LENGTH TEST: title_ko is 6-14 chars? title_en is 3-7 words? (If not → trim or expand)
+Before finalizing each idea:
 
-For summary_ko and summary_en:
-5. 3-ELEMENT TEST: Does it contain WHO+ACTION, DIFFERENCE, and OUTCOME? (If missing any → add)
-6. ANTI-PATTERN TEST: Any SYSTEM VOICE / BUZZWORD / FAKE STATS / MONEY AS FEATURE? (If yes → rewrite)
+For titles:
+1. VISUAL TEST: Can I picture a real moment, object, or action?
+2. MEMORY TEST: Would I remember this title 10 minutes later?
+3. MONETIZATION TEST: Is the title led by subscription, marketplace, SaaS, pricing, or monetization language? If yes, rewrite unless product form itself is the novelty.
+4. LENGTH TEST: title_ko is 6-14 characters and title_en is 3-7 words.
 
-If any test fails, rewrite that field before moving to the next idea.
-Do NOT output until all 10 ideas pass all 6 tests."""
+For summaries:
+5. 3-ELEMENT TEST: WHO+ACTION, DIFFERENCE, and OUTCOME are all present.
+6. USER TEST: The summary is centered on what the user does, not what the system claims.
+7. MONEY TEST: The revenue model is not presented as the product experience.
 
-    # ── User prompt (Task + dynamic data) ──
+If any test fails, rewrite before moving on.
+Do not output until all 10 ideas pass the checks."""
+
+    system_prompt += """
+
+=== ONE-LINE IDEA QUALITY RUBRIC ===
+
+Generate the one-line idea first.
+It is the most important output because it decides whether a user stays or leaves.
+
+The one-line idea is NOT a slogan and NOT a feature list.
+It should feel like a sharp product hook someone would repeat to a friend.
+
+Each one-line idea must make these 4 things clear in a single sentence:
+1. WHO: exactly who this is for
+2. MOMENT: when or why they reach for it
+3. TWIST: what new behavior or mechanism makes it different
+4. PAYOFF: the concrete result they get
+
+Good one-line pattern:
+"A restaurant owner snaps the prep shelf before dinner and gets tonight's missing ingredients in one reorder-ready list."
+
+Bad one-line pattern:
+"An AI-powered inventory solution for restaurant optimization."
+
+Before writing the title or summary, verify the one-line idea:
+- Can I picture a real user moment?
+- Is the sentence about product behavior, not buzzwords?
+- Would this make someone curious enough to tap?
+- Is monetization absent unless it is truly the product twist?
+"""
 
     tier_instructions = {
-        "stable": "Create an idea that is FAITHFUL to these keywords. Immediately understandable. 'Of course this combination leads to this.'",
-        "expansion": "PUSH one keyword much harder than others. Stretch the interpretation. 'Same vein, different reading.'",
-        "pivot": "CHANGE the service format or business model entirely. If others are apps, make this an API or marketplace. 'I didn't expect this direction.'",
-        "rare": "EXPERIMENTAL and MEMORABLE. The most unexpected direction from these keywords. Something people would screenshot and share. Surprising but coherent.",
+        "stable": "Create an idea that is faithful to these keywords and immediately understandable. The user, problem, and product form should connect cleanly.",
+        "expansion": "Push one keyword much harder than the others. Stretch the reading, but stay grounded in a believable user behavior.",
+        "pivot": "Change the service format or delivery model entirely. Do NOT default to API, marketplace, or subscription pivot just because MONEY is present. Choose the least obvious but still keyword-faithful direction.",
+        "rare": "Create the most memorable but coherent direction. It should feel screenshot-worthy because of the user experience, not because of the revenue model. Do not use the revenue model itself as the surprise.",
     }
 
     combo_sections = []
     for combo in combos:
-        kw_list = ", ".join(f"{kw['en']} ({kw['category'].upper()})" for kw in combo["keywords"])
+        kw_list = ", ".join(
+            f"{kw['en']} ({kw['category'].upper()})" for kw in combo["keywords"]
+        )
         instruction = tier_instructions[combo["tier_type"]]
-
         combo_sections.append(
             f"=== Idea {combo['sort_order']} ===\n"
             f"Keywords: {kw_list}\n"
@@ -146,6 +158,21 @@ Do NOT output until all 10 ideas pass all 6 tests."""
 
 {combos_text}
 
-Generate 10 ideas for the combinations above. Each idea must have sort_order, title_ko, title_en, summary_ko, summary_en."""
+Generate 10 ideas for the combinations above.
+
+Global guardrails:
+- Build the idea around user behavior, not monetization.
+- Do NOT default to API, marketplace, or subscription pivot.
+- If MONEY appears in the keywords, keep it as background context unless the business model is truly the novel part.
+- Generate the one-line idea first, then derive the title and summary from that same hook.
+
+Each idea must have:
+- sort_order
+- idea_line_ko
+- idea_line_en
+- title_ko
+- title_en
+- summary_ko
+- summary_en"""
 
     return system_prompt, user_prompt

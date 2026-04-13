@@ -47,6 +47,8 @@ export type IdeaTierType = "stable" | "expansion" | "pivot" | "rare";
 
 export interface Idea {
   id: string;
+  idea_line_ko: string;
+  idea_line_en: string;
   title_ko: string;
   title_en: string;
   summary_ko: string;

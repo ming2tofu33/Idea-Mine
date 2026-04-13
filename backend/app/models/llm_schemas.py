@@ -11,6 +11,8 @@ from typing import Literal
 
 class MiningIdea(BaseModel):
     sort_order: int
+    idea_line_ko: str
+    idea_line_en: str
     title_ko: str
     title_en: str
     summary_ko: str

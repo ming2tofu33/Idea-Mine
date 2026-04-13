@@ -10,7 +10,7 @@ from app.services.combo_builder import build_keyword_combos
 _openai: OpenAI | None = None
 
 MODEL = "gpt-5-nano"
-PROMPT_VERSION = "v5"
+PROMPT_VERSION = "v7"
 
 COST_PER_1K_INPUT = 0.00005
 COST_PER_1K_OUTPUT = 0.0004
@@ -112,6 +112,8 @@ async def generate_ideas(
         rows_to_insert.append({
             "user_id": user_id,
             "vein_id": vein_id,
+            "idea_line_ko": idea_text.get("idea_line_ko", idea_text.get("summary_ko", "한줄 아이디어 없음")),
+            "idea_line_en": idea_text.get("idea_line_en", idea_text.get("summary_en", "No one-line idea")),
             "title_ko": idea_text.get("title_ko", "제목 없음"),
             "title_en": idea_text.get("title_en", "Untitled"),
             "summary_ko": idea_text.get("summary_ko", "요약 없음"),

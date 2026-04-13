@@ -16,11 +16,18 @@ interface IdeaCardProps {
 
 export function IdeaCard({ idea, language, isInBag, bagFull, transportLabel, onToggle }: IdeaCardProps) {
   const title = language === "ko" ? idea.title_ko : idea.title_en;
+  const ideaLine =
+    language === "ko"
+      ? idea.idea_line_ko || idea.summary_ko
+      : idea.idea_line_en || idea.summary_en;
   const summary = language === "ko" ? idea.summary_ko : idea.summary_en;
 
   return (
     <View style={[styles.card, isInBag && styles.cardSelected]}>
       <PixelText variant="subtitle">{title}</PixelText>
+      <PixelText variant="body" style={styles.ideaLine}>
+        {ideaLine}
+      </PixelText>
       <PixelText variant="body" style={styles.summary}>
         {summary}
       </PixelText>
@@ -55,8 +62,12 @@ const styles = StyleSheet.create({
   },
   summary: {
     color: midnight.text.secondary,
-    marginTop: 8,
+    marginTop: 6,
     marginBottom: 12,
+  },
+  ideaLine: {
+    color: midnight.text.primary,
+    marginTop: 8,
   },
   chips: {
     flexDirection: "row",

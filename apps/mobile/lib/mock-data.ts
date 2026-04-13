@@ -99,6 +99,8 @@ function makeIdeas(veinId: string): Idea[] {
   const shuffled = [...IDEA_TEMPLATES].sort(() => Math.random() - 0.5);
   return shuffled.map((t, i) => ({
     id: `idea-${randomId()}`,
+    idea_line_ko: t.summary,
+    idea_line_en: t.summary,
     title_ko: t.title,
     title_en: t.title,
     summary_ko: t.summary,
@@ -251,6 +253,7 @@ let mockAppraisals: Appraisal[] = [];
 
 function makeMockOverview(ideaId: string): Overview {
   const idea = mockVaultedIdeas.find((i) => i.id === ideaId);
+  const timestamp = new Date().toISOString();
   const title = idea?.title_ko ?? "Mock 아이디어";
   return {
     id: `overview-${randomId()}`,

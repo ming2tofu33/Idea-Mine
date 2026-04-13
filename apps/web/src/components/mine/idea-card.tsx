@@ -73,6 +73,7 @@ interface IdeaCardProps {
 
 export function IdeaCard({ idea, isSelected, onToggle, isVaulted }: IdeaCardProps) {
   const tier = TIER_CONFIG[idea.tier_type];
+  const ideaLine = idea.idea_line_ko || idea.summary_ko;
 
   return (
     <motion.button
@@ -133,8 +134,13 @@ export function IdeaCard({ idea, isSelected, onToggle, isVaulted }: IdeaCardProp
         {idea.title_ko}
       </h3>
 
+      {/* One-line idea */}
+      <p className="mb-2 text-sm font-medium leading-relaxed text-text-primary/95 line-clamp-2">
+        {ideaLine}
+      </p>
+
       {/* Summary */}
-      <p className="mb-4 text-sm leading-relaxed text-text-secondary/90 line-clamp-3">
+      <p className="mb-4 text-xs leading-relaxed text-text-secondary/80 line-clamp-2">
         {idea.summary_ko}
       </p>
 

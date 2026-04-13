@@ -30,6 +30,8 @@ class TodayVeinsResponse(BaseModel):
 
 class IdeaOut(BaseModel):
     id: str
+    idea_line_ko: str
+    idea_line_en: str
     title_ko: str
     title_en: str
     summary_ko: str

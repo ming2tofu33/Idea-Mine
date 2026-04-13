@@ -265,6 +265,8 @@ export function experienceIdeaToIdea(
 
   return {
     id: exp.id,
+    idea_line_ko: exp.signalLineKo,
+    idea_line_en: exp.signalLineEn,
     title_ko: exp.titleKo,
     title_en: exp.titleEn,
     summary_ko: exp.summaryKo,
