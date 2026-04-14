@@ -95,13 +95,6 @@ const IDEA_TEMPLATES = [
   { title: "핀테크 가계부 AI 코치", summary: "소비 패턴을 분석하고 절약 목표를 설정해주는 AI 재정 코치. 게이미피케이션 요소 포함" },
 ];
 
-const TIER_TYPES: Array<"stable" | "expansion" | "pivot" | "rare"> = [
-  "stable", "stable", "stable",
-  "expansion", "expansion", "expansion",
-  "pivot", "pivot",
-  "rare", "rare",
-];
-
 function makeIdeas(veinId: string): Idea[] {
   void veinId;
   const shuffled = [...IDEA_TEMPLATES].sort(() => Math.random() - 0.5);
@@ -119,7 +112,6 @@ function makeIdeas(veinId: string): Idea[] {
       ko: k.ko,
       en: k.en,
     })),
-    tier_type: TIER_TYPES[i],
     sort_order: i + 1,
     is_vaulted: false,
   }));

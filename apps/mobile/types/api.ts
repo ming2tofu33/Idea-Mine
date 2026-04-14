@@ -43,8 +43,6 @@ export interface RerollResponse {
 
 // --- Ideas ---
 
-export type IdeaTierType = "stable" | "expansion" | "pivot" | "rare";
-
 export interface Idea {
   id: string;
   idea_line_ko: string;
@@ -54,7 +52,6 @@ export interface Idea {
   summary_ko: string;
   summary_en: string;
   keyword_combo: KeywordComboEntry[];
-  tier_type: IdeaTierType;
   sort_order: number;
   is_vaulted: boolean;
 }

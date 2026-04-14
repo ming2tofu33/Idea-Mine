@@ -15,7 +15,7 @@ import { PixelImage } from "../../../components/PixelImage";
 import { EmptyState } from "../../../components/shared/EmptyState";
 import { ActionDock } from "../../../components/shared/ActionDock";
 import { pixel } from "../../../constants/pixel";
-import { RARITY_CONFIG, tierToRarity, GEM_SPRITES } from "../../../constants/mining";
+import { GEM_SPRITES } from "../../../constants/mining";
 
 export default function VaultScreen() {
   const router = useRouter();
@@ -50,8 +50,6 @@ export default function VaultScreen() {
           {recentIdeas.length > 0 ? (
             <View style={styles.gemsRow}>
               {recentIdeas.map((idea, idx) => {
-                const rarity = tierToRarity(idea.tier_type);
-                const config = RARITY_CONFIG[rarity] ?? RARITY_CONFIG.common;
                 const title = language === "ko" ? idea.title_ko : idea.title_en;
                 const isCenter = idx === 0;
                 return (
@@ -66,14 +64,10 @@ export default function VaultScreen() {
                     }
                   >
                     <PixelImage
-                      source={GEM_SPRITES[rarity] ?? GEM_SPRITES.common}
+                      source={GEM_SPRITES.common}
                       scale={isCenter ? 3 : 2}
                     />
-                    <View style={[styles.gemCaption, { borderColor: config.borderColor }]}>
-                      <PixelText variant="caption" style={{ color: config.color }}>
-                        {"icon" in config && config.icon ? `${config.icon} ` : ""}
-                        {config.label[language]}
-                      </PixelText>
+                    <View style={styles.gemCaption}>
                       <PixelText variant="caption" numberOfLines={1} style={styles.gemTitle}>
                         {title}
                       </PixelText>

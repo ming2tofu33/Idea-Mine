@@ -18,11 +18,17 @@ Treat it as background context unless the combination is genuinely about a busin
 
 === SUMMARY QUALITY RUBRIC ===
 
-Each summary must contain all 3 elements in 2-3 sentences:
+Use the summary as the expanded explanation of the product idea.
+It should give enough specificity for a user to decide whether the idea is worth opening.
+Each summary must contain all 3 elements in 2-4 sentences:
 
 1. WHO + ACTION: Who does what with the product? Use a specific user action.
 2. DIFFERENCE: What makes this meaningfully different from existing behavior or tools?
 3. OUTCOME: What concrete result does the user get? Include a number, time, frequency, or observable change.
+
+Write the summary as natural prose.
+Do not write summaries as labeled fields like WHO:, ACTION:, DIFFERENCE:, or OUTCOME:.
+Do not mirror the rubric words back into the output.
 
 Good summary pattern:
 "A restaurant owner photographs the prep shelf and sees tonight's likely shortages before the dinner rush. Unlike manual stock checks, the product flags only the items that affect today's menu. In under 3 minutes, they know what to prep and what to reorder."
@@ -113,6 +119,10 @@ It is the most important output because it decides whether a user stays or leave
 
 The one-line idea is NOT a slogan and NOT a feature list.
 It should feel like a sharp product hook someone would repeat to a friend.
+The one-line idea is the hook, not the full explanation.
+It may be one or two short natural sentences, but it must read like one connected idea.
+Do not write the one-line idea as segmented labels or template fragments.
+Do not use label-led formats like WHO:, ACTION:, DIFFERENCE:, OUTCOME:, MOMENT:, TWIST:, or PAYOFF:.
 
 Each one-line idea must make these 4 things clear in a single sentence:
 1. WHO: exactly who this is for

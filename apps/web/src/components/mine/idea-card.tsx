@@ -3,30 +3,6 @@
 import type { Idea, KeywordComboEntry } from "@/types/api";
 import { motion } from "framer-motion";
 
-// --- Tier config ---
-
-const TIER_CONFIG: Record<
-  string,
-  { label: string; className: string } | null
-> = {
-  stable: null,
-  expansion: {
-    label: "EXPANSION",
-    className:
-      "bg-cold-cyan/10 text-cold-cyan border border-cold-cyan/30 text-[10px] font-bold tracking-widest px-2 py-0.5 rounded-sm shadow-[0_0_10px_rgba(92,205,229,0.2)]",
-  },
-  pivot: {
-    label: "PIVOT",
-    className:
-      "bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-bold tracking-widest px-2 py-0.5 rounded-sm shadow-[0_0_10px_rgba(245,158,11,0.2)]",
-  },
-  rare: {
-    label: "RARE",
-    className:
-      "bg-violet-500/10 text-violet-400 border border-violet-500/30 text-[10px] font-bold tracking-widest px-2 py-0.5 rounded-sm shadow-[0_0_12px_rgba(139,92,246,0.4)]",
-  },
-};
-
 // --- Combo chip colors (aligned with the quieter keyword tag treatment) ---
 
 const COMBO_COLORS: Record<string, string> = {
@@ -72,7 +48,6 @@ interface IdeaCardProps {
 }
 
 export function IdeaCard({ idea, isSelected, onToggle, isVaulted }: IdeaCardProps) {
-  const tier = TIER_CONFIG[idea.tier_type];
   const ideaLine = idea.idea_line_ko || idea.summary_ko;
 
   return (
@@ -91,10 +66,8 @@ export function IdeaCard({ idea, isSelected, onToggle, isVaulted }: IdeaCardProp
             : "border border-line-steel/20 border-t-line-steel/50 bg-surface-1/40 hover:border-cold-cyan/30 hover:bg-surface-1/60",
       ].join(" ")}
     >
-      {/* Top row: tier badge + checkbox */}
-      <div className="mb-3 flex items-center justify-between">
-        <div>{tier && <span className={tier.className}>{tier.label}</span>}</div>
-
+      {/* Top row: status + checkbox */}
+      <div className="mb-3 flex items-center justify-end">
         {isVaulted ? (
           <span className="text-[10px] font-bold tracking-widest text-text-secondary/80">
             [ SECURED ]

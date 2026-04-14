@@ -27,3 +27,11 @@ def test_build_mining_prompt_prevents_default_api_marketplace_pivots():
     _, user_prompt = build_mining_prompt(SAMPLE_COMBOS)
 
     assert "Do NOT default to API, marketplace, or subscription pivot" in user_prompt
+
+
+def test_build_mining_prompt_splits_hook_from_expanded_explanation():
+    system_prompt, _ = build_mining_prompt(SAMPLE_COMBOS)
+
+    assert "The one-line idea is the hook, not the full explanation." in system_prompt
+    assert "Use the summary as the expanded explanation of the product idea." in system_prompt
+    assert "enough specificity for a user to decide whether the idea is worth opening" in system_prompt

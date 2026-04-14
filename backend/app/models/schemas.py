@@ -37,7 +37,6 @@ class IdeaOut(BaseModel):
     summary_ko: str
     summary_en: str
     keyword_combo: list[dict]
-    tier_type: str
     sort_order: int
     is_vaulted: bool
 

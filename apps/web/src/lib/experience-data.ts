@@ -272,7 +272,6 @@ export function experienceIdeaToIdea(
     summary_ko: exp.summaryKo,
     summary_en: exp.summaryEn,
     keyword_combo,
-    tier_type: "stable",
     sort_order: sortOrder,
     is_vaulted: true,
   };
