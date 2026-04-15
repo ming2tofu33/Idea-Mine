@@ -12,15 +12,6 @@ import { useLanguage } from "@/hooks/use-language";
 import { getDemoTodayVeinsResponse } from "@/lib/experience-data";
 import { trackExperienceEvent } from "@/lib/experience-events";
 
-/**
- * DemoMine — 게스트가 /mine을 방문했을 때 보여주는 데모 모드.
- *
- * 실제 Mine 페이지의 핵심 컴포넌트(SectorScanStage, SelectedVeinPanel)를
- * 그대로 재사용하되, 데이터만 정적 데모 데이터를 주입한다.
- *
- * 주요 액션(MINE TARGET, RESCAN SECTORS)은 모두 sign-in으로 유도하는
- * soft gate로 연결된다.
- */
 export function DemoMine() {
   const { lang } = useLanguage();
   const data = useMemo(() => getDemoTodayVeinsResponse(), []);
@@ -72,20 +63,14 @@ export function DemoMine() {
       <MineBackground />
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
-        {/* Header — 실제 Mine과 동일한 PageHeader 사용 */}
         <div className="mx-auto mb-6 w-full max-w-7xl">
           <PageHeader
             eyebrow="MINE"
-            title={lang === "ko" ? "오늘의 광맥" : "Today's veins"}
-            subtitle={
-              lang === "ko"
-                ? "탐지된 광맥 중 하나를 선택해 채굴하세요"
-                : "Select one of the detected veins to start mining"
-            }
+            title="Today's veins"
+            subtitle="Select one of the detected veins to start mining"
           />
         </div>
 
-        {/* 핵심 인터랙션 — 실제 Mine과 100% 동일한 컴포넌트 */}
         <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,380px)] lg:items-stretch">
           <SectorScanStage
             veins={data.veins}
@@ -111,7 +96,6 @@ export function DemoMine() {
           />
         </div>
 
-        {/* 데모 컨텍스트 안내 — 한 줄, 작게 */}
         <div className="mx-auto mt-6 w-full max-w-7xl">
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-cold-cyan/15 bg-[rgba(92,205,229,0.04)] px-5 py-4 text-center sm:flex-row sm:justify-between sm:text-left">
             <p className="text-xs leading-5 text-text-secondary sm:text-sm">

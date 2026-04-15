@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -13,7 +13,7 @@ import { SectionCard } from "@/components/shared/section-card";
 import { KeywordChip } from "@/components/mine/keyword-chip";
 import { vaultApi } from "@/lib/api";
 
-// --- Section group ---
+const WORKFLOW_STEPS = ["Mine", "Vault", "Overview", "Appraisal", "Full Overview"];
 
 function SectionGroup({
   label,
@@ -42,10 +42,6 @@ function SectionGroup({
   );
 }
 
-// --- Page ---
-
-const WORKFLOW_STEPS = ["Mine", "Vault", "개요", "감정", "풀 개요"];
-
 export default function VaultDetailPage({
   params,
 }: {
@@ -56,14 +52,12 @@ export default function VaultDetailPage({
   const queryClient = useQueryClient();
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  // Load the idea
   const ideaQuery = useQuery({
     queryKey: ["vaultedIdeas"],
     queryFn: vaultApi.getVaultedIdeas,
-    select: (ideas) => ideas.find((i) => i.id === ideaId),
+    select: (ideas) => ideas.find((idea) => idea.id === ideaId),
   });
 
-  // Load overview
   const overviewQuery = useQuery({
     queryKey: ["overviews", ideaId],
     queryFn: async () => {
@@ -73,7 +67,6 @@ export default function VaultDetailPage({
     enabled: !!ideaId,
   });
 
-  // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: () => vaultApi.deleteIdea(ideaId),
     onSuccess: () => {
@@ -85,9 +78,7 @@ export default function VaultDetailPage({
   const idea = ideaQuery.data;
   const overview = overviewQuery.data;
   const isLoading = ideaQuery.isLoading || overviewQuery.isLoading;
-
-  // Determine workflow position
-  const currentStep = overview ? 2 : 1; // 0=Mine, 1=Vault, 2=개요, 3=감정, 4=풀개요
+  const currentStep = overview ? 2 : 1;
 
   return (
     <div className="relative flex min-h-0 flex-1">
@@ -95,11 +86,10 @@ export default function VaultDetailPage({
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-2xl space-y-6">
-          {/* Breadcrumb */}
           <Breadcrumb
             items={[
               { label: "Vault", href: "/vault" },
-              { label: idea?.title_ko ?? "..." },
+              { label: idea?.title || "..." },
             ]}
           />
 
@@ -115,48 +105,43 @@ export default function VaultDetailPage({
             </div>
           ) : !idea ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <p className="text-sm text-text-secondary">
-                아이디어를 찾을 수 없습니다
-              </p>
+              <p className="text-sm text-text-secondary">Idea not found.</p>
               <Link
                 href="/vault"
                 className="mt-4 cursor-pointer rounded-lg border border-line-steel bg-surface-2 px-5 py-2.5 text-sm font-medium text-text-secondary transition-colors duration-200 hover:text-text-primary"
               >
-                금고로 돌아가기
+                Back to vault
               </Link>
             </div>
           ) : (
             <>
-              {/* Progress steps */}
               <ProgressSteps steps={WORKFLOW_STEPS} currentStep={currentStep} />
 
-              {/* Idea header */}
               <div>
                 <h2 className="text-xl font-bold text-text-primary">
-                  {idea.title_ko}
+                  {idea.title}
                 </h2>
                 <p className="mt-2 text-sm leading-relaxed text-text-secondary">
-                  {idea.summary_ko}
+                  {idea.summary}
                 </p>
 
-                {/* Keywords */}
                 {idea.keyword_combo && idea.keyword_combo.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
-                    {idea.keyword_combo.map((kw) => (
+                    {idea.keyword_combo.map((keyword) => (
                       <KeywordChip
-                        key={kw.slug}
+                        key={keyword.slug}
                         keyword={{
-                          id: kw.slug,
-                          slug: kw.slug,
-                          category: kw.category as
+                          id: keyword.slug,
+                          slug: keyword.slug,
+                          category: keyword.category as
                             | "ai"
                             | "who"
                             | "domain"
                             | "tech"
                             | "value"
                             | "money",
-                          ko: kw.ko,
-                          en: kw.en,
+                          ko: keyword.en,
+                          en: keyword.en,
                           is_premium: false,
                         }}
                       />
@@ -165,49 +150,48 @@ export default function VaultDetailPage({
                 )}
               </div>
 
-              {/* Overview sections */}
               {overview ? (
                 <div className="space-y-6">
-                  <SectionGroup label="Vision" delay={0}>
-                    <SectionCard title="컨셉">
+                  <SectionGroup label="Vision">
+                    <SectionCard title="Concept">
                       <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
-                        {overview.concept_ko}
+                        {overview.concept}
                       </p>
                     </SectionCard>
-                    <SectionCard title="문제 정의">
+                    <SectionCard title="Problem">
                       <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
-                        {overview.problem_ko}
+                        {overview.problem}
                       </p>
                     </SectionCard>
-                    <SectionCard title="타깃 사용자">
+                    <SectionCard title="Target user">
                       <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
-                        {overview.target_ko}
+                        {overview.target}
                       </p>
                     </SectionCard>
                   </SectionGroup>
 
                   <SectionGroup label="Product" delay={0.1}>
-                    <SectionCard title="핵심 기능">
+                    <SectionCard title="Core features">
                       <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
-                        {overview.features_ko}
+                        {overview.features}
                       </p>
                     </SectionCard>
-                    <SectionCard title="차별점">
+                    <SectionCard title="Differentiator">
                       <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
-                        {overview.differentiator_ko}
+                        {overview.differentiator}
                       </p>
                     </SectionCard>
                   </SectionGroup>
 
                   <SectionGroup label="Business" delay={0.2}>
-                    <SectionCard title="수익 모델">
+                    <SectionCard title="Business model">
                       <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
-                        {overview.revenue_ko}
+                        {overview.revenue}
                       </p>
                     </SectionCard>
-                    <SectionCard title="MVP 범위">
+                    <SectionCard title="MVP scope">
                       <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
-                        {overview.mvp_scope_ko}
+                        {overview.mvp_scope}
                       </p>
                     </SectionCard>
                   </SectionGroup>
@@ -215,18 +199,17 @@ export default function VaultDetailPage({
               ) : (
                 <div className="rounded-xl border border-dashed border-line-steel/30 bg-surface-1/30 p-6 text-center">
                   <p className="mb-3 text-sm text-text-secondary">
-                    아직 개요가 생성되지 않았습니다
+                    No overview has been generated yet.
                   </p>
                   <Link
                     href={`/lab/overview/${ideaId}`}
                     className="inline-block cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-5 py-2.5 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/20"
                   >
-                    개요 생성하기
+                    Generate overview
                   </Link>
                 </div>
               )}
 
-              {/* Actions */}
               <div className="flex items-center gap-3 border-t border-line-steel/20 pt-4">
                 {overview ? (
                   <>
@@ -234,13 +217,13 @@ export default function VaultDetailPage({
                       href={`/lab/appraisal/${overview.id}`}
                       className="cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-5 py-2.5 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/20"
                     >
-                      감정 보기
+                      Open appraisal
                     </Link>
                     <Link
                       href={`/lab/overview/${ideaId}`}
                       className="cursor-pointer rounded-lg border border-line-steel/30 bg-surface-2/50 px-5 py-2.5 text-sm font-medium text-text-secondary transition-colors duration-200 hover:text-text-primary"
                     >
-                      개요 보기
+                      Open overview
                     </Link>
                   </>
                 ) : (
@@ -248,7 +231,7 @@ export default function VaultDetailPage({
                     href={`/lab/overview/${ideaId}`}
                     className="cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-5 py-2.5 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/20"
                   >
-                    개요 생성하기
+                    Generate overview
                   </Link>
                 )}
 
@@ -256,23 +239,21 @@ export default function VaultDetailPage({
 
                 {confirmDelete ? (
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-text-secondary">
-                      정말 삭제할까요?
-                    </span>
+                    <span className="text-xs text-text-secondary">Delete this idea?</span>
                     <button
                       type="button"
                       onClick={() => deleteMutation.mutate()}
                       disabled={deleteMutation.isPending}
                       className="cursor-pointer rounded px-3 py-1.5 text-xs text-red-400 transition-colors duration-200 hover:bg-red-400/10 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {deleteMutation.isPending ? "삭제 중..." : "삭제"}
+                      {deleteMutation.isPending ? "Deleting..." : "Delete"}
                     </button>
                     <button
                       type="button"
                       onClick={() => setConfirmDelete(false)}
                       className="cursor-pointer rounded px-3 py-1.5 text-xs text-text-secondary transition-colors duration-200 hover:text-text-primary"
                     >
-                      취소
+                      Cancel
                     </button>
                   </div>
                 ) : (
@@ -280,6 +261,7 @@ export default function VaultDetailPage({
                     type="button"
                     onClick={() => setConfirmDelete(true)}
                     className="cursor-pointer rounded p-2 text-text-secondary/40 transition-colors duration-200 hover:text-red-400"
+                    title="Delete"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>

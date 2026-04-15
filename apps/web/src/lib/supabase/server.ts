@@ -18,7 +18,7 @@ export async function createClient() {
               cookieStore.set(name, value, options),
             );
           } catch {
-            // Server Component에서 호출 시 set은 무시됨 (정상)
+            // In Server Components this can no-op, which is expected.
           }
         },
       },

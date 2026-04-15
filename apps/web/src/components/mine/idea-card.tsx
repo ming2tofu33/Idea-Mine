@@ -33,7 +33,7 @@ function ComboChip({ entry }: { entry: KeywordComboEntry }) {
           boxShadow: `0 0 0 1px rgba(255,255,255,0.08), 0 0 10px ${color}22`,
         }}
       />
-      {entry.ko}
+      {entry.en}
     </span>
   );
 }
@@ -48,7 +48,7 @@ interface IdeaCardProps {
 }
 
 export function IdeaCard({ idea, isSelected, onToggle, isVaulted }: IdeaCardProps) {
-  const ideaLine = idea.idea_line_ko || idea.summary_ko;
+  const ideaLine = idea.idea_line || idea.summary;
 
   return (
     <motion.button
@@ -104,7 +104,7 @@ export function IdeaCard({ idea, isSelected, onToggle, isVaulted }: IdeaCardProp
 
       {/* Title */}
       <h3 className="mb-2 text-lg font-bold tracking-tight text-text-primary drop-shadow-sm">
-        {idea.title_ko}
+        {idea.title}
       </h3>
 
       {/* One-line idea */}
@@ -114,7 +114,7 @@ export function IdeaCard({ idea, isSelected, onToggle, isVaulted }: IdeaCardProp
 
       {/* Summary */}
       <p className="mb-4 text-xs leading-relaxed text-text-secondary/80 line-clamp-2">
-        {idea.summary_ko}
+        {idea.summary}
       </p>
 
       {/* Keyword combo chips */}

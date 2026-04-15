@@ -50,7 +50,7 @@ export default function MiningResultPage({
 }) {
   const { veinId } = use(params);
   const { profile } = useProfile();
-  const lang: MineLanguage = (profile?.language ?? "ko") as MineLanguage;
+  const lang: MineLanguage = (profile?.language ?? "en") as MineLanguage;
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [vaultedIds, setVaultedIds] = useState<Set<string>>(new Set());

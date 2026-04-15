@@ -52,12 +52,9 @@ export interface KeywordComboEntry {
 
 export interface Idea {
   id: string;
-  idea_line_ko: string;
-  idea_line_en: string;
-  title_ko: string;
-  title_en: string;
-  summary_ko: string;
-  summary_en: string;
+  idea_line: string;
+  title: string;
+  summary: string;
   keyword_combo: KeywordComboEntry[];
   sort_order: number;
   is_vaulted: boolean;
@@ -81,20 +78,13 @@ export interface Overview {
   id: string;
   idea_id: string;
   user_id: string;
-  concept_ko: string;
-  concept_en: string;
-  problem_ko: string;
-  problem_en: string;
-  target_ko: string;
-  target_en: string;
-  features_ko: string;
-  features_en: string;
-  differentiator_ko: string;
-  differentiator_en: string;
-  revenue_ko: string;
-  revenue_en: string;
-  mvp_scope_ko: string;
-  mvp_scope_en: string;
+  concept: string;
+  problem: string;
+  target: string;
+  features: string;
+  differentiator: string;
+  revenue: string;
+  mvp_scope: string;
   created_at: string;
   updated_at: string;
 }
@@ -107,18 +97,12 @@ export interface Appraisal {
   id: string;
   overview_id: string;
   depth: AppraisalDepth;
-  market_fit_ko: string;
-  market_fit_en: string;
-  problem_fit_ko?: string;
-  problem_fit_en?: string;
-  feasibility_ko: string;
-  feasibility_en: string;
-  differentiation_ko?: string;
-  differentiation_en?: string;
-  scalability_ko?: string;
-  scalability_en?: string;
-  risk_ko: string;
-  risk_en: string;
+  market_fit: string;
+  problem_fit?: string;
+  feasibility: string;
+  differentiation?: string;
+  scalability?: string;
+  risk: string;
 }
 
 // --- Full Overview ---
@@ -180,7 +164,7 @@ export interface UserProfile {
   streak_days: number;
 }
 
-// --- Product Design (제품 설계서) ---
+// --- Product Design ---
 
 export interface ProductDesign {
   id: string;
@@ -202,7 +186,7 @@ export interface ProductDesign {
   created_at: string;
 }
 
-// --- Blueprint (기술 청사진) ---
+// --- Blueprint ---
 
 export interface Blueprint {
   id: string;
@@ -217,7 +201,7 @@ export interface Blueprint {
   created_at: string;
 }
 
-// --- Roadmap (실행 로드맵) ---
+// --- Roadmap ---
 
 export interface Roadmap {
   id: string;

@@ -35,10 +35,14 @@ export function setMockMode(on: boolean): void { _mockMode = on; }
 
 // --- Proxy: dispatches to mock or real at call time ---
 
-function proxy<T extends Record<string, (...args: any[]) => any>>(real: T, mock: T): T {
+type Callable = (...args: never[]) => unknown;
+
+function proxy<T extends Record<string, Callable>>(real: T, mock: T): T {
   return new Proxy(real, {
-    get(_, prop: string) {
-      return (...args: any[]) => (_mockMode ? mock : real)[prop](...args);
+    get(_target, prop, receiver) {
+      const source = _mockMode ? mock : real;
+      const value = Reflect.get(source, prop, receiver);
+      return typeof value === "function" ? value.bind(source) : value;
     },
   });
 }

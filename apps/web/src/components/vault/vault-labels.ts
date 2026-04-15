@@ -1,62 +1,42 @@
-/**
- * Vault 페이지 다국어 라벨
- *
- * Mine 라벨과 동일한 패턴: 컴포넌트에서 lang prop을 받아 사용.
- */
+type LocalizedText = {
+  ko: string;
+  en: string;
+};
+
+type LocalizedCount = {
+  ko: (value: number) => string;
+  en: (value: number) => string;
+};
+
+const copy = (value: string): LocalizedText => ({ ko: value, en: value });
+const copyCount = (formatter: (value: number) => string): LocalizedCount => ({
+  ko: formatter,
+  en: formatter,
+});
 
 export type VaultLanguage = "ko" | "en";
 
 export const VAULT_LABELS = {
-  // PageHeader
-  eyebrow: { ko: "금고", en: "VAULT" },
-  title: { ko: "금고", en: "The Vault" },
-  subtitle: {
-    ko: "채굴한 아이디어를 보관하고 관리하는 공간입니다",
-    en: "Store and manage the ideas you've mined",
-  },
-  ideasCount: {
-    ko: (n: number) => `아이디어 ${n}개`,
-    en: (n: number) => `${n} ideas`,
-  },
-
-  // Workflow steps
+  eyebrow: copy("VAULT"),
+  title: copy("The Vault"),
+  subtitle: copy("Store and manage the ideas you've mined"),
+  ideasCount: copyCount((count) => `${count} ideas`),
   workflow: {
-    raw: { ko: "원석", en: "Raw" },
-    overview: { ko: "개요", en: "Overview" },
-    appraisal: { ko: "감정", en: "Appraisal" },
-    fullOverview: { ko: "풀 개요", en: "Full overview" },
+    raw: copy("Raw"),
+    overview: copy("Overview"),
+    appraisal: copy("Appraisal"),
+    fullOverview: copy("Full overview"),
   },
-  overviewComplete: { ko: "개요 완료", en: "Overview ready" },
-  rawStone: { ko: "원석", en: "Raw stone" },
-
-  // Delete confirm
-  deleteConfirm: { ko: "삭제?", en: "Delete?" },
-  deleting: { ko: "...", en: "..." },
-
-  // Error / empty states
-  loadFailed: {
-    ko: "금고를 불러오지 못했습니다",
-    en: "Couldn't load the vault",
-  },
-  unknownError: { ko: "알 수 없는 오류", en: "Unknown error" },
-  emptyTitle: { ko: "아직 아이디어가 없어요", en: "No ideas yet" },
-  emptyHint: {
-    ko: "광산에서 마음에 드는 아이디어를 채굴해 금고에 반입해보세요",
-    en: "Mine some ideas you like and bring them into the vault",
-  },
-  goToMine: { ko: "광산으로 가기", en: "Go to the Mine" },
-
-  // Demo mode notices (guest at /vault)
-  demoSampleNotice: {
-    ko: "이건 샘플 금고입니다",
-    en: "This is a sample vault",
-  },
-  demoFreshNotice: {
-    ko: "진짜 금고는 로그인 후 내가 채굴한 아이디어로 채워집니다",
-    en: "Your real vault fills up with the ideas you mine after signing in",
-  },
-  demoMyVaultCta: {
-    ko: "내 금고 보러 가기 →",
-    en: "Open my vault →",
-  },
+  overviewComplete: copy("Overview ready"),
+  rawStone: copy("Raw stone"),
+  deleteConfirm: copy("Delete?"),
+  deleting: copy("..."),
+  loadFailed: copy("Couldn't load the vault"),
+  unknownError: copy("Unknown error"),
+  emptyTitle: copy("No ideas yet"),
+  emptyHint: copy("Mine some ideas you like and bring them into the vault"),
+  goToMine: copy("Go to the Mine"),
+  demoSampleNotice: copy("This is a sample vault"),
+  demoFreshNotice: copy("Your real vault fills up with the ideas you mine after signing in"),
+  demoMyVaultCta: copy("Open my vault ->"),
 } as const;

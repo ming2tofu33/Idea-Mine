@@ -14,16 +14,16 @@ interface ConfirmCostDialogProps {
 }
 
 const TIER_LABELS: Record<string, string> = {
-  free: "기본 광부",
-  lite: "광산주 Lite",
-  pro: "광산주 Pro",
+  free: "Free",
+  lite: "Lite",
+  pro: "Pro",
 };
 
 export function ConfirmCostDialog({
   action,
   onConfirm,
   isLoading = false,
-  label = "재생성",
+  label = "Regenerate",
   message,
   className = "",
 }: ConfirmCostDialogProps) {
@@ -37,18 +37,15 @@ export function ConfirmCostDialog({
   });
 
   const usage = usageQuery.data;
-  const info = usage
-    ? usage[action === "overview" ? "overviews" : "generations"]
-    : null;
-
+  const info = usage ? usage[action === "overview" ? "overviews" : "generations"] : null;
   const tierLabel = usage ? (TIER_LABELS[usage.tier] ?? usage.tier) : "";
   const isUnlimited = info && info.limit >= 50;
   const remaining = info ? info.limit - info.used : null;
 
   const defaultMessage =
     action === "overview"
-      ? "이 작업은 AI 크레딧을 사용합니다."
-      : "이 작업은 채굴 크레딧을 사용합니다.";
+      ? "This action uses AI document credits."
+      : "This action uses generation credits.";
 
   if (!showConfirm) {
     return (
@@ -79,22 +76,18 @@ export function ConfirmCostDialog({
       <p className="text-sm text-text-primary">{message ?? defaultMessage}</p>
 
       {usageQuery.isLoading ? (
-        <p className="mt-2 text-xs text-text-secondary/50">
-          사용량 확인 중...
-        </p>
+        <p className="mt-2 text-xs text-text-secondary/50">Checking usage...</p>
       ) : info ? (
         <p className="mt-2 text-xs text-text-secondary">
           {tierLabel} &middot;{" "}
           {isUnlimited ? (
-            <span className="text-cold-cyan">무제한</span>
+            <span className="text-cold-cyan">Unlimited</span>
           ) : (
             <>
-              오늘 남은 횟수:{" "}
+              Remaining today:{" "}
               <span
                 className={
-                  remaining !== null && remaining <= 1
-                    ? "text-red-400"
-                    : "text-cold-cyan"
+                  remaining !== null && remaining <= 1 ? "text-red-400" : "text-cold-cyan"
                 }
               >
                 {remaining}/{info.limit}
@@ -110,7 +103,7 @@ export function ConfirmCostDialog({
           onClick={() => setShowConfirm(false)}
           className="cursor-pointer rounded-md px-3 py-1.5 text-xs text-text-secondary transition-colors hover:text-text-primary"
         >
-          취소
+          Cancel
         </button>
         <button
           type="button"
@@ -121,7 +114,7 @@ export function ConfirmCostDialog({
           disabled={isLoading || (remaining !== null && remaining <= 0)}
           className="cursor-pointer rounded-md border border-cold-cyan/30 bg-cold-cyan/10 px-4 py-1.5 text-xs font-medium text-cold-cyan transition-all hover:bg-cold-cyan/20 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isLoading ? "처리 중..." : "확인"}
+          {isLoading ? "Processing..." : "Confirm"}
         </button>
       </div>
     </div>

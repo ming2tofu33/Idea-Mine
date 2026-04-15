@@ -1,174 +1,102 @@
 "use client";
 
-import { use, useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { use, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  ChevronDown,
-  ChevronUp,
-  Check,
-  Loader2,
-  Copy,
-  Sparkles,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, Copy, Loader2, Sparkles } from "lucide-react";
 import { LabBackground } from "@/components/backgrounds/lab-background";
+import { GenerateAllLoading } from "@/components/lab/generate-all-loading";
+import { LockedItem } from "@/components/lab/locked-item";
 import { Breadcrumb } from "@/components/shared/breadcrumb";
 import { SectionCard } from "@/components/shared/section-card";
-import { LockedItem } from "@/components/lab/locked-item";
-import { GenerateAllLoading } from "@/components/lab/generate-all-loading";
-import { vaultApi, labApi, collectionApi, profileApi } from "@/lib/api";
-import type {
-  Overview,
-  Appraisal,
-  ProductDesign,
-  Blueprint,
-  Roadmap,
-  UserProfile,
-} from "@/types/api";
+import { collectionApi, labApi, profileApi, vaultApi } from "@/lib/api";
+import type { Appraisal, Blueprint, Overview, ProductDesign, Roadmap } from "@/types/api";
 
-// ─── Locked item metadata ───
-
-const LOCKED_DESCRIPTIONS: Record<string, { description: string; tier: "lite" | "pro" }> = {
+const LOCKED = {
   design: {
-    description: "사용자 흐름, 화면 목록, 기능 우선순위, 비즈니스 규칙 — 뭘 만들지 정하는 문서",
-    tier: "lite",
+    description: "User flows, screens, priorities, and product rules.",
+    tier: "lite" as const,
   },
   blueprint: {
-    description: "기술 스택, DB 설계, API 엔드포인트, 파일 구조 — 어떻게 만들지 설계하는 문서",
-    tier: "pro",
+    description: "Tech stack, data model, API surface, and structure.",
+    tier: "pro" as const,
   },
   roadmap: {
-    description: "Phase별 Sprint 계획, 검증 포인트 — 뭐부터 만들지 계획하는 문서",
-    tier: "pro",
+    description: "Phase plan, checkpoints, and sprint sequencing.",
+    tier: "pro" as const,
   },
 };
 
-// ─── CompletionBar ───
-
-function CompletionBar({ count }: { count: number }) {
+function DotBar({ count }: { count: number }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs text-text-secondary/60">컬렉션 완성도:</span>
+      <span className="text-xs text-text-secondary/60">Collection:</span>
       <div className="flex gap-1">
         {Array.from({ length: 5 }).map((_, i) => (
           <div
             key={i}
-            className={[
-              "h-2.5 w-2.5 rounded-full",
-              i < count ? "bg-cold-cyan shadow-[0_0_6px_rgba(92,205,229,0.4)]" : "bg-surface-2/60",
-            ].join(" ")}
+            className={i < count ? "h-2.5 w-2.5 rounded-full bg-cold-cyan" : "h-2.5 w-2.5 rounded-full bg-surface-2/60"}
           />
         ))}
       </div>
-      <span className="text-xs font-medium text-text-secondary/80">{count}/5</span>
+      <span className="text-xs text-text-secondary/80">{count}/5</span>
     </div>
   );
 }
 
-// ─── CollectionItem ───
-
-function CollectionItem({
+function Item({
   number,
   title,
   badge,
-  isComplete,
-  isExpanded,
+  open,
   onToggle,
   children,
 }: {
   number: number;
   title: string;
   badge: string;
-  isComplete: boolean;
-  isExpanded: boolean;
+  open: boolean;
   onToggle: () => void;
   children: React.ReactNode;
 }) {
   return (
-    <div
-      className={[
-        "overflow-hidden rounded-xl border bg-surface-1/40 transition-colors duration-200",
-        isComplete
-          ? "border-l-2 border-l-cold-cyan/40 border-t-line-steel/20 border-r-line-steel/20 border-b-line-steel/20"
-          : "border-line-steel/20",
-      ].join(" ")}
-    >
-      {/* Header */}
+    <div className="overflow-hidden rounded-xl border border-line-steel/20 bg-surface-1/40">
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full cursor-pointer items-center gap-3 px-5 py-4 text-left transition-colors duration-200 hover:bg-surface-1/60"
+        className="flex w-full cursor-pointer items-center gap-3 px-5 py-4 text-left hover:bg-surface-1/60"
       >
-        {/* Number */}
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-2/50 text-xs font-bold text-text-secondary/70">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-surface-2/50 text-xs font-bold text-text-secondary/70">
           {number}
         </span>
-
-        {/* Title */}
-        <span className="flex-1 text-sm font-medium text-text-primary">
-          {title}
-        </span>
-
-        {/* Badge */}
-        <span
-          className={[
-            "rounded-full border px-2 py-0.5 text-[10px] font-medium",
-            isComplete
-              ? "border-cold-cyan/30 bg-cold-cyan/10 text-cold-cyan"
-              : "border-line-steel/20 bg-surface-2/30 text-text-secondary/50",
-          ].join(" ")}
-        >
+        <span className="flex-1 text-sm font-medium text-text-primary">{title}</span>
+        <span className="rounded-full border border-line-steel/20 bg-surface-2/30 px-2 py-0.5 text-[10px] text-text-secondary/60">
           {badge}
         </span>
-
-        {/* Chevron */}
-        {isExpanded ? (
-          <ChevronUp className="h-4 w-4 shrink-0 text-text-secondary/40" />
-        ) : (
-          <ChevronDown className="h-4 w-4 shrink-0 text-text-secondary/40" />
-        )}
+        {open ? <ChevronUp className="h-4 w-4 text-text-secondary/40" /> : <ChevronDown className="h-4 w-4 text-text-secondary/40" />}
       </button>
-
-      {/* Body */}
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
-          >
-            <div className="border-t border-line-steel/10 px-5 py-4 space-y-4">
-              {children}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {open && <div className="space-y-4 border-t border-line-steel/10 px-5 py-4">{children}</div>}
     </div>
   );
 }
 
-// ─── GenerateButton ───
-
 function GenerateButton({
   label,
-  onGenerate,
-  isPending,
+  pending,
+  onClick,
   disabled,
   disabledReason,
 }: {
   label: string;
-  onGenerate: () => void;
-  isPending: boolean;
+  pending: boolean;
+  onClick: () => void;
   disabled?: boolean;
   disabledReason?: string;
 }) {
   if (disabled) {
     return (
-      <div className="rounded-xl border border-dashed border-line-steel/20 bg-surface-1/15 px-5 py-4">
-        <p className="text-xs text-text-secondary/40">{disabledReason}</p>
+      <div className="rounded-xl border border-dashed border-line-steel/20 bg-surface-1/15 px-5 py-4 text-xs text-text-secondary/40">
+        {disabledReason}
       </div>
     );
   }
@@ -176,389 +104,140 @@ function GenerateButton({
   return (
     <button
       type="button"
-      onClick={onGenerate}
-      disabled={isPending}
-      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-cold-cyan/30 bg-cold-cyan/5 px-5 py-3 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/10 disabled:cursor-not-allowed disabled:opacity-50"
+      onClick={onClick}
+      disabled={pending}
+      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-cold-cyan/30 bg-cold-cyan/5 px-5 py-3 text-sm font-medium text-cold-cyan hover:bg-cold-cyan/10 disabled:opacity-50"
     >
-      {isPending ? (
-        <>
-          <Loader2 className="h-4 w-4 animate-spin" />
-          생성 중...
-        </>
-      ) : (
-        <>
-          <Sparkles className="h-4 w-4" />
-          {label}
-        </>
-      )}
+      {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+      {pending ? "Generating..." : label}
     </button>
   );
 }
 
-// ─── Document content renderers ───
-
-function OverviewContent({ overview }: { overview: Overview }) {
-  const sections = [
-    { title: "컨셉", content: overview.concept_ko },
-    { title: "문제 정의", content: overview.problem_ko },
-    { title: "타깃 사용자", content: overview.target_ko },
-    { title: "핵심 기능", content: overview.features_ko },
-    { title: "차별점", content: overview.differentiator_ko },
-    { title: "수익 모델", content: overview.revenue_ko },
-    { title: "MVP 범위", content: overview.mvp_scope_ko },
-  ];
-
+function CardText({ title, content }: { title: string; content: string | undefined }) {
   return (
-    <>
-      {sections.map((s) => (
-        <SectionCard key={s.title} title={s.title}>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
-            {s.content}
-          </p>
-        </SectionCard>
-      ))}
-    </>
+    <SectionCard title={title}>
+      <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">{content || "-"}</p>
+    </SectionCard>
   );
 }
 
-function AppraisalContent({ appraisal }: { appraisal: Appraisal }) {
-  const dimensions = [
-    { title: "시장 적합성", content: appraisal.market_fit_ko },
-    ...(appraisal.problem_fit_ko ? [{ title: "문제 적합성", content: appraisal.problem_fit_ko }] : []),
-    { title: "실현 가능성", content: appraisal.feasibility_ko },
-    ...(appraisal.differentiation_ko ? [{ title: "차별화", content: appraisal.differentiation_ko }] : []),
-    ...(appraisal.scalability_ko ? [{ title: "확장성", content: appraisal.scalability_ko }] : []),
-    { title: "리스크", content: appraisal.risk_ko },
-  ];
-
+function CardList({ title, items }: { title: string; items: string[] }) {
   return (
-    <>
-      {dimensions.map((d) => (
-        <SectionCard key={d.title} title={d.title}>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
-            {d.content}
-          </p>
-        </SectionCard>
-      ))}
-    </>
+    <SectionCard title={title}>
+      <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
+        {items.map((item, index) => <li key={`${title}-${index}`}>{item}</li>)}
+      </ul>
+    </SectionCard>
   );
 }
 
-function DesignContent({ design }: { design: ProductDesign }) {
-  return (
-    <>
-      <SectionCard title="사용자 흐름">
-        <ol className="list-decimal space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {design.user_flow.map((step, i) => (
-            <li key={i}>{step}</li>
-          ))}
-        </ol>
-      </SectionCard>
-      <SectionCard title="화면 목록">
-        <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {design.screens.map((s, i) => (
-            <li key={i}>{s}</li>
-          ))}
-        </ul>
-      </SectionCard>
-      <SectionCard title="Must 기능">
-        <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {design.features_must.map((f, i) => (
-            <li key={i}>{f}</li>
-          ))}
-        </ul>
-      </SectionCard>
-      <SectionCard title="Should 기능">
-        <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {design.features_should.map((f, i) => (
-            <li key={i}>{f}</li>
-          ))}
-        </ul>
-      </SectionCard>
-      <SectionCard title="Later 기능">
-        <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {design.features_later.map((f, i) => (
-            <li key={i}>{f}</li>
-          ))}
-        </ul>
-      </SectionCard>
-      <SectionCard title="비즈니스 모델">
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
-          {design.business_model}
-        </p>
-      </SectionCard>
-      <SectionCard title="비즈니스 규칙">
-        <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {design.business_rules.map((r, i) => (
-            <li key={i}>{r}</li>
-          ))}
-        </ul>
-      </SectionCard>
-      <SectionCard title="MVP 범위">
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
-          {design.mvp_scope}
-        </p>
-      </SectionCard>
-    </>
-  );
-}
-
-function BlueprintContent({ blueprint }: { blueprint: Blueprint }) {
-  return (
-    <>
-      <SectionCard title="기술 스택">
-        <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {blueprint.tech_stack.map((t, i) => (
-            <li key={i}>{t}</li>
-          ))}
-        </ul>
-      </SectionCard>
-      <SectionCard title="데이터 모델">
-        <pre className="overflow-x-auto rounded-lg bg-bg-deep/60 p-4 text-xs leading-relaxed text-text-secondary font-mono">
-          {blueprint.data_model_sql}
-        </pre>
-      </SectionCard>
-      <SectionCard title="API 엔드포인트">
-        <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {blueprint.api_endpoints.map((e, i) => (
-            <li key={i}>{e}</li>
-          ))}
-        </ul>
-      </SectionCard>
-      <SectionCard title="파일 구조">
-        <pre className="overflow-x-auto rounded-lg bg-bg-deep/60 p-4 text-xs leading-relaxed text-text-secondary font-mono">
-          {blueprint.file_structure}
-        </pre>
-      </SectionCard>
-      <SectionCard title="외부 서비스">
-        <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {blueprint.external_services.map((s, i) => (
-            <li key={i}>{s}</li>
-          ))}
-        </ul>
-      </SectionCard>
-      <SectionCard title="인증 흐름">
-        <ol className="list-decimal space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {blueprint.auth_flow.map((a, i) => (
-            <li key={i}>{a}</li>
-          ))}
-        </ol>
-      </SectionCard>
-    </>
-  );
-}
-
-function RoadmapContent({ roadmap }: { roadmap: Roadmap }) {
-  return (
-    <>
-      <SectionCard title="Phase 0 — 기반 구축">
-        <ol className="list-decimal space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {roadmap.phase_0.map((t, i) => (
-            <li key={i}>{t}</li>
-          ))}
-        </ol>
-      </SectionCard>
-      <SectionCard title="Phase 1 — 핵심 기능">
-        <ol className="list-decimal space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {roadmap.phase_1.map((t, i) => (
-            <li key={i}>{t}</li>
-          ))}
-        </ol>
-      </SectionCard>
-      <SectionCard title="Phase 2 — 확장">
-        <ol className="list-decimal space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {roadmap.phase_2.map((t, i) => (
-            <li key={i}>{t}</li>
-          ))}
-        </ol>
-      </SectionCard>
-      <SectionCard title="검증 포인트">
-        <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {roadmap.validation_checkpoints.map((c, i) => (
-            <li key={i}>{c}</li>
-          ))}
-        </ul>
-      </SectionCard>
-      <SectionCard title="예상 복잡도">
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
-          {roadmap.estimated_complexity}
-        </p>
-      </SectionCard>
-      <SectionCard title="첫 번째 스프린트 태스크">
-        <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-text-secondary">
-          {roadmap.first_sprint_tasks.map((t, i) => (
-            <li key={i}>{t}</li>
-          ))}
-        </ul>
-      </SectionCard>
-    </>
-  );
-}
-
-// ─── CopyAllButton ───
-
-function CopyAllButton({
-  overview,
-  appraisal,
-  design,
-  blueprint,
-  roadmap,
-  ideaTitle,
-}: {
-  overview: Overview;
-  appraisal: Appraisal;
-  design: ProductDesign;
-  blueprint: Blueprint;
-  roadmap: Roadmap;
-  ideaTitle: string;
-}) {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = useCallback(async () => {
-    const md = formatAllAsMarkdown(ideaTitle, overview, appraisal, design, blueprint, roadmap);
-    await navigator.clipboard.writeText(md);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }, [ideaTitle, overview, appraisal, design, blueprint, roadmap]);
-
-  return (
-    <button
-      type="button"
-      onClick={handleCopy}
-      className="flex cursor-pointer items-center gap-2 rounded-xl border border-line-steel/30 bg-surface-1/40 px-5 py-3 text-sm font-medium text-text-secondary transition-all duration-200 hover:border-cold-cyan/20 hover:text-text-primary"
-    >
-      {copied ? (
-        <>
-          <Check className="h-4 w-4 text-emerald-400" />
-          <span className="text-emerald-400">복사됨!</span>
-        </>
-      ) : (
-        <>
-          <Copy className="h-4 w-4" />
-          전체 복사
-        </>
-      )}
-    </button>
-  );
-}
-
-function formatAllAsMarkdown(
+function buildMarkdown(
   title: string,
   overview: Overview,
   appraisal: Appraisal,
   design: ProductDesign,
   blueprint: Blueprint,
   roadmap: Roadmap,
-): string {
-  return `# ${title} — 프로젝트 컬렉션
+) {
+  return `# ${title} - Project Collection
 
-## 1. 개요서
+## Overview
+Concept
+${overview.concept}
 
-### 컨셉
-${overview.concept_ko}
+Problem
+${overview.problem}
 
-### 문제 정의
-${overview.problem_ko}
+Target user
+${overview.target}
 
-### 타깃 사용자
-${overview.target_ko}
+Core features
+${overview.features}
 
-### 핵심 기능
-${overview.features_ko}
+Differentiator
+${overview.differentiator}
 
-### 차별점
-${overview.differentiator_ko}
+Business model
+${overview.revenue}
 
-### 수익 모델
-${overview.revenue_ko}
+MVP scope
+${overview.mvp_scope}
 
-### MVP 범위
-${overview.mvp_scope_ko}
+## Appraisal
+Market fit
+${appraisal.market_fit}
 
-## 2. 감정서
+${appraisal.problem_fit ? `Problem fit\n${appraisal.problem_fit}\n\n` : ""}Feasibility
+${appraisal.feasibility}
 
-### 시장 적합성
-${appraisal.market_fit_ko}
+${appraisal.differentiation ? `Differentiation\n${appraisal.differentiation}\n\n` : ""}${appraisal.scalability ? `Scalability\n${appraisal.scalability}\n\n` : ""}Risk
+${appraisal.risk}
 
-${appraisal.problem_fit_ko ? `### 문제 적합성\n${appraisal.problem_fit_ko}\n` : ""}### 실현 가능성
-${appraisal.feasibility_ko}
+## Product Design
+User flow
+${design.user_flow.join("\n")}
 
-${appraisal.differentiation_ko ? `### 차별화\n${appraisal.differentiation_ko}\n` : ""}${appraisal.scalability_ko ? `### 확장성\n${appraisal.scalability_ko}\n` : ""}### 리스크
-${appraisal.risk_ko}
+Screens
+${design.screens.join("\n")}
 
-## 3. 제품 설계서
+Must-have features
+${design.features_must.join("\n")}
 
-### 사용자 흐름
-${design.user_flow.map((s, i) => `${i + 1}. ${s}`).join("\n")}
+Should-have features
+${design.features_should.join("\n")}
 
-### 화면 목록
-${design.screens.map((s) => `- ${s}`).join("\n")}
+Later features
+${design.features_later.join("\n")}
 
-### Must 기능
-${design.features_must.map((f) => `- ${f}`).join("\n")}
-
-### Should 기능
-${design.features_should.map((f) => `- ${f}`).join("\n")}
-
-### Later 기능
-${design.features_later.map((f) => `- ${f}`).join("\n")}
-
-### 비즈니스 모델
+Business model
 ${design.business_model}
 
-### 비즈니스 규칙
-${design.business_rules.map((r) => `- ${r}`).join("\n")}
+Business rules
+${design.business_rules.join("\n")}
 
-### MVP 범위
+MVP scope
 ${design.mvp_scope}
 
-## 4. 기술 청사진
+## Blueprint
+Tech stack
+${blueprint.tech_stack.join("\n")}
 
-### 기술 스택
-${blueprint.tech_stack.map((t) => `- ${t}`).join("\n")}
-
-### 데이터 모델
-\`\`\`sql
+Data model
 ${blueprint.data_model_sql}
-\`\`\`
 
-### API 엔드포인트
-${blueprint.api_endpoints.map((e) => `- ${e}`).join("\n")}
+API endpoints
+${blueprint.api_endpoints.join("\n")}
 
-### 파일 구조
-\`\`\`
+File structure
 ${blueprint.file_structure}
-\`\`\`
 
-### 외부 서비스
-${blueprint.external_services.map((s) => `- ${s}`).join("\n")}
+External services
+${blueprint.external_services.join("\n")}
 
-### 인증 흐름
-${blueprint.auth_flow.map((a, i) => `${i + 1}. ${a}`).join("\n")}
+Auth flow
+${blueprint.auth_flow.join("\n")}
 
-## 5. 실행 로드맵
+## Roadmap
+Phase 0 - foundation
+${roadmap.phase_0.join("\n")}
 
-### Phase 0 — 기반 구축
-${roadmap.phase_0.map((t, i) => `${i + 1}. ${t}`).join("\n")}
+Phase 1 - core product
+${roadmap.phase_1.join("\n")}
 
-### Phase 1 — 핵심 기능
-${roadmap.phase_1.map((t, i) => `${i + 1}. ${t}`).join("\n")}
+Phase 2 - expansion
+${roadmap.phase_2.join("\n")}
 
-### Phase 2 — 확장
-${roadmap.phase_2.map((t, i) => `${i + 1}. ${t}`).join("\n")}
+Validation checkpoints
+${roadmap.validation_checkpoints.join("\n")}
 
-### 검증 포인트
-${roadmap.validation_checkpoints.map((c) => `- ${c}`).join("\n")}
-
-### 예상 복잡도
+Estimated complexity
 ${roadmap.estimated_complexity}
 
-### 첫 번째 스프린트 태스크
-${roadmap.first_sprint_tasks.map((t) => `- ${t}`).join("\n")}
+First sprint tasks
+${roadmap.first_sprint_tasks.join("\n")}
 `;
 }
-
-// ─── Page ───
 
 export default function CollectionPage({
   params,
@@ -567,97 +246,66 @@ export default function CollectionPage({
 }) {
   const { ideaId } = use(params);
   const queryClient = useQueryClient();
-
-  // Expanded state — track which items are expanded
-  const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
-
-  const toggleItem = (num: number) => {
-    setExpandedItems((prev) => {
-      const next = new Set(prev);
-      if (next.has(num)) next.delete(num);
-      else next.add(num);
-      return next;
-    });
-  };
-
-  // ── Data loading ──
-
-  const profileQuery = useQuery({
-    queryKey: ["profile"],
-    queryFn: profileApi.getProfile,
+  const [open, setOpen] = useState<Set<number>>(new Set([1]));
+  const toggle = (n: number) => setOpen((prev) => {
+    const next = new Set(prev);
+    if (next.has(n)) next.delete(n);
+    else next.add(n);
+    return next;
   });
 
+  const profileQuery = useQuery({ queryKey: ["profile"], queryFn: profileApi.getProfile });
   const ideaQuery = useQuery({
     queryKey: ["vaultedIdeas"],
     queryFn: vaultApi.getVaultedIdeas,
-    select: (ideas) => ideas.find((i) => i.id === ideaId),
+    select: (ideas) => ideas.find((idea) => idea.id === ideaId),
   });
-
   const overviewsQuery = useQuery({
     queryKey: ["overviews", ideaId],
     queryFn: () => vaultApi.getOverviewsByIdea(ideaId),
     enabled: !!ideaId,
   });
 
-  const latestOverview = overviewsQuery.data?.[0];
-
+  const overview = overviewsQuery.data?.[0];
   const appraisalsQuery = useQuery({
-    queryKey: ["appraisals", latestOverview?.id],
-    queryFn: () => labApi.getAppraisalsByOverview(latestOverview!.id),
-    enabled: !!latestOverview,
+    queryKey: ["appraisals", overview?.id],
+    queryFn: () => labApi.getAppraisalsByOverview(overview!.id),
+    enabled: !!overview,
   });
+  const appraisal = appraisalsQuery.data?.[0];
 
   const designsQuery = useQuery({
-    queryKey: ["designs", latestOverview?.id],
-    queryFn: () => collectionApi.getDesignsByOverview(latestOverview!.id),
-    enabled: !!latestOverview,
+    queryKey: ["designs", overview?.id],
+    queryFn: () => collectionApi.getDesignsByOverview(overview!.id),
+    enabled: !!overview,
   });
-
-  const latestDesign = designsQuery.data?.[0];
+  const design = designsQuery.data?.[0];
 
   const blueprintsQuery = useQuery({
-    queryKey: ["blueprints", latestDesign?.id],
-    queryFn: () => collectionApi.getBlueprintsByDesign(latestDesign!.id),
-    enabled: !!latestDesign,
+    queryKey: ["blueprints", design?.id],
+    queryFn: () => collectionApi.getBlueprintsByDesign(design!.id),
+    enabled: !!design,
   });
-
-  const latestBlueprint = blueprintsQuery.data?.[0];
+  const blueprint = blueprintsQuery.data?.[0];
 
   const roadmapsQuery = useQuery({
-    queryKey: ["roadmaps", latestBlueprint?.id],
-    queryFn: () => collectionApi.getRoadmapsByBlueprint(latestBlueprint!.id),
-    enabled: !!latestBlueprint,
+    queryKey: ["roadmaps", blueprint?.id],
+    queryFn: () => collectionApi.getRoadmapsByBlueprint(blueprint!.id),
+    enabled: !!blueprint,
   });
+  const roadmap = roadmapsQuery.data?.[0];
 
-  // ── Derived data ──
-
-  const idea = ideaQuery.data;
   const profile = profileQuery.data;
-  const latestAppraisal = appraisalsQuery.data?.[0];
-  const latestRoadmap = roadmapsQuery.data?.[0];
+  const idea = ideaQuery.data;
+  const tier = profile?.persona_tier ?? profile?.tier ?? "free";
+  const isAdmin = profile?.role === "admin";
+  const canDesign = tier === "lite" || tier === "pro" || isAdmin;
+  const canBlueprint = tier === "pro" || isAdmin;
+  const canRoadmap = tier === "pro" || isAdmin;
 
-  const hasOverview = !!latestOverview;
-  const hasAppraisal = !!latestAppraisal;
-  const hasDesign = !!latestDesign;
-  const hasBlueprint = !!latestBlueprint;
-  const hasRoadmap = !!latestRoadmap;
+  const count = [overview, appraisal, design, blueprint, roadmap].filter(Boolean).length;
 
-  const completionCount =
-    (hasOverview ? 1 : 0) +
-    (hasAppraisal ? 1 : 0) +
-    (hasDesign ? 1 : 0) +
-    (hasBlueprint ? 1 : 0) +
-    (hasRoadmap ? 1 : 0);
-
-  const effectiveTier = profile?.persona_tier ?? profile?.tier ?? "free";
-  const canAccessDesign = effectiveTier === "lite" || effectiveTier === "pro" || profile?.role === "admin";
-  const canAccessBlueprint = effectiveTier === "pro" || profile?.role === "admin";
-  const canAccessRoadmap = effectiveTier === "pro" || profile?.role === "admin";
-  const isProOrAdmin = effectiveTier === "pro" || profile?.role === "admin";
-
-  // ── Mutations ──
-
-  const invalidateAll = () => {
+  const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ["overviews", ideaId] });
     queryClient.invalidateQueries({ queryKey: ["appraisals"] });
     queryClient.invalidateQueries({ queryKey: ["designs"] });
@@ -666,43 +314,32 @@ export default function CollectionPage({
   };
 
   const appraisalMutation = useMutation({
-    mutationFn: () => labApi.createAppraisal(latestOverview!.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["appraisals", latestOverview?.id] });
-    },
+    mutationFn: () => labApi.createAppraisal(overview!.id),
+    onSuccess: refresh,
   });
-
   const designMutation = useMutation({
-    mutationFn: () => collectionApi.createDesign(latestOverview!.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["designs", latestOverview?.id] });
-    },
+    mutationFn: () => collectionApi.createDesign(overview!.id),
+    onSuccess: refresh,
   });
-
   const blueprintMutation = useMutation({
-    mutationFn: () => collectionApi.createBlueprint(latestDesign!.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["blueprints", latestDesign?.id] });
-    },
+    mutationFn: () => collectionApi.createBlueprint(design!.id),
+    onSuccess: refresh,
   });
-
   const roadmapMutation = useMutation({
-    mutationFn: () => collectionApi.createRoadmap(latestBlueprint!.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["roadmaps", latestBlueprint?.id] });
-    },
+    mutationFn: () => collectionApi.createRoadmap(blueprint!.id),
+    onSuccess: refresh,
   });
-
   const generateAllMutation = useMutation({
-    mutationFn: () => collectionApi.generateAll(latestOverview!.id),
-    onSuccess: () => invalidateAll(),
+    mutationFn: () => collectionApi.generateAll(overview!.id),
+    onSuccess: refresh,
   });
 
-  // ── Loading state ──
+  const copyAll = async () => {
+    if (!(idea && overview && appraisal && design && blueprint && roadmap)) return;
+    await navigator.clipboard.writeText(buildMarkdown(idea.title, overview, appraisal, design, blueprint, roadmap));
+  };
 
   const isLoading = ideaQuery.isLoading || overviewsQuery.isLoading;
-
-  // ── Generate all loading ──
 
   if (generateAllMutation.isPending) {
     return (
@@ -718,15 +355,13 @@ export default function CollectionPage({
   return (
     <div className="relative flex min-h-0 flex-1">
       <LabBackground />
-
       <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
         <div className="mx-auto w-full max-w-2xl space-y-6">
-          {/* Breadcrumb */}
           <Breadcrumb
             items={[
               { label: "Lab", href: "/lab" },
-              { label: "컬렉션" },
-              ...(idea ? [{ label: idea.title_ko }] : []),
+              { label: "Collection" },
+              ...(idea ? [{ label: idea.title }] : []),
             ]}
           />
 
@@ -735,277 +370,132 @@ export default function CollectionPage({
               <div className="h-7 w-2/3 rounded bg-surface-2/60" />
               <div className="h-4 w-full rounded bg-surface-2/40" />
               <div className="mt-6 space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-16 rounded-xl bg-surface-2/30" />
-                ))}
+                {Array.from({ length: 5 }).map((_, i) => <div key={i} className="h-16 rounded-xl bg-surface-2/30" />)}
               </div>
             </div>
           ) : !idea ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <p className="text-sm text-text-secondary">
-                아이디어를 찾을 수 없습니다
-              </p>
-              <Link
-                href="/lab"
-                className="mt-4 cursor-pointer rounded-lg border border-line-steel bg-surface-2 px-5 py-2.5 text-sm font-medium text-text-secondary transition-colors duration-200 hover:text-text-primary"
-              >
-                Lab으로 돌아가기
+              <p className="text-sm text-text-secondary">Idea not found.</p>
+              <Link href="/lab" className="mt-4 cursor-pointer rounded-lg border border-line-steel bg-surface-2 px-5 py-2.5 text-sm font-medium text-text-secondary hover:text-text-primary">
+                Back to lab
               </Link>
             </div>
           ) : (
             <>
-              {/* Title + completion */}
               <div>
-                <h2 className="text-xl font-bold text-text-primary">
-                  {idea.title_ko}
-                </h2>
-                <div className="mt-2">
-                  <CompletionBar count={completionCount} />
-                </div>
+                <h2 className="text-xl font-bold text-text-primary">{idea.title}</h2>
+                <div className="mt-2"><DotBar count={count} /></div>
               </div>
 
-              {/* No overview — prompt to create */}
-              {!hasOverview ? (
+              {!overview ? (
                 <div className="rounded-xl border border-dashed border-line-steel/30 bg-surface-1/30 p-8 text-center">
-                  <p className="mb-4 text-sm text-text-secondary">
-                    먼저 개요를 생성하세요
-                  </p>
-                  <Link
-                    href={`/lab/overview/${ideaId}`}
-                    className="cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-6 py-3 text-sm font-medium text-cold-cyan transition-all duration-200 hover:bg-cold-cyan/20"
-                  >
-                    개요 생성하러 가기
+                  <p className="mb-4 text-sm text-text-secondary">Generate an overview first to unlock the collection.</p>
+                  <Link href={`/lab/overview/${ideaId}`} className="cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-6 py-3 text-sm font-medium text-cold-cyan hover:bg-cold-cyan/20">
+                    Go to overview
                   </Link>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {/* 1. Overview */}
-                  <CollectionItem
-                    number={1}
-                    title="개요서"
-                    badge={hasOverview ? "완료" : "생성 필요"}
-                    isComplete={hasOverview}
-                    isExpanded={expandedItems.has(1)}
-                    onToggle={() => toggleItem(1)}
-                  >
-                    <OverviewContent overview={latestOverview!} />
-                  </CollectionItem>
+                  <Item number={1} title="Overview" badge="Done" open={open.has(1)} onToggle={() => toggle(1)}>
+                    <CardText title="Concept" content={overview.concept} />
+                    <CardText title="Problem" content={overview.problem} />
+                    <CardText title="Target user" content={overview.target} />
+                    <CardText title="Core features" content={overview.features} />
+                    <CardText title="Differentiator" content={overview.differentiator} />
+                    <CardText title="Business model" content={overview.revenue} />
+                    <CardText title="MVP scope" content={overview.mvp_scope} />
+                  </Item>
 
-                  {/* 2. Appraisal */}
-                  {hasAppraisal ? (
-                    <CollectionItem
-                      number={2}
-                      title="감정서"
-                      badge="완료"
-                      isComplete
-                      isExpanded={expandedItems.has(2)}
-                      onToggle={() => toggleItem(2)}
-                    >
-                      <AppraisalContent appraisal={latestAppraisal!} />
-                    </CollectionItem>
+                  {appraisal ? (
+                    <Item number={2} title="Appraisal" badge="Done" open={open.has(2)} onToggle={() => toggle(2)}>
+                      <CardText title="Market fit" content={appraisal.market_fit} />
+                      {appraisal.problem_fit && <CardText title="Problem fit" content={appraisal.problem_fit} />}
+                      <CardText title="Feasibility" content={appraisal.feasibility} />
+                      {appraisal.differentiation && <CardText title="Differentiation" content={appraisal.differentiation} />}
+                      {appraisal.scalability && <CardText title="Scalability" content={appraisal.scalability} />}
+                      <CardText title="Risk" content={appraisal.risk} />
+                    </Item>
                   ) : (
-                    <div className="rounded-xl border border-line-steel/20 bg-surface-1/40 p-5">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-2/50 text-xs font-bold text-text-secondary/70">
-                          2
-                        </span>
-                        <span className="text-sm font-medium text-text-primary">감정서</span>
-                        <span className="rounded-full border border-line-steel/20 bg-surface-2/30 px-2 py-0.5 text-[10px] font-medium text-text-secondary/50">
-                          생성 필요
-                        </span>
-                      </div>
-                      <GenerateButton
-                        label="감정 요청"
-                        onGenerate={() => appraisalMutation.mutate()}
-                        isPending={appraisalMutation.isPending}
-                      />
-                      {appraisalMutation.isError && (
-                        <p className="mt-2 text-xs text-red-400">
-                          {appraisalMutation.error instanceof Error
-                            ? appraisalMutation.error.message
-                            : "감정 생성에 실패했습니다"}
-                        </p>
-                      )}
-                    </div>
+                    <GenerateButton label="Generate appraisal" pending={appraisalMutation.isPending} onClick={() => appraisalMutation.mutate()} />
                   )}
 
-                  {/* 3. Product Design */}
-                  {!canAccessDesign ? (
-                    <LockedItem
-                      number={3}
-                      title="제품 설계서"
-                      description={LOCKED_DESCRIPTIONS.design.description}
-                      requiredTier={LOCKED_DESCRIPTIONS.design.tier}
-                    />
-                  ) : hasDesign ? (
-                    <CollectionItem
-                      number={3}
-                      title="제품 설계서"
-                      badge="완료"
-                      isComplete
-                      isExpanded={expandedItems.has(3)}
-                      onToggle={() => toggleItem(3)}
-                    >
-                      <DesignContent design={latestDesign!} />
-                    </CollectionItem>
+                  {!canDesign ? (
+                    <LockedItem number={3} title="Product design" description={LOCKED.design.description} requiredTier={LOCKED.design.tier} />
+                  ) : design ? (
+                    <Item number={3} title="Product design" badge="Done" open={open.has(3)} onToggle={() => toggle(3)}>
+                      <CardList title="User flow" items={design.user_flow} />
+                      <CardList title="Screens" items={design.screens} />
+                      <CardList title="Must-have features" items={design.features_must} />
+                      <CardList title="Should-have features" items={design.features_should} />
+                      <CardList title="Later features" items={design.features_later} />
+                      <CardText title="Business model" content={design.business_model} />
+                      <CardList title="Business rules" items={design.business_rules} />
+                      <CardText title="MVP scope" content={design.mvp_scope} />
+                    </Item>
                   ) : (
-                    <div className="rounded-xl border border-line-steel/20 bg-surface-1/40 p-5">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-2/50 text-xs font-bold text-text-secondary/70">
-                          3
-                        </span>
-                        <span className="text-sm font-medium text-text-primary">제품 설계서</span>
-                        <span className="rounded-full border border-line-steel/20 bg-surface-2/30 px-2 py-0.5 text-[10px] font-medium text-text-secondary/50">
-                          생성 필요
-                        </span>
-                      </div>
-                      <GenerateButton
-                        label="제품 설계서 생성"
-                        onGenerate={() => designMutation.mutate()}
-                        isPending={designMutation.isPending}
-                        disabled={!hasOverview}
-                        disabledReason="개요서가 필요합니다"
-                      />
-                      {designMutation.isError && (
-                        <p className="mt-2 text-xs text-red-400">
-                          {designMutation.error instanceof Error
-                            ? designMutation.error.message
-                            : "설계서 생성에 실패했습니다"}
-                        </p>
-                      )}
-                    </div>
+                    <GenerateButton label="Generate product design" pending={designMutation.isPending} onClick={() => designMutation.mutate()} disabled={!overview} disabledReason="Overview is required first." />
                   )}
 
-                  {/* 4. Blueprint */}
-                  {!canAccessBlueprint ? (
-                    <LockedItem
-                      number={4}
-                      title="기술 청사진"
-                      description={LOCKED_DESCRIPTIONS.blueprint.description}
-                      requiredTier={LOCKED_DESCRIPTIONS.blueprint.tier}
-                    />
-                  ) : hasBlueprint ? (
-                    <CollectionItem
-                      number={4}
-                      title="기술 청사진"
-                      badge="완료"
-                      isComplete
-                      isExpanded={expandedItems.has(4)}
-                      onToggle={() => toggleItem(4)}
-                    >
-                      <BlueprintContent blueprint={latestBlueprint!} />
-                    </CollectionItem>
+                  {!canBlueprint ? (
+                    <LockedItem number={4} title="Blueprint" description={LOCKED.blueprint.description} requiredTier={LOCKED.blueprint.tier} />
+                  ) : blueprint ? (
+                    <Item number={4} title="Blueprint" badge="Done" open={open.has(4)} onToggle={() => toggle(4)}>
+                      <CardList title="Tech stack" items={blueprint.tech_stack} />
+                      <CardText title="Data model" content={blueprint.data_model_sql} />
+                      <CardList title="API endpoints" items={blueprint.api_endpoints} />
+                      <CardText title="File structure" content={blueprint.file_structure} />
+                      <CardList title="External services" items={blueprint.external_services} />
+                      <CardList title="Auth flow" items={blueprint.auth_flow} />
+                    </Item>
                   ) : (
-                    <div className="rounded-xl border border-line-steel/20 bg-surface-1/40 p-5">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-2/50 text-xs font-bold text-text-secondary/70">
-                          4
-                        </span>
-                        <span className="text-sm font-medium text-text-primary">기술 청사진</span>
-                        <span className="rounded-full border border-line-steel/20 bg-surface-2/30 px-2 py-0.5 text-[10px] font-medium text-text-secondary/50">
-                          생성 필요
-                        </span>
-                      </div>
-                      <GenerateButton
-                        label="기술 청사진 생성"
-                        onGenerate={() => blueprintMutation.mutate()}
-                        isPending={blueprintMutation.isPending}
-                        disabled={!hasDesign}
-                        disabledReason="제품 설계서가 먼저 필요합니다"
-                      />
-                      {blueprintMutation.isError && (
-                        <p className="mt-2 text-xs text-red-400">
-                          {blueprintMutation.error instanceof Error
-                            ? blueprintMutation.error.message
-                            : "청사진 생성에 실패했습니다"}
-                        </p>
-                      )}
-                    </div>
+                    <GenerateButton label="Generate blueprint" pending={blueprintMutation.isPending} onClick={() => blueprintMutation.mutate()} disabled={!design} disabledReason="Product design is required first." />
                   )}
 
-                  {/* 5. Roadmap */}
-                  {!canAccessRoadmap ? (
-                    <LockedItem
-                      number={5}
-                      title="실행 로드맵"
-                      description={LOCKED_DESCRIPTIONS.roadmap.description}
-                      requiredTier={LOCKED_DESCRIPTIONS.roadmap.tier}
-                    />
-                  ) : hasRoadmap ? (
-                    <CollectionItem
-                      number={5}
-                      title="실행 로드맵"
-                      badge="완료"
-                      isComplete
-                      isExpanded={expandedItems.has(5)}
-                      onToggle={() => toggleItem(5)}
-                    >
-                      <RoadmapContent roadmap={latestRoadmap!} />
-                    </CollectionItem>
+                  {!canRoadmap ? (
+                    <LockedItem number={5} title="Roadmap" description={LOCKED.roadmap.description} requiredTier={LOCKED.roadmap.tier} />
+                  ) : roadmap ? (
+                    <Item number={5} title="Roadmap" badge="Done" open={open.has(5)} onToggle={() => toggle(5)}>
+                      <CardList title="Phase 0 - foundation" items={roadmap.phase_0} />
+                      <CardList title="Phase 1 - core product" items={roadmap.phase_1} />
+                      <CardList title="Phase 2 - expansion" items={roadmap.phase_2} />
+                      <CardList title="Validation checkpoints" items={roadmap.validation_checkpoints} />
+                      <CardText title="Estimated complexity" content={roadmap.estimated_complexity} />
+                      <CardList title="First sprint tasks" items={roadmap.first_sprint_tasks} />
+                    </Item>
                   ) : (
-                    <div className="rounded-xl border border-line-steel/20 bg-surface-1/40 p-5">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-surface-2/50 text-xs font-bold text-text-secondary/70">
-                          5
-                        </span>
-                        <span className="text-sm font-medium text-text-primary">실행 로드맵</span>
-                        <span className="rounded-full border border-line-steel/20 bg-surface-2/30 px-2 py-0.5 text-[10px] font-medium text-text-secondary/50">
-                          생성 필요
-                        </span>
-                      </div>
-                      <GenerateButton
-                        label="실행 로드맵 생성"
-                        onGenerate={() => roadmapMutation.mutate()}
-                        isPending={roadmapMutation.isPending}
-                        disabled={!hasBlueprint}
-                        disabledReason="기술 청사진이 먼저 필요합니다"
-                      />
-                      {roadmapMutation.isError && (
-                        <p className="mt-2 text-xs text-red-400">
-                          {roadmapMutation.error instanceof Error
-                            ? roadmapMutation.error.message
-                            : "로드맵 생성에 실패했습니다"}
-                        </p>
-                      )}
-                    </div>
+                    <GenerateButton label="Generate roadmap" pending={roadmapMutation.isPending} onClick={() => roadmapMutation.mutate()} disabled={!blueprint} disabledReason="Blueprint is required first." />
                   )}
                 </div>
               )}
 
-              {/* Bottom actions */}
-              {hasOverview && (
+              {overview && (
                 <div className="flex flex-wrap items-center gap-3 border-t border-line-steel/15 pt-6">
-                  {/* Generate All */}
-                  {isProOrAdmin && completionCount < 5 && hasOverview && (
+                  {(tier === "pro" || isAdmin) && count < 5 && (
                     <button
                       type="button"
                       onClick={() => generateAllMutation.mutate()}
-                      disabled={generateAllMutation.isPending}
-                      className="flex cursor-pointer items-center gap-2 rounded-xl border border-signal-pink/30 bg-signal-pink/5 px-5 py-3 text-sm font-medium text-signal-pink transition-all duration-200 hover:bg-signal-pink/10 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex cursor-pointer items-center gap-2 rounded-xl border border-signal-pink/30 bg-signal-pink/5 px-5 py-3 text-sm font-medium text-signal-pink hover:bg-signal-pink/10"
                     >
                       <Sparkles className="h-4 w-4" />
-                      나머지 전부 생성
+                      Generate the rest
                     </button>
                   )}
 
-                  {generateAllMutation.isError && (
-                    <p className="text-xs text-red-400">
-                      {generateAllMutation.error instanceof Error
-                        ? generateAllMutation.error.message
-                        : "일괄 생성에 실패했습니다"}
-                    </p>
+                  {count === 5 && idea && overview && appraisal && design && blueprint && roadmap && (
+                    <button
+                      type="button"
+                      onClick={copyAll}
+                      className="flex cursor-pointer items-center gap-2 rounded-xl border border-line-steel/30 bg-surface-1/40 px-5 py-3 text-sm font-medium text-text-secondary hover:border-cold-cyan/20 hover:text-text-primary"
+                    >
+                      <Copy className="h-4 w-4" />
+                      Copy collection
+                    </button>
                   )}
 
-                  {/* Copy All */}
-                  {completionCount === 5 && (
-                    <CopyAllButton
-                      overview={latestOverview!}
-                      appraisal={latestAppraisal!}
-                      design={latestDesign!}
-                      blueprint={latestBlueprint!}
-                      roadmap={latestRoadmap!}
-                      ideaTitle={idea.title_ko}
-                    />
+                  {(appraisalMutation.isError || designMutation.isError || blueprintMutation.isError || roadmapMutation.isError || generateAllMutation.isError) && (
+                    <p className="text-xs text-red-400">
+                      A generation step failed. Retry the specific document.
+                    </p>
                   )}
                 </div>
               )}

@@ -17,7 +17,7 @@ import { vaultApi } from "@/lib/api";
 export function VaultClient() {
   const queryClient = useQueryClient();
   const { profile } = useProfile();
-  const lang: VaultLanguage = (profile?.language ?? "ko") as VaultLanguage;
+  const lang: VaultLanguage = (profile?.language ?? "en") as VaultLanguage;
 
   const {
     data: ideas,

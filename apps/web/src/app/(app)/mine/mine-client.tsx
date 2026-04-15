@@ -9,15 +9,13 @@ import { MINE_LABELS, type MineLanguage } from "@/components/mine/mine-labels";
 import { SectorScanStage } from "@/components/mine/sector-scan-stage";
 import { SelectedVeinPanel } from "@/components/mine/selected-vein-panel";
 import { PageHeader } from "@/components/shared/page-header";
-import { useProfile } from "@/hooks/use-profile";
 import { miningApi } from "@/lib/api";
 import type { TodayVeinsResponse } from "@/types/api";
 
 export function MineClient() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const { profile } = useProfile();
-  const lang: MineLanguage = (profile?.language ?? "ko") as MineLanguage;
+  const lang: MineLanguage = "en";
   const [selectedVeinIdState, setSelectedVeinIdState] = useState<string | null>(null);
 
   const {
@@ -86,12 +84,8 @@ export function MineClient() {
         <div className="mx-auto mb-6 w-full max-w-7xl">
           <PageHeader
             eyebrow="MINE"
-            title={lang === "ko" ? "오늘의 광맥" : "Today's veins"}
-            subtitle={
-              lang === "ko"
-                ? "탐지된 광맥 중 하나를 선택해 채굴하세요"
-                : "Select one of the detected veins to start mining"
-            }
+            title="Today's veins"
+            subtitle="Select one of the detected veins to start mining"
             meta={
               data && !isError ? (
                 <>

@@ -13,7 +13,7 @@ type VaultIdeaCardProps = {
   onDelete: (id: string) => void;
   isDeleting: boolean;
   lang: VaultLanguage;
-  /** 링크 클릭을 막고 싶을 때 (데모 모드 등) */
+  /** Disables navigation while keeping the card visible in demo mode. */
   linkDisabled?: boolean;
 };
 
@@ -26,9 +26,8 @@ export function VaultIdeaCard({
   linkDisabled = false,
 }: VaultIdeaCardProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const title = lang === "en" && idea.title_en ? idea.title_en : idea.title_ko;
-  const summary =
-    lang === "en" && idea.summary_en ? idea.summary_en : idea.summary_ko;
+  const title = idea.title;
+  const summary = idea.summary;
 
   const handleLinkClick = (e: React.MouseEvent) => {
     if (linkDisabled) {
@@ -42,7 +41,6 @@ export function VaultIdeaCard({
       onClick={handleLinkClick}
       className="group relative flex cursor-pointer flex-col rounded-xl border border-line-steel/30 bg-surface-1/50 p-5 backdrop-blur-sm transition-all duration-200 hover:border-cold-cyan/20 hover:bg-surface-1/70 motion-safe:hover:-translate-y-0.5"
     >
-      {/* Delete button — top-right, hover-visible */}
       <div
         className="absolute right-3 top-3 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
         onClick={(e) => e.preventDefault()}
@@ -78,17 +76,14 @@ export function VaultIdeaCard({
         )}
       </div>
 
-      {/* Title */}
       <h3 className="mb-1 pr-8 text-base font-semibold text-text-primary transition-colors group-hover:text-cold-cyan">
         {title}
       </h3>
 
-      {/* Summary */}
       <p className="mb-4 line-clamp-2 flex-1 text-sm leading-relaxed text-text-secondary">
         {summary}
       </p>
 
-      {/* Bottom: workflow progress */}
       <WorkflowDots hasOverview={hasOverview} lang={lang} />
     </Link>
   );

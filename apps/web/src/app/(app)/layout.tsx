@@ -2,10 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "./app-shell";
 
 /**
- * (app) 레이아웃은 게스트도 통과시킨다 — /mine, /vault, /lab은 게스트에게 데모를 보여주기 때문.
- * 보호가 필요한 페이지는 각 page.tsx에서 자체 가드 (mine/[veinId], vault/[ideaId] 등).
- * 게스트면 user/profile이 null이고 AppShell은 게스트 모드 헤더를 렌더한다.
- * QueryProvider는 루트 layout에서 이미 제공.
+ * The app shell stays accessible to guests so /mine, /vault, and /lab can
+ * render demo experiences. Protected detail routes enforce their own guards.
  */
 export default async function AppLayout({
   children,
@@ -13,7 +11,9 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const profile = user
     ? (

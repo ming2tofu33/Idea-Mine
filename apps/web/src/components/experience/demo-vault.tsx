@@ -13,10 +13,8 @@ import {
 } from "@/lib/experience-data";
 
 /**
- * DemoVault — 게스트가 /vault를 방문했을 때 보여주는 데모 모드.
- *
- * 실제 Vault의 VaultIdeaCard를 그대로 재사용하되,
- * 9개 정적 데모 idea를 주입. 삭제 액션은 sign-in으로 유도.
+ * Guest-facing vault demo. Reuses the real vault card with static sample data
+ * and routes destructive actions to sign-in.
  */
 export function DemoVault() {
   const { lang } = useLanguage();
@@ -32,7 +30,6 @@ export function DemoVault() {
       <VaultBackground />
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
-        {/* Header — 실제 Vault와 동일한 PageHeader */}
         <div className="mx-auto mb-6 w-full max-w-5xl">
           <PageHeader
             eyebrow={VAULT_LABELS.eyebrow[lang]}
@@ -46,7 +43,6 @@ export function DemoVault() {
           />
         </div>
 
-        {/* 데모 아이디어 grid — 실제 Vault와 100% 동일 */}
         <div className="mx-auto w-full max-w-5xl flex-1">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {ideas.map((idea) => (
@@ -63,14 +59,13 @@ export function DemoVault() {
           </div>
         </div>
 
-        {/* 데모 컨텍스트 안내 */}
         <div className="mx-auto mt-6 w-full max-w-5xl">
           <div className="flex flex-col items-center gap-3 rounded-2xl border border-cold-cyan/15 bg-[rgba(92,205,229,0.04)] px-5 py-4 text-center sm:flex-row sm:justify-between sm:text-left">
             <p className="text-xs leading-5 text-text-secondary sm:text-sm">
               <span className="font-semibold text-cold-cyan">
                 {VAULT_LABELS.demoSampleNotice[lang]}
               </span>
-              <span className="mx-2 text-text-secondary/40">·</span>
+              <span className="mx-2 text-text-secondary/40">/</span>
               {VAULT_LABELS.demoFreshNotice[lang]}
             </p>
             <Link

@@ -70,7 +70,7 @@ export function SectorScanStage({
   isError,
   errorMessage,
   warningMessage,
-  lang = "ko",
+  lang = "en",
 }: SectorScanStageProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const animateMotion = prefersReducedMotion === false;

@@ -8,14 +8,13 @@ import type { Idea } from "@/types/api";
 type IdeaRowProps = {
   idea: Idea;
   lang: LabLanguage;
-  /** 클릭 시 기본 링크 대신 커스텀 동작 (데모 모드 등) */
+  /** Overrides the default link action, used by demo mode. */
   onClickOverride?: (e: React.MouseEvent) => void;
 };
 
 export function IdeaRow({ idea, lang, onClickOverride }: IdeaRowProps) {
-  const title = lang === "en" && idea.title_en ? idea.title_en : idea.title_ko;
-  const summary =
-    lang === "en" && idea.summary_en ? idea.summary_en : idea.summary_ko;
+  const title = idea.title;
+  const summary = idea.summary;
 
   return (
     <Link

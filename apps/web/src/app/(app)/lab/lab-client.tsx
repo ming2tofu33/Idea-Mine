@@ -19,7 +19,7 @@ import type { Overview } from "@/types/api";
 
 export function LabClient() {
   const { profile } = useProfile();
-  const lang: LabLanguage = (profile?.language ?? "ko") as LabLanguage;
+  const lang: LabLanguage = (profile?.language ?? "en") as LabLanguage;
 
   // Load all vaulted ideas
   const ideasQuery = useQuery({

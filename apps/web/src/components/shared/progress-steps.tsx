@@ -11,7 +11,6 @@ export function ProgressSteps({ steps, currentStep }: ProgressStepsProps) {
       {steps.map((step, i) => {
         const isCompleted = i < currentStep;
         const isCurrent = i === currentStep;
-        const isFuture = i > currentStep;
 
         return (
           <div key={i} className="flex items-center gap-1">

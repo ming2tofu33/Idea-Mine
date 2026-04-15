@@ -82,7 +82,7 @@ export function SelectedVeinPanel({
   onMine,
   onRetry,
   onReroll,
-  lang = "ko",
+  lang = "en",
 }: SelectedVeinPanelProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
   const animateMotion = prefersReducedMotion === false;
@@ -183,8 +183,8 @@ export function SelectedVeinPanel({
   const rarityLabel = MINE_LABELS.rarity[vein.rarity][lang];
   const keywords = vein.keywords.slice(0, 4);
   const displayName = getVeinDisplayName(vein, lang);
-  const primaryKeyword = vein.keywords[0]?.[lang] ?? vein.keywords[0]?.ko ?? "signal";
-  const secondaryKeyword = vein.keywords[1]?.[lang] ?? vein.keywords[1]?.ko;
+  const primaryKeyword = vein.keywords[0]?.[lang] ?? vein.keywords[0]?.en ?? "signal";
+  const secondaryKeyword = vein.keywords[1]?.[lang] ?? vein.keywords[1]?.en;
   const instruction = secondaryKeyword
     ? MINE_LABELS.instructionWithSecondary[lang](primaryKeyword, secondaryKeyword)
     : MINE_LABELS.instructionSingle[lang];

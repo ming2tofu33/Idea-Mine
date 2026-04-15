@@ -3,9 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { VaultClient } from "./vault-client";
 
 /**
- * /vault 라우트 — 인증 상태에 따라 분기.
- * - 로그인 유저: 실제 Vault (VaultClient)
- * - 게스트: 데모 Vault (DemoVault) — 정적 샘플 데이터
+ * Authenticated users see the real vault. Guests see the demo vault.
  */
 export default async function VaultPage() {
   const supabase = await createClient();

@@ -1,48 +1,69 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Settings, RotateCcw, Pickaxe, X, UserPlus, Bug,
-  DollarSign, FileText, Film, CreditCard, CalendarClock,
-  Trash2, Database, Info,
+  Bug,
+  CalendarClock,
+  CreditCard,
+  Database,
+  DollarSign,
+  FileText,
+  Film,
+  Info,
+  Pickaxe,
+  RotateCcw,
+  Settings,
+  Trash2,
+  UserPlus,
+  X,
 } from "lucide-react";
 import { adminApi, isMockMode, setMockMode } from "@/lib/api";
 import { resetMockState } from "@/lib/mock-data";
 import type { UserProfile } from "@/types/api";
 
-// --- Persona chips ---
-
 const PERSONAS = [
-  { key: null, label: "Admin", detail: "무제한", color: "amber" },
-  { key: "free", label: "Free", detail: "채굴1 · 리롤2", color: "gray" },
-  { key: "lite", label: "Lite", detail: "채굴5 · 리롤10", color: "cyan" },
-  { key: "pro", label: "Pro", detail: "채굴50 · 리롤20", color: "pink" },
+  { key: null, label: "Admin", detail: "Unlimited", color: "amber" },
+  { key: "free", label: "Free", detail: "1 mine · 2 rerolls", color: "gray" },
+  { key: "lite", label: "Lite", detail: "5 mines · 10 rerolls", color: "cyan" },
+  { key: "pro", label: "Pro", detail: "50 mines · 20 rerolls", color: "pink" },
 ] as const;
 
 function getChipClasses(color: string, isActive: boolean) {
   const base = "cursor-pointer rounded-lg border px-3 py-2 text-left transition-all duration-200";
-  if (!isActive) return `${base} border-line-steel/20 bg-surface-1/30 hover:border-line-steel/40`;
+  if (!isActive) {
+    return `${base} border-line-steel/20 bg-surface-1/30 hover:border-line-steel/40`;
+  }
+
   switch (color) {
-    case "amber": return `${base} border-amber-400/40 bg-amber-400/10 shadow-[0_0_12px_rgba(245,158,11,0.1)]`;
-    case "cyan": return `${base} border-cold-cyan/40 bg-cold-cyan/10 shadow-[0_0_12px_rgba(92,205,229,0.1)]`;
-    case "pink": return `${base} border-signal-pink/40 bg-signal-pink/10 shadow-[0_0_12px_rgba(255,59,147,0.1)]`;
-    default: return `${base} border-line-steel/40 bg-surface-2/60`;
+    case "amber":
+      return `${base} border-amber-400/40 bg-amber-400/10 shadow-[0_0_12px_rgba(245,158,11,0.1)]`;
+    case "cyan":
+      return `${base} border-cold-cyan/40 bg-cold-cyan/10 shadow-[0_0_12px_rgba(92,205,229,0.1)]`;
+    case "pink":
+      return `${base} border-signal-pink/40 bg-signal-pink/10 shadow-[0_0_12px_rgba(255,59,147,0.1)]`;
+    default:
+      return `${base} border-line-steel/40 bg-surface-2/60`;
   }
 }
 
 function getLabelColor(color: string, isActive: boolean) {
-  if (!isActive) return "text-text-secondary";
+  if (!isActive) {
+    return "text-text-secondary";
+  }
+
   switch (color) {
-    case "amber": return "text-amber-400";
-    case "cyan": return "text-cold-cyan";
-    case "pink": return "text-signal-pink";
-    default: return "text-text-primary";
+    case "amber":
+      return "text-amber-400";
+    case "cyan":
+      return "text-cold-cyan";
+    case "pink":
+      return "text-signal-pink";
+    default:
+      return "text-text-primary";
   }
 }
-
-// --- Section title ---
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -51,8 +72,6 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
     </h3>
   );
 }
-
-// --- Menu item ---
 
 function MenuItem({
   label,
@@ -79,42 +98,47 @@ function MenuItem({
     >
       <span className="flex items-center gap-2">
         {Icon && <Icon className="h-3.5 w-3.5" />}
-        {isPending ? "처리 중..." : label}
+        {isPending ? "Processing..." : label}
       </span>
       {dim && (
         <span className="rounded bg-surface-1/30 px-1.5 py-0.5 text-[10px] text-text-secondary/40">
-          준비 중
+          Soon
         </span>
       )}
     </button>
   );
 }
 
-// --- Mock toggle ---
-
 function MockToggle({ mockOn, onToggle }: { mockOn: boolean; onToggle: () => void }) {
   return (
-    <button onClick={onToggle} className="flex w-full items-center justify-between rounded-lg border border-line-steel/20 bg-surface-1/50 px-3 py-2 transition-all hover:border-line-steel/40">
+    <button
+      onClick={onToggle}
+      className="flex w-full items-center justify-between rounded-lg border border-line-steel/20 bg-surface-1/50 px-3 py-2 transition-all hover:border-line-steel/40"
+    >
       <div>
-        <div className="text-sm text-text-secondary">Mock 모드</div>
+        <div className="text-sm text-text-secondary">Mock mode</div>
         <div className="text-[10px] text-text-secondary/50">
-          {mockOn ? "가짜 데이터 사용 중" : "실제 API 연결 중"}
+          {mockOn ? "Using mock data" : "Connected to the live API"}
         </div>
       </div>
-      <div className={`flex h-5 w-9 items-center rounded-full px-0.5 transition-colors ${mockOn ? "bg-amber-400/30" : "bg-surface-2"}`}>
-        <div className={`h-4 w-4 rounded-full transition-all ${mockOn ? "translate-x-4 bg-amber-400" : "translate-x-0 bg-text-secondary/40"}`} />
+      <div
+        className={`flex h-5 w-9 items-center rounded-full px-0.5 transition-colors ${
+          mockOn ? "bg-amber-400/30" : "bg-surface-2"
+        }`}
+      >
+        <div
+          className={`h-4 w-4 rounded-full transition-all ${
+            mockOn ? "translate-x-4 bg-amber-400" : "translate-x-0 bg-text-secondary/40"
+          }`}
+        />
       </div>
     </button>
   );
 }
 
-// --- placeholder handler ---
-
 function placeholder(name: string) {
-  alert(`${name} 기능은 아직 준비 중이에요`);
+  alert(`${name} is not ready yet.`);
 }
-
-// --- Component ---
 
 export function AdminFab({ profile }: { profile: UserProfile }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -124,68 +148,74 @@ export function AdminFab({ profile }: { profile: UserProfile }) {
   const fabRef = useRef<HTMLButtonElement>(null);
   const queryClient = useQueryClient();
 
-  // Close on click outside
   useEffect(() => {
-    if (!isOpen) return;
-    function handleClick(e: MouseEvent) {
+    if (!isOpen) {
+      return;
+    }
+
+    function handleClick(event: MouseEvent) {
       if (
-        panelRef.current && !panelRef.current.contains(e.target as Node) &&
-        fabRef.current && !fabRef.current.contains(e.target as Node)
+        panelRef.current &&
+        !panelRef.current.contains(event.target as Node) &&
+        fabRef.current &&
+        !fabRef.current.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
     }
+
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [isOpen]);
 
-  function showFeedback(msg: string) {
-    setFeedback(msg);
+  function showFeedback(message: string) {
+    setFeedback(message);
     setTimeout(() => setFeedback(null), 1500);
   }
 
-  // Persona
   const personaMutation = useMutation({
     mutationFn: (tier: string | null) => adminApi.setPersona(tier),
     onSuccess: (_data, tier) => {
       queryClient.invalidateQueries();
-      showFeedback(tier ? `${tier.toUpperCase()} 모드` : "Admin 모드");
+      showFeedback(tier ? `${tier.toUpperCase()} mode` : "Admin mode");
     },
   });
 
-  // Tools
   const resetMutation = useMutation({
     mutationFn: adminApi.resetDailyState,
-    onSuccess: () => { queryClient.invalidateQueries(); showFeedback("일일 상태 리셋 완료"); },
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+      showFeedback("Daily state reset");
+    },
   });
 
   const regenMutation = useMutation({
     mutationFn: adminApi.regenerateVeins,
-    onSuccess: () => { queryClient.invalidateQueries(); showFeedback("광맥 재생성 완료"); },
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+      showFeedback("Veins regenerated");
+    },
   });
 
-  // Mock toggle
   const handleMockToggle = () => {
     const next = !mockOn;
     setMockMode(next);
     setMockOn(next);
-    showFeedback(next ? "Mock 모드 ON" : "Mock 모드 OFF");
+    showFeedback(next ? "Mock mode ON" : "Mock mode OFF");
   };
 
-  // New user simulation
   const handleNewUserSim = () => {
     setMockMode(true);
     setMockOn(true);
     resetMockState();
     queryClient.invalidateQueries();
-    showFeedback("신규 유저 시뮬레이션 시작");
+    showFeedback("New user simulation started");
   };
 
   const currentPersona = profile.persona_tier;
 
   return (
     <>
-      {/* Panel */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -196,9 +226,7 @@ export function AdminFab({ profile }: { profile: UserProfile }) {
             transition={{ duration: 0.2 }}
             className="fixed bottom-20 right-6 z-50 w-72 rounded-xl border border-line-steel/30 bg-bg-deep/90 p-4 backdrop-blur-xl"
           >
-            {/* Scrollable content */}
             <div className="max-h-[70vh] overflow-y-auto pr-1">
-              {/* Feedback toast */}
               <AnimatePresence>
                 {feedback && (
                   <motion.div
@@ -212,78 +240,118 @@ export function AdminFab({ profile }: { profile: UserProfile }) {
                 )}
               </AnimatePresence>
 
-              {/* Persona */}
-              <SectionTitle>페르소나</SectionTitle>
+              <SectionTitle>Persona</SectionTitle>
               <div className="grid grid-cols-2 gap-2">
-                {PERSONAS.map((p) => {
-                  const isActive = p.key === null ? currentPersona === null : currentPersona === p.key;
+                {PERSONAS.map((persona) => {
+                  const isActive =
+                    persona.key === null
+                      ? currentPersona === null
+                      : currentPersona === persona.key;
+
                   return (
                     <button
-                      key={p.key ?? "admin"}
-                      onClick={() => personaMutation.mutate(p.key)}
+                      key={persona.key ?? "admin"}
+                      onClick={() => personaMutation.mutate(persona.key)}
                       disabled={personaMutation.isPending}
-                      className={getChipClasses(p.color, isActive)}
+                      className={getChipClasses(persona.color, isActive)}
                     >
-                      <div className={`text-xs font-semibold ${getLabelColor(p.color, isActive)}`}>
-                        {p.label}
+                      <div
+                        className={`text-xs font-semibold ${getLabelColor(persona.color, isActive)}`}
+                      >
+                        {persona.label}
                       </div>
-                      <div className="text-[10px] text-text-secondary/60">{p.detail}</div>
+                      <div className="text-[10px] text-text-secondary/60">
+                        {persona.detail}
+                      </div>
                     </button>
                   );
                 })}
               </div>
 
-              {/* Quick tools */}
-              <SectionTitle>빠른 도구</SectionTitle>
+              <SectionTitle>Quick tools</SectionTitle>
               <div className="space-y-1.5">
                 <MenuItem
-                  label="일일 상태 리셋"
+                  label="Reset daily state"
                   icon={RotateCcw}
                   onClick={() => resetMutation.mutate()}
                   isPending={resetMutation.isPending}
                 />
                 <MenuItem
-                  label="광맥 재생성"
+                  label="Regenerate veins"
                   icon={Pickaxe}
                   onClick={() => regenMutation.mutate()}
                   isPending={regenMutation.isPending}
                 />
                 <MenuItem
-                  label="신규 유저 시뮬레이션"
+                  label="Simulate new user"
                   icon={UserPlus}
                   onClick={handleNewUserSim}
                 />
               </div>
 
-              {/* Debug */}
-              <SectionTitle>디버그</SectionTitle>
+              <SectionTitle>Debug</SectionTitle>
               <div className="space-y-1.5">
-                <MenuItem label="Daily State 보기" icon={Bug} onClick={() => placeholder("Daily State")} dim />
                 <MenuItem
-                  label="AI 비용 확인"
-                  icon={DollarSign}
-                  onClick={() => { window.location.href = "/admin/costs"; setIsOpen(false); }}
+                  label="View daily state"
+                  icon={Bug}
+                  onClick={() => placeholder("Daily state")}
+                  dim
                 />
-                <MenuItem label="프롬프트 뷰어" icon={FileText} onClick={() => placeholder("프롬프트 뷰어")} dim />
+                <MenuItem
+                  label="Open AI costs"
+                  icon={DollarSign}
+                  onClick={() => {
+                    window.location.href = "/admin/costs";
+                    setIsOpen(false);
+                  }}
+                />
+                <MenuItem
+                  label="Prompt viewer"
+                  icon={FileText}
+                  onClick={() => placeholder("Prompt viewer")}
+                  dim
+                />
               </div>
 
-              {/* Simulation */}
-              <SectionTitle>시뮬레이션</SectionTitle>
+              <SectionTitle>Simulation</SectionTitle>
               <div className="space-y-1.5">
-                <MenuItem label="광고 완료 시뮬레이션" icon={Film} onClick={() => placeholder("광고 시뮬레이션")} dim />
-                <MenuItem label="구독 만료 시뮬레이션" icon={CreditCard} onClick={() => placeholder("구독 시뮬레이션")} dim />
-                <MenuItem label="날짜 점프" icon={CalendarClock} onClick={() => placeholder("날짜 점프")} dim />
+                <MenuItem
+                  label="Ad completion simulation"
+                  icon={Film}
+                  onClick={() => placeholder("Ad completion simulation")}
+                  dim
+                />
+                <MenuItem
+                  label="Subscription expiry simulation"
+                  icon={CreditCard}
+                  onClick={() => placeholder("Subscription expiry simulation")}
+                  dim
+                />
+                <MenuItem
+                  label="Date jump"
+                  icon={CalendarClock}
+                  onClick={() => placeholder("Date jump")}
+                  dim
+                />
               </div>
 
-              {/* Data management */}
-              <SectionTitle>데이터 관리</SectionTitle>
+              <SectionTitle>Data</SectionTitle>
               <div className="space-y-1.5">
-                <MenuItem label="금고 초기화" icon={Trash2} onClick={() => placeholder("금고 초기화")} dim />
-                <MenuItem label="전체 리셋" icon={Database} onClick={() => placeholder("전체 리셋")} dim />
+                <MenuItem
+                  label="Clear vault"
+                  icon={Trash2}
+                  onClick={() => placeholder("Clear vault")}
+                  dim
+                />
+                <MenuItem
+                  label="Reset all"
+                  icon={Database}
+                  onClick={() => placeholder("Reset all")}
+                  dim
+                />
               </div>
 
-              {/* Environment */}
-              <SectionTitle>환경</SectionTitle>
+              <SectionTitle>Environment</SectionTitle>
               <div className="space-y-1.5">
                 <MockToggle mockOn={mockOn} onToggle={handleMockToggle} />
                 <div className="flex items-center gap-1.5 px-1 py-1">
@@ -298,7 +366,6 @@ export function AdminFab({ profile }: { profile: UserProfile }) {
         )}
       </AnimatePresence>
 
-      {/* FAB button */}
       <button
         ref={fabRef}
         onClick={() => setIsOpen(!isOpen)}

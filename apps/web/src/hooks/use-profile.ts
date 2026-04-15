@@ -10,7 +10,7 @@ export function useProfile() {
   const profileQuery = useQuery({
     queryKey: ["profile"],
     queryFn: profileApi.getProfile,
-    staleTime: 5 * 60 * 1000, // 5분
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const updateLanguageMutation = useMutation({

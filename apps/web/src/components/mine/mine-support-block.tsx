@@ -35,7 +35,7 @@ const STATUS_KEY: Record<MineSupportStatus, "supportLoading" | "supportError" | 
   ready: "supportReady",
 };
 
-export function MineSupportBlock({ status, lang = "ko" }: MineSupportBlockProps) {
+export function MineSupportBlock({ status, lang = "en" }: MineSupportBlockProps) {
   const [collapsed, setCollapsed] = useState(true);
   const copy = MINE_LABELS[STATUS_KEY[status]];
 

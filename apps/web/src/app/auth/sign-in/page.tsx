@@ -38,7 +38,7 @@ function SignInForm() {
         </p>
         {isFromExperience && (
           <p className="mt-2 max-w-xs text-xs leading-5 text-cold-cyan/80">
-            이 광맥을 저장하고 본인의 Mine에서 이어가려면 로그인하세요.
+            Sign in to save this vein and continue exploring it inside your Mine.
           </p>
         )}
       </div>
@@ -49,7 +49,7 @@ function SignInForm() {
           disabled={isLoading}
           className="flex h-12 items-center justify-center gap-2 rounded-lg border border-line-steel bg-surface-1 text-sm text-text-primary transition-colors hover:border-signal-pink/40 hover:bg-surface-2 disabled:opacity-50"
         >
-          Google로 시작하기
+          Continue with Google
         </button>
 
         <button
@@ -57,12 +57,12 @@ function SignInForm() {
           disabled={isLoading}
           className="flex h-12 items-center justify-center gap-2 rounded-lg border border-line-steel bg-surface-1 text-sm text-text-primary transition-colors hover:border-signal-pink/40 hover:bg-surface-2 disabled:opacity-50"
         >
-          GitHub로 시작하기
+          Continue with GitHub
         </button>
       </div>
 
       {isLoading && (
-        <p className="text-xs text-text-secondary">연결하는 중...</p>
+        <p className="text-xs text-text-secondary">Connecting...</p>
       )}
     </div>
   );

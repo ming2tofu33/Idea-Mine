@@ -3,8 +3,7 @@
 import { VAULT_LABELS, type VaultLanguage } from "./vault-labels";
 
 /**
- * Vault idea card의 하단 진행률 표시.
- * 원석 → 개요 → 감정 → 풀 개요 4단계 dot.
+ * Small progress indicator for the vault idea card.
  */
 export function WorkflowDots({
   hasOverview,

@@ -1,7 +1,5 @@
 /**
- * 공개 체험 플로우를 위한 최소 계측.
- * 비로그인 세션을 localStorage sessionId로 식별하고,
- * /api/experience-events로 fire-and-forget 전송.
+ * Minimal analytics for the public demo flow.
  */
 
 export type ExperienceEventName =
@@ -45,10 +43,9 @@ export async function trackExperienceEvent(args: TrackArgs): Promise<void> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ sessionId, ...args }),
-      // Fire-and-forget: don't block navigation on logging
       keepalive: true,
     });
   } catch {
-    // Silent fail — logging must never break user flow
+    // Logging must never break navigation.
   }
 }

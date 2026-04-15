@@ -1,57 +1,27 @@
-/**
- * Lab 페이지 다국어 라벨
- */
+type LocalizedText = {
+  ko: string;
+  en: string;
+};
+
+const copy = (value: string): LocalizedText => ({ ko: value, en: value });
 
 export type LabLanguage = "ko" | "en";
 
 export const LAB_LABELS = {
-  // PageHeader
-  eyebrow: { ko: "실험실", en: "LAB" },
-  title: { ko: "실험실", en: "The Lab" },
-  subtitle: {
-    ko: "수집한 아이디어를 분석하고 정제하는 공간입니다",
-    en: "Analyze and refine the ideas you've collected",
-  },
-
-  // Section headers
-  pendingOverview: { ko: "개요 대기", en: "Pending overview" },
-  recentDocuments: { ko: "최근 문서", en: "Recent documents" },
-
-  // Status badges
-  overview: { ko: "개요", en: "Overview" },
-  generateOverview: { ko: "개요 생성", en: "Generate overview" },
-
-  // Empty states
-  noIdeasTitle: { ko: "아이디어가 없습니다", en: "No ideas yet" },
-  allOverviewsTitle: {
-    ko: "모든 아이디어에 개요가 생성되었습니다",
-    en: "Every idea already has an overview",
-  },
-  noIdeasDesc: {
-    ko: "금고에 아이디어를 먼저 저장해주세요",
-    en: "Save some ideas in the vault first",
-  },
-  newIdeasDesc: {
-    ko: "새로운 아이디어를 채굴해보세요",
-    en: "Mine some new ideas",
-  },
-  goToMine: { ko: "광산으로 이동", en: "Go to the Mine" },
-  noDocumentsYet: {
-    ko: "아직 생성된 문서가 없습니다",
-    en: "No documents generated yet",
-  },
-
-  // Demo mode notices (guest at /lab)
-  demoSampleNotice: {
-    ko: "이건 샘플 실험실입니다",
-    en: "This is a sample lab",
-  },
-  demoFreshNotice: {
-    ko: "진짜 실험실은 내가 채굴한 아이디어의 개요와 감정으로 채워집니다",
-    en: "Your real lab fills with overviews and appraisals of your own ideas",
-  },
-  demoMyLabCta: {
-    ko: "내 실험실 보러 가기 →",
-    en: "Open my lab →",
-  },
+  eyebrow: copy("LAB"),
+  title: copy("The Lab"),
+  subtitle: copy("Analyze and refine the ideas you've collected"),
+  pendingOverview: copy("Pending overview"),
+  recentDocuments: copy("Recent documents"),
+  overview: copy("Overview"),
+  generateOverview: copy("Generate overview"),
+  noIdeasTitle: copy("No ideas yet"),
+  allOverviewsTitle: copy("Every idea already has an overview"),
+  noIdeasDesc: copy("Save some ideas in the vault first"),
+  newIdeasDesc: copy("Mine some new ideas"),
+  goToMine: copy("Go to the Mine"),
+  noDocumentsYet: copy("No documents generated yet"),
+  demoSampleNotice: copy("This is a sample lab"),
+  demoFreshNotice: copy("Your real lab fills with overviews and appraisals of your own ideas"),
+  demoMyLabCta: copy("Open my lab ->"),
 } as const;

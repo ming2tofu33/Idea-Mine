@@ -9,7 +9,7 @@ type OverviewRowProps = {
   idea: Idea;
   overview: Overview;
   lang: LabLanguage;
-  /** 클릭 시 기본 링크 대신 커스텀 동작 (데모 모드 등) */
+  /** Overrides the default link action, used by demo mode. */
   onClickOverride?: (e: React.MouseEvent) => void;
 };
 
@@ -19,11 +19,8 @@ export function OverviewRow({
   lang,
   onClickOverride,
 }: OverviewRowProps) {
-  const title = lang === "en" && idea.title_en ? idea.title_en : idea.title_ko;
-  const concept =
-    lang === "en" && overview.concept_en
-      ? overview.concept_en
-      : overview.concept_ko;
+  const title = idea.title;
+  const concept = overview.concept;
 
   return (
     <Link
