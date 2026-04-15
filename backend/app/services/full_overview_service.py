@@ -311,7 +311,7 @@ async def generate_full_overview(
                 "business_model": result.business_model,
                 "business_rules": _as_string_list(result.business_rules),
                 "mvp_scope": result.mvp_scope,
-                "tech_stack": result.tech_stack,
+                "tech_stack": result.tech_stack.model_dump(),
                 "data_model_sql": result.data_model_sql,
                 "api_endpoints": _as_string_list(result.api_endpoints),
                 "file_structure": result.file_structure,
@@ -339,7 +339,7 @@ def _format_for_critique(result: FullOverviewResponse) -> str:
         f"BUSINESS RULES:\n{nl.join('- ' + r for r in result.business_rules)}",
         f"MVP SCOPE: {result.mvp_scope}",
         "TECH STACK:\n"
-        + nl.join(f"- {key}: {value}" for key, value in result.tech_stack.items()),
+        + nl.join(f"- {key}: {value}" for key, value in result.tech_stack.model_dump().items()),
         f"DATA MODEL SQL:\n{result.data_model_sql}",
         f"API ENDPOINTS:\n{nl.join('- ' + e for e in result.api_endpoints)}",
         f"FILE STRUCTURE:\n{result.file_structure}",

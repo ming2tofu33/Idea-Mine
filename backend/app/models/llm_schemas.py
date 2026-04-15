@@ -60,6 +60,14 @@ class AppraisalFullResponse(BaseModel):
 
 # --- Full Overview (merged narrative + technical) ---
 
+class FullOverviewTechStackResponse(BaseModel):
+    frontend: str
+    backend: str
+    database: str
+    ai_ml: str
+    auth: str
+    hosting: str
+
 class FullOverviewResponse(BaseModel):
     # Narrative
     concept: str
@@ -74,7 +82,7 @@ class FullOverviewResponse(BaseModel):
     business_rules: list[str]
     mvp_scope: str
     # Technical
-    tech_stack: dict[str, str]
+    tech_stack: FullOverviewTechStackResponse
     data_model_sql: str
     api_endpoints: list[str]
     file_structure: str
