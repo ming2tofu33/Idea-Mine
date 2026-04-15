@@ -1,26 +1,21 @@
 from app.models.llm_schemas import FullOverviewResponse
 
 
-def test_full_overview_response_uses_explicit_tech_stack_object():
+def test_full_overview_response_flattens_tech_stack_fields_for_openai_parse():
     schema = FullOverviewResponse.model_json_schema()
-    tech_stack = schema["properties"]["tech_stack"]
+    properties = schema["properties"]
 
-    assert tech_stack["$ref"] == "#/$defs/FullOverviewTechStackResponse"
+    assert "tech_stack" not in properties
+    assert "$defs" not in schema
 
-    tech_stack_def = schema["$defs"]["FullOverviewTechStackResponse"]
-    assert sorted(tech_stack_def["properties"].keys()) == [
-        "ai_ml",
-        "auth",
-        "backend",
-        "database",
-        "frontend",
-        "hosting",
+    expected_fields = [
+        "tech_stack_ai_ml",
+        "tech_stack_auth",
+        "tech_stack_backend",
+        "tech_stack_database",
+        "tech_stack_frontend",
+        "tech_stack_hosting",
     ]
-    assert sorted(tech_stack_def["required"]) == [
-        "ai_ml",
-        "auth",
-        "backend",
-        "database",
-        "frontend",
-        "hosting",
-    ]
+
+    assert sorted(field for field in properties if field.startswith("tech_stack_")) == expected_fields
+    assert sorted(field for field in schema["required"] if field.startswith("tech_stack_")) == expected_fields

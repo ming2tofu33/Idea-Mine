@@ -311,7 +311,7 @@ async def generate_full_overview(
                 "business_model": result.business_model,
                 "business_rules": _as_string_list(result.business_rules),
                 "mvp_scope": result.mvp_scope,
-                "tech_stack": result.tech_stack.model_dump(),
+                "tech_stack": _tech_stack_dict(result),
                 "data_model_sql": result.data_model_sql,
                 "api_endpoints": _as_string_list(result.api_endpoints),
                 "file_structure": result.file_structure,
@@ -339,7 +339,7 @@ def _format_for_critique(result: FullOverviewResponse) -> str:
         f"BUSINESS RULES:\n{nl.join('- ' + r for r in result.business_rules)}",
         f"MVP SCOPE: {result.mvp_scope}",
         "TECH STACK:\n"
-        + nl.join(f"- {key}: {value}" for key, value in result.tech_stack.model_dump().items()),
+        + nl.join(f"- {key}: {value}" for key, value in _tech_stack_dict(result).items()),
         f"DATA MODEL SQL:\n{result.data_model_sql}",
         f"API ENDPOINTS:\n{nl.join('- ' + e for e in result.api_endpoints)}",
         f"FILE STRUCTURE:\n{result.file_structure}",
@@ -353,6 +353,17 @@ def _as_string_list(value: object) -> list[str]:
     if not isinstance(value, list):
         return []
     return [item for item in value if isinstance(item, str)]
+
+
+def _tech_stack_dict(result: FullOverviewResponse) -> dict[str, str]:
+    return {
+        "frontend": result.tech_stack_frontend,
+        "backend": result.tech_stack_backend,
+        "database": result.tech_stack_database,
+        "ai_ml": result.tech_stack_ai_ml,
+        "auth": result.tech_stack_auth,
+        "hosting": result.tech_stack_hosting,
+    }
 
 
 async def _log_ai_usage(supabase: Client, **fields) -> None:

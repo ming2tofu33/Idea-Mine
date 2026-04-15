@@ -85,9 +85,13 @@ Add [REVIEW], [DRAFT], or [READY] to each section title.
    Provide IN, OUT, core hypothesis, validation questions, and the cheapest test method.
 
 10. TECH STACK
-    Return an object with exactly these keys:
-    frontend, backend, database, ai_ml, auth, hosting
-    Each value must be a short concrete technology choice with no extra prose.
+    Fill these exact top-level fields with short concrete technology choices:
+    tech_stack_frontend
+    tech_stack_backend
+    tech_stack_database
+    tech_stack_ai_ml
+    tech_stack_auth
+    tech_stack_hosting
 
 11. DATA MODEL
     Write SQL CREATE TABLE statements for the MVP, with UUID keys and timestamps.
