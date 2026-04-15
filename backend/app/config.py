@@ -1,4 +1,10 @@
-from pydantic_settings import BaseSettings
+from pathlib import Path
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+BACKEND_DIR = Path(__file__).resolve().parents[1]
+BACKEND_ENV_FILE = BACKEND_DIR / ".env"
 
 
 class Settings(BaseSettings):
@@ -9,8 +15,7 @@ class Settings(BaseSettings):
     tavily_api_key: str = ""
     port: int = 8000
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=str(BACKEND_ENV_FILE), extra="ignore")
 
 
 settings = Settings()
