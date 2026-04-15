@@ -9,8 +9,7 @@ export interface Keyword {
   id: string;
   slug: string;
   category: "ai" | "who" | "domain" | "tech" | "value" | "money";
-  ko: string;
-  en: string;
+  label: string;
   is_premium: boolean;
 }
 
@@ -46,8 +45,7 @@ export interface RerollResponse {
 export interface KeywordComboEntry {
   category: string;
   slug: string;
-  ko: string;
-  en: string;
+  label: string;
 }
 
 export interface Idea {
@@ -156,7 +154,6 @@ export type UserRole = "user" | "admin";
 export interface UserProfile {
   id: string;
   nickname: string;
-  language: "ko" | "en";
   tier: UserTier;
   role: UserRole;
   persona_tier: UserTier | null;

@@ -7,7 +7,6 @@ import { MineBackground } from "@/components/backgrounds/mine-background";
 import { IdeaCard } from "@/components/mine/idea-card";
 import { MINE_LABELS, type MineLanguage } from "@/components/mine/mine-labels";
 import { PageHeader } from "@/components/shared/page-header";
-import { useProfile } from "@/hooks/use-profile";
 import { miningApi, ideasApi } from "@/lib/api";
 import type { Idea } from "@/types/api";
 
@@ -49,8 +48,7 @@ export default function MiningResultPage({
   params: Promise<{ veinId: string }>;
 }) {
   const { veinId } = use(params);
-  const { profile } = useProfile();
-  const lang: MineLanguage = (profile?.language ?? "en") as MineLanguage;
+  const lang: MineLanguage = "en";
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [vaultedIds, setVaultedIds] = useState<Set<string>>(new Set());

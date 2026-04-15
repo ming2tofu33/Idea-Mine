@@ -1,16 +1,16 @@
 # Project Overview v2
 
-> Internal alignment document for IDEA MINE v2. This document defines the product direction after the shift to a web-first product and a premium space UI, and is intended to be decomposed into `mind` later.
+> Internal alignment document for IDEA MINE v2. This document defines the product direction after the shift to a web-only product and a premium space UI, and is intended to be decomposed into `mind` later.
 
 ## 1. Project Summary
 
-IDEA MINE v2 repositions the product from a mobile-first pixel experiment into a web-first premium idea exploration platform. The goal is not to change the core value of the product, but to express that value through a channel and an interface that better fit how the product will actually be used.
+IDEA MINE v2 repositions the product from a small-screen pixel experiment into a web-only premium idea exploration platform. The goal is not to change the core value of the product, but to express that value through the channel and interface that best fit how the product is actually used.
 
-V2 is driven by two equally important shifts. The first is strategic: core product work moves from app-first to web-first. The second is experiential: the interface moves from pixel game aesthetics to a premium space UI built around depth, clarity, and smooth motion. Together, these shifts aim to improve validation speed, day-to-day usability, and overall brand quality.
+V2 is driven by two equally important shifts. The first is strategic: core product work moves to web-only execution. The second is experiential: the interface moves from pixel game aesthetics to a premium space UI built around depth, clarity, and smooth motion. Together, these shifts aim to improve validation speed, day-to-day usability, and overall brand quality.
 
 ## 2. Why V2
 
-V1 proved that the mining metaphor, structured idea generation, and Mine-Lab-Vault loop have real product potential. It also revealed the limits of a mobile-first, pixel-heavy approach once the product started moving closer to a serious planning tool than a playful experiment.
+V1 proved that the mining metaphor, structured idea generation, and Mine-Lab-Vault loop have real product potential. It also revealed the limits of a small-screen, pixel-heavy approach once the product started moving closer to a serious planning tool than a playful experiment.
 
 IDEA MINE is fundamentally about reading, comparing, selecting, refining, and revisiting ideas. That usage pattern benefits more from the browser than from a small mobile screen. At the same time, the product now needs a stronger sense of quality and trust than the current pixel tone naturally provides.
 
@@ -18,11 +18,11 @@ V2 exists to answer that gap. It keeps the core product thesis intact while upgr
 
 ## 3. The Two Core Shifts
 
-### 3.1 From App-First to Web-First
+### 3.1 To Web-Only
 
-In v2, IDEA MINE is designed, built, and validated on the web first. The browser becomes the reference environment for the core user loop, and the app becomes a later extension built on top of a clearer product baseline.
+In v2, IDEA MINE is designed, built, and validated on the web only. The browser is the reference environment for the core user loop, and mobile is not part of the active product scope.
 
-This change reflects the real shape of the work. Users need room to compare results, read longer text, understand structure, and move between stored assets. The web supports those behaviors more naturally at this stage than a mobile-first product does.
+This change reflects the real shape of the work. Users need room to compare results, read longer text, understand structure, and move between stored assets. The web supports those behaviors more naturally than a mobile-led product does.
 
 ### 3.2 From Pixel Game UI to Premium Space UI
 
@@ -62,17 +62,17 @@ The metaphor must support product structure, not distract from it. The Mine rema
 4. Premium comes before playful. The product can feel imaginative and immersive, but it should first feel capable, serious, and well-made.
 5. Every strong result should be able to become an asset. Good outputs must be saveable, revisitable, and expandable.
 6. Structure comes before complexity. Navigation, hierarchy, and user flow must be clear before visual or feature richness expands.
-7. The product must stay extensible. Current decisions should make later expansion to app, Showcase, Observatory, and other spaces easier rather than harder.
+7. The product must stay extensible. Current decisions should make later expansion to new surfaces or spaces possible without shaping current work around inactive channels.
 
 ## 7. Web-First Strategy
 
-The web is the base surface of v2. Core functionality should be designed, tested, and validated there before being translated into other channels. This changes both product planning and implementation planning.
+The web is the base surface of v2. Core functionality should be designed, tested, and validated there. This changes both product planning and implementation planning.
 
 The operational implication is simple. Mine, Vault, and Lab must work as a strong browser experience first. Information density, layout decisions, reading comfort, and workflow transitions should all be judged by web standards rather than by mobile constraints.
 
-This strategy does not reject the app. It changes the order of development. The app should come later, after the core structure has already been proven on the web. At that point, the app can be designed for mobile-native use cases such as quick exploration, lightweight saving, notifications, and fast re-entry instead of being forced to carry the entire product from day one.
+This strategy removes mobile from active scope. The product should not carry app assumptions in its information architecture, copy, or delivery plans while the web product is still the only active surface.
 
-At the architecture level, web-first also means separating reusable logic from channel-specific UI. Data models, API contracts, and domain behavior should remain portable. The interface layer should be free to differ between web and app if that leads to a better experience on each surface.
+At the architecture level, web-only means the browser is the only contract that must be satisfied in active development. Data models and API contracts should stay clean and reusable, but current design decisions should not be constrained by inactive mobile requirements.
 
 ## 8. Experience Direction
 
@@ -146,7 +146,7 @@ V2 keeps the core product thesis intact.
 
 V2 deliberately changes the following foundations.
 
-- The primary platform shifts from app-first to web-first
+- The primary platform shifts to web-only
 - The emotional tone shifts from pixel game UI to premium space UI
 - The product impression shifts from experimental and playful to refined and credible
 - The interface shifts toward higher information density and stronger browser usability
@@ -172,12 +172,12 @@ The MVP is not just a clickable concept. It must be a real product slice that ca
 
 The following are intentionally not goals for v2 at this stage.
 
-- Shipping a fully polished mobile app before the web product is validated
+- Carrying mobile product scope or mobile-specific requirements in active planning
 - Turning the interface into a full 3D or game-like experience
 - Continuing the pixel style as the primary visual language
 - Expanding feature count before the Mine-Vault-Lab loop is strong
 - Framing the product as a simple AI idea generator without asset-building depth
-- Forcing one identical UI across every platform
+- Designing around inactive client platforms
 
 V2 is about making the product sharper, not broader.
 
@@ -185,7 +185,6 @@ V2 is about making the product sharper, not broader.
 
 Once the web-first core is strong, IDEA MINE can expand in several directions.
 
-- A mobile app focused on quick exploration, light saving, and re-entry
 - Observatory as a data and pattern-viewing layer
 - Showcase as an external-facing layer for selected outputs
 - Exchange as a later layer for connection, opportunity, or asset circulation

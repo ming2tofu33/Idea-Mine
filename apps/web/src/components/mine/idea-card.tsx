@@ -33,7 +33,7 @@ function ComboChip({ entry }: { entry: KeywordComboEntry }) {
           boxShadow: `0 0 0 1px rgba(255,255,255,0.08), 0 0 10px ${color}22`,
         }}
       />
-      {entry.en}
+      {entry.label}
     </span>
   );
 }

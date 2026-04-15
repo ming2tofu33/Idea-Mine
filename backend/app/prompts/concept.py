@@ -1,9 +1,8 @@
 def build_concept_prompt(
-    title_en: str,
-    summary_en: str,
+    title: str,
+    summary: str,
     keywords: list[dict],
-    idea_line_en: str = "",
-    idea_line_ko: str = "",
+    idea_line: str = "",
 ) -> tuple[str, str]:
     """Step 1: 제품 컨셉 생성 프롬프트 v3.
 
@@ -14,12 +13,11 @@ def build_concept_prompt(
           JSON 템플릿 제거 (스키마가 구조 보장),
           core_experience 검증 루프 추가.
     - v3: concept 템플릿 조건부 분기 (AI 키워드 없을 때 대응),
-          한국어 core_experience GOOD/BAD 예시 추가,
           verification 4개 테스트로 확장.
     """
     kw_by_role: dict[str, str] = {}
     for kw in keywords:
-        kw_by_role[kw["category"].upper()] = kw["en"]
+        kw_by_role[kw["category"].upper()] = kw["label"]
 
     kw_lines = []
     role_desc = {
@@ -59,13 +57,8 @@ CRITICAL: Do NOT invent AI technology if it's not in the keywords. Free-tier use
 
 Describe the first 30 seconds of use as a concrete user action sequence.
 
-English examples:
 GOOD: "Opens the app, sees 3 food options as swipeable cards, swipes right on one, and gets a nearby restaurant suggestion"
 BAD: "Leverages AI to receive personalized recommendations"
-
-Korean examples (natural Korean, NOT a translation of English):
-GOOD: "앱 열자마자 3개 카드가 뜨고, 마음에 드는 걸 오른쪽으로 쓸면 바로 근처 식당이 추천된다"
-BAD: "AI를 활용하여 사용자의 취향에 맞는 맞춤형 추천을 받습니다"
 
 === VERIFICATION ===
 
@@ -81,10 +74,9 @@ If any test fails, revise before outputting."""
 
     user_prompt = f"""=== INPUT ===
 
-Title: {title_en}
-Summary: {summary_en}
-One-line idea EN: {idea_line_en}
-One-line idea KO: {idea_line_ko}
+Title: {title}
+Summary: {summary}
+One-line idea: {idea_line}
 
 Keywords:
 {kw_block}
@@ -95,7 +87,7 @@ The selected one-line idea is the source of truth.
 Title is only a label. Summary is supporting context.
 If title, summary, and one-line idea conflict, follow the one-line idea.
 
-Generate a product concept with these 4 outputs:
+Generate a product concept with these 4 outputs. Provide English only.
 
 1. CONCEPT: One sentence in this exact format:
    "A [TECH] for [WHO] that uses [AI] to deliver [VALUE] in [DOMAIN], monetized via [MONEY]."
@@ -109,6 +101,10 @@ Generate a product concept with these 4 outputs:
 4. CORE EXPERIENCE: In one sentence, what does the user DO with this product?
    Be concrete: describe the first 30 seconds of use.
 
-Provide both English and Korean for concept, primary_user, and core_experience."""
+Return fields:
+- concept
+- product_type
+- primary_user
+- core_experience"""
 
     return system_prompt, user_prompt

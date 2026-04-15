@@ -1,30 +1,16 @@
 def build_overview_prompt(
-    title_en: str,
-    summary_en: str,
+    title: str,
+    summary: str,
     keywords: list[dict],
     market_research: str,
     concept: dict,
-    idea_line_en: str = "",
-    idea_line_ko: str = "",
+    idea_line: str = "",
 ) -> tuple[str, str]:
-    """Step 2: 개요서 생성 프롬프트 v6.
+    """Build the detailed project overview prompt from the selected idea."""
 
-    변경 이력:
-    - v1~v3.2: 단일 프롬프트
-    - v4: 2단계 파이프라인. Concept 앵커.
-    - v4.1: 전체 few-shot 제거 → 섹션별 인라인 GOOD/BAD + 품질 루브릭.
-    - v4.2: Screen Test 강제, 차별점 User Sentence, MVP 테스트 다양화,
-            한국어 자연스러운 톤 지시, Chain-of-Thought self-verification.
-    - v5: system/user 분리, Pydantic structured output 전환,
-          JSON 템플릿 제거 (스키마가 구조 보장),
-          anti-pattern 8→5 축소, verification loop 강화.
-    - v6: concept echo 명확화 (copy exactly),
-          market research 섹션별 활용 가이드 추가,
-          verification을 섹션별로 구체화 (관련 테스트만 적용).
-    """
     kw_by_role: dict[str, str] = {}
     for kw in keywords:
-        kw_by_role[kw["category"].upper()] = kw["en"]
+        kw_by_role[kw["category"].upper()] = kw["label"]
 
     kw_lines = []
     for cat in ["WHO", "TECH", "AI", "DOMAIN", "VALUE", "MONEY"]:
@@ -33,101 +19,88 @@ def build_overview_prompt(
 
     kw_block = "\n".join(kw_lines)
 
-    concept_en = concept.get("concept_en", "")
-    concept_ko = concept.get("concept_ko", "")
+    concept_text = concept.get("concept", "")
     product_type = concept.get("product_type", "B2C")
-    primary_user_en = concept.get("primary_user_en", "")
-    primary_user_ko = concept.get("primary_user_ko", "")
-    core_experience_en = concept.get("core_experience_en", "")
-    core_experience_ko = concept.get("core_experience_ko", "")
+    primary_user = concept.get("primary_user", "")
+    core_experience = concept.get("core_experience", "")
 
-    # ── System prompt (Context + Constraints) ──
-
-    system_prompt = """You are writing a project overview. Your concept is already decided — do not deviate from it.
+    system_prompt = """You are writing a project overview. The concept is already decided and cannot drift.
 
 === QUALITY RUBRIC ===
 
 Before writing each sentence, ask yourself these 3 tests:
 
 1. SCREEN TEST: Can someone draw a UI screen from this sentence?
-   GOOD: "3 food options appear as swipeable cards — swipe right to pick, left to skip"
+   GOOD: "Three workout options appear as cards and the user taps one to start immediately"
    BAD: "Personalized recommendations are provided to the user"
 
-2. SPECIFICITY TEST: Does this sentence contain a concrete noun, verb, AND number/detail?
-   GOOD: "Pet trainers spend 3+ hours/week searching YouTube for new techniques"
+2. SPECIFICITY TEST: Does this sentence contain a concrete noun, verb, and number/detail?
+   GOOD: "Pet trainers spend 30 minutes searching YouTube every Monday and still cannot find current drills"
    BAD: "Users face challenges in finding relevant information"
 
 3. HUMAN TEST: Would a real PM say this in a team meeting?
-   GOOD: "앱 열면 오늘의 추천 3개가 카드로 뜬다"
-   BAD: "사용자 기본 설정을 기반으로 음식 옵션을 추천합니다"
+   GOOD: "When the user opens the app, they see three workout cards and start one immediately."
+   BAD: "The system leverages defaults to present personalized options."
 
 === ANTI-PATTERNS ===
 
-- TAUTOLOGY: Feature name repeats in description ("맞춤 추천: 추천합니다") → Describe the SCREEN and INTERACTION instead
-- SYSTEM VOICE: Describes what the system does ("provides", "leverages") → Describe what the USER does ("taps", "swipes", "sees")
-- PRICING AS FEATURE: Revenue/pricing in core features → Move to business model section
-- SOLUTION IN PROBLEM: Problem section mentions the product or its solution → Problem describes ONLY the current state and pain
-- BUZZWORD PADDING: Empty adjectives ("AI-powered", "혁신적인", "종합적인 솔루션") → Delete any adjective that can be removed without changing the meaning
+- TAUTOLOGY: Feature name repeats in description. Describe the screen and interaction instead.
+- SYSTEM VOICE: Describe what the user sees and does, not what the system provides.
+- PRICING AS FEATURE: Revenue logic belongs in the business model section, not core features.
+- SOLUTION IN PROBLEM: The problem section should only describe the user's current pain and workaround.
+- BUZZWORD PADDING: Remove empty adjectives like "AI-powered" when they add no concrete meaning.
 
 === USING MARKET RESEARCH ===
 
 Extract from the market context and use in specific sections:
-- PROBLEM: Pain frequency, current behavior patterns (if data exists)
-- TARGET USER: Demographic context, usage timing
-- DIFFERENTIATOR: Actual competitor names from the research (do NOT invent competitors)
-- BUSINESS MODEL: Competitor price benchmarks with actual $ amounts
+- PROBLEM: Pain frequency and current behavior patterns
+- TARGET USER: Demographic context and usage timing
+- DIFFERENTIATOR: Actual competitor names from the research
+- BUSINESS MODEL: Competitor price benchmarks with actual dollar amounts
 
-If a section has no relevant market data, rely on concrete user scenarios — NEVER invent statistics.
+If a section has no relevant market data, rely on concrete user scenarios. Never invent statistics.
 
-=== VERIFICATION (run RELEVANT tests per section) ===
+=== VERIFICATION ===
 
 Before outputting, apply only the tests that make sense for each section:
 
-1. PROBLEM: SPECIFICITY + HUMAN tests (no Screen Test — no UI exists yet)
-2. TARGET USER: SPECIFICITY + HUMAN tests
-3. CORE FEATURES: SCREEN + SPECIFICITY + HUMAN tests (all 3 — this is where UI matters)
-4. DIFFERENTIATOR: HUMAN test ("could a real user say this out loud?")
-5. BUSINESS MODEL: SPECIFICITY test (must have 2+ specific dollar amounts)
-6. MVP SCOPE: HUMAN test + "does the cheapest test actually fit this product type?"
+1. PROBLEM: SPECIFICITY + HUMAN
+2. TARGET USER: SPECIFICITY + HUMAN
+3. CORE FEATURES: SCREEN + SPECIFICITY + HUMAN
+4. DIFFERENTIATOR: HUMAN
+5. BUSINESS MODEL: SPECIFICITY
+6. MVP SCOPE: HUMAN + cheapest-test realism
 
 Fix any section that fails its relevant tests before outputting.
 
 === RULES ===
 
-- Korean: Write as a PM would speak in a team meeting. Natural, conversational.
-- English: Same content, professional but natural.
-- Every Korean field must stay in Korean. Only keep English for unavoidable proper nouns or product names from market research.
-- Every English field must stay in English.
-- features: • bullet points with \\n separators.
-- NEVER fabricate statistics. Use market research data only.
+- Write all sections in English only.
+- Sound like a product manager talking to a team: concrete, natural, specific.
+- features must be 4-5 bullet points separated by \\n.
+- Never fabricate statistics. Use market research data only.
 - No scores, no ratings, no evaluations.
-- Primary user is the ONLY persona. No other user type appears anywhere."""
-
-    # ── User prompt (Task + dynamic data) ──
+- Primary user is the only persona. No other user type appears anywhere.
+"""
 
     user_prompt = f"""=== SELECTED IDEA (source of truth) ===
 
-Selected one-line idea EN: {idea_line_en}
-Selected one-line idea KO: {idea_line_ko}
-Title: {title_en}
-Summary: {summary_en}
+Selected one-line idea: {idea_line}
+Title: {title}
+Summary: {summary}
 
 The selected one-line idea is the source of truth for what product was chosen.
 Do not broaden, rename, or swap the product described by the one-line idea.
 
 === FIXED CONCEPT (do NOT change this) ===
 
-Concept EN: {concept_en}
-Concept KO: {concept_ko}
+Concept: {concept_text}
 Product type: {product_type}
-Primary user EN: {primary_user_en}
-Primary user KO: {primary_user_ko}
-Core experience EN: {core_experience_en}
-Core experience KO: {core_experience_ko}
+Primary user: {primary_user}
+Core experience: {core_experience}
 
-Every section below MUST describe a product that matches this concept exactly.
-Every English section must match the English anchors above.
-Every Korean section must match the Korean anchors above.
+Every section below must describe a product that matches this concept exactly.
+Write all sections in English only.
 
 === KEYWORDS ===
 
@@ -140,65 +113,51 @@ Every Korean section must match the Korean anchors above.
 === WRITE 6 SECTIONS ===
 
 1. PROBLEM (3-5 sentences)
-   The primary user's specific pain. How often. What they do today. Why it fails.
-   MUST include: a concrete behavior ("they currently do X for Y minutes"), not just a feeling.
-   GOOD: "She searches YouTube for 30 minutes every Monday but finds mostly outdated 2019 content"
-   BAD: "Users struggle to find quality content in their field"
-   Self-check: Did I name what the user DOES today and why it FAILS?
+   Describe the primary user's specific pain, how often it happens, what they do today, and why it fails.
+   Include a concrete behavior, not just a feeling.
 
 2. TARGET USER (3-5 sentences)
-   ONE persona: Korean name, age, job, daily context, current workaround, frustration.
-   MUST include: a specific MOMENT in their day/week when they'd reach for this product.
-   GOOD: "매주 월요일 퇴근길, 지하철에서 뭘 시켜먹을지 10분째 배민을 스크롤하다 결국 아무거나 시킨다"
-   BAD: "She frequently looks for professional development opportunities"
-   Self-check: Can I picture the exact moment and location?
+   Describe one persona: age or life stage, job or role, daily context, current workaround, and frustration.
+   Include the exact moment in the day or week when they would reach for this product.
 
 3. CORE FEATURES (4-5 bullets)
-   For EACH feature, think step by step:
-   Step 1 — What does the user SEE on screen? (layout, cards, buttons, list)
-   Step 2 — What does the user DO? (tap, swipe, type, scroll, drag)
-   Step 3 — What HAPPENS as a result? (screen changes, data appears, notification sent)
+   For each feature, describe:
+   - what the user sees on screen
+   - what the user does
+   - what happens next
+   - why it matters
 
-   Write as: "Feature Name: [what user sees] → [what user does] → [what happens] — [why it matters]"
+   Use the format:
+   "Feature Name: [screen] -> [action] -> [result] -> [value]"
 
-   GOOD: "오늘의 추천: 앱을 열면 3개의 음식 카드가 나타남 → 카드를 좌우로 스와이프 → 오른쪽 스와이프한 음식 기반 근처 맛집 추천 — 30초 안에 저녁 결정"
-   BAD: "맞춤 추천: 사용자 기본 설정을 기반으로 음식 옵션을 추천합니다"
-
-   IMPORTANT: Ads, subscriptions, payments, and premium upgrades are NEVER features.
-   Self-check for each feature: If I read this to a developer, can they start building the screen?
+   Ads, subscriptions, payments, and premium upgrades are never core features.
 
 4. DIFFERENTIATOR (3-5 sentences)
-   Name 1-2 products the primary user has actually tried or heard of.
-   Write as if the user is explaining why they switched:
-   "I used to use [product] but [specific frustration]. This solves it by [specific mechanism]."
-
-   GOOD: "배민으로 검색하면 리뷰 수백 개를 읽어야 해서 결정이 더 어려워짐. 이 앱은 취향 데이터 기반으로 딱 3개만 보여주니까 10초면 결정됨"
-   BAD: "Unlike existing solutions that lack personalization, this provides AI-powered recommendations"
-
-   Self-check: Could a real user say this sentence out loud?
+   Name 1-2 products the user has tried or knows.
+   Explain the switch in user language:
+   "I used [product], but [specific frustration]. This solves it by [specific mechanism]."
 
 5. BUSINESS MODEL (3-5 sentences)
-   - If MONEY = subscription/SaaS/freemium: "$X.XX/month" + free/paid split + 2 benchmarks with actual prices.
-   - If MONEY = ad-supported: ad format + estimated CPM + premium ad-free tier + 2 benchmarks.
-   - If MONEY = usage-based: per-unit price + estimated monthly cost for typical user + 2 benchmarks.
-   - If MONEY = other: specific pricing mechanism + 2 benchmarks.
-   MUST include at least TWO specific dollar amounts.
+   Match the keyword model:
+   - subscription/SaaS/freemium: monthly price, free/paid split, and 2 benchmarks
+   - ad-supported: ad format, CPM estimate, premium ad-free tier, and 2 benchmarks
+   - usage-based: per-unit price, expected monthly spend, and 2 benchmarks
+   - other: specific pricing mechanism and 2 benchmarks
+
+   Include at least two specific dollar amounts.
 
 6. MVP SCOPE (3-5 sentences)
-   - IN: 3-4 specific features (from the core features list above)
-   - OUT: 2-3 features explicitly deferred
-   - The ONE thing: "User [verb]s [object] and [outcome]" — one sentence.
-   - Cheapest test: Choose the method that fits THIS product type:
-     * Consumer app → 5-10 user interviews + clickable Figma prototype
-     * B2B tool → Cold email/DM to 20 potential users with Loom video demo
-     * Marketplace → Supply-side recruitment first (post in relevant community/Discord)
-     * Content product → Publish 5 pieces on existing platform, measure engagement
-     * Hardware/IoT → Wizard-of-Oz test with manual backend
-     Do NOT default to "Google Form survey" for every idea.
+   - IN: 3-4 specific features from the list above
+   - OUT: 2-3 explicitly deferred features
+   - ONE thing: "User [verb]s [object] and [outcome]."
+   - Cheapest test:
+     * Consumer app: 5-10 user interviews plus clickable Figma prototype
+     * B2B tool: cold outreach to 20 prospects with a Loom demo
+     * Marketplace: recruit supply first
+     * Content product: publish 5 pieces on an existing platform
+     * Hardware/IoT: Wizard-of-Oz test with a manual backend
 
-For concept_en, copy Concept EN exactly as-is.
-For concept_ko, copy Concept KO exactly as-is.
-Every Korean section must stay in Korean unless a proper noun must remain in English.
-Do NOT paraphrase or rewrite the concept fields."""
+For concept, copy Concept exactly as-is.
+Do not paraphrase or rewrite the concept field."""
 
     return system_prompt, user_prompt

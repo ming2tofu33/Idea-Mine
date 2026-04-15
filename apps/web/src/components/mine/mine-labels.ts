@@ -1,37 +1,27 @@
 type LocalizedText = {
-  ko: string;
   en: string;
 };
 
 type LocalizedTextList = {
-  ko: string[];
   en: string[];
 };
 
 type LocalizedCount = {
-  ko: (value: number) => string;
   en: (value: number) => string;
 };
 
 type LocalizedInstruction = {
-  ko: (primary: string, secondary: string) => string;
   en: (primary: string, secondary: string) => string;
 };
 
-const copy = (value: string): LocalizedText => ({ ko: value, en: value });
-const copyList = (values: string[]): LocalizedTextList => ({ ko: values, en: values });
-const copyCount = (formatter: (value: number) => string): LocalizedCount => ({
-  ko: formatter,
-  en: formatter,
-});
+const copy = (value: string): LocalizedText => ({ en: value });
+const copyList = (values: string[]): LocalizedTextList => ({ en: values });
+const copyCount = (formatter: (value: number) => string): LocalizedCount => ({ en: formatter });
 const copyInstruction = (
   formatter: (primary: string, secondary: string) => string,
-): LocalizedInstruction => ({
-  ko: formatter,
-  en: formatter,
-});
+): LocalizedInstruction => ({ en: formatter });
 
-export type MineLanguage = "ko" | "en";
+export type MineLanguage = "en";
 
 export const MINE_LABELS = {
   rerolls: copy("rerolls"),
@@ -87,9 +77,15 @@ export const MINE_LABELS = {
   supportSystemNote: copy("System note"),
   supportReady: {
     title: copy("Scan guidance and system notes."),
-    intro: copy("Quiet guidance for the current sector. Keep the main stage in focus and use this block for orientation only."),
-    primary: copy("Select a target, review the detail panel, and reroll only when you need a fresh sector."),
-    secondary: copy("Pink signal energy stays concentrated on the selected vein and the primary mine action."),
+    intro: copy(
+      "Quiet guidance for the current sector. Keep the main stage in focus and use this block for orientation only.",
+    ),
+    primary: copy(
+      "Select a target, review the detail panel, and reroll only when you need a fresh sector.",
+    ),
+    secondary: copy(
+      "Pink signal energy stays concentrated on the selected vein and the primary mine action.",
+    ),
   },
   supportLoading: {
     title: copy("Scan guidance and system notes."),
@@ -105,7 +101,9 @@ export const MINE_LABELS = {
   },
   supportEmpty: {
     title: copy("Scan guidance and system notes."),
-    intro: copy("No target is available yet. Keep this block as orientation while the sector repopulates."),
+    intro: copy(
+      "No target is available yet. Keep this block as orientation while the sector repopulates.",
+    ),
     primary: copy("Wait for a fresh sector before selecting a target."),
     secondary: copy("A fresh sector will appear here once the scan resolves."),
   },
@@ -124,6 +122,6 @@ export const MINE_LABELS = {
   unknownError: copy("Unknown error"),
   selectedSuffix: copy("selected"),
   vaulting: copy("Vaulting..."),
-  vaultIntake: copy("Vault them 💎"),
+  vaultIntake: copy("Vault them?"),
   vaultSuccess: copy("Saved to the vault!"),
 } as const;

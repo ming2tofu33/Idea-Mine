@@ -18,23 +18,23 @@ def get_tavily() -> TavilyClient:
 
 
 async def research_market(
-    title_en: str,
-    summary_en: str,
+    title: str,
+    summary: str,
     keywords: list[dict],
 ) -> str:
     """아이디어 관련 시장/경쟁 데이터를 2개 쿼리로 검색."""
     client = get_tavily()
 
     # 핵심 도메인 키워드 추출 (domain + who 우선)
-    domain_kws = [kw["en"] for kw in keywords if kw["category"] in ("domain", "who")]
-    tech_kws = [kw["en"] for kw in keywords if kw["category"] in ("ai", "tech")]
-    domain_term = " ".join(domain_kws[:2]) if domain_kws else title_en
+    domain_kws = [kw["label"] for kw in keywords if kw["category"] in ("domain", "who")]
+    tech_kws = [kw["label"] for kw in keywords if kw["category"] in ("ai", "tech")]
+    domain_term = " ".join(domain_kws[:2]) if domain_kws else title
     tech_term = " ".join(tech_kws[:2]) if tech_kws else ""
 
     # 쿼리 1: 시장 규모 + 트렌드
     market_query = f"{domain_term} {tech_term} market size growth trend 2024 2025"
     # 쿼리 2: 경쟁사 + 유사 서비스
-    competition_query = f"{title_en} similar apps competitors alternatives"
+    competition_query = f"{title} similar apps competitors alternatives"
 
     sections = []
 

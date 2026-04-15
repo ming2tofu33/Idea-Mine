@@ -16,6 +16,11 @@ Each keyword has a category that defines its role in the idea:
 MONEY should almost never be the main hook of the idea.
 Treat it as background context unless the combination is genuinely about a business model innovation.
 
+=== OUTPUT LANGUAGE ===
+
+Write all outputs in English only.
+Do not generate Korean variants.
+
 === SUMMARY QUALITY RUBRIC ===
 
 Use the summary as the expanded explanation of the product idea.
@@ -44,8 +49,7 @@ For every summary, self-check:
 === TITLE QUALITY RUBRIC ===
 
 Structure:
-- title_ko: 6-14 characters, noun phrase, not a sentence
-- title_en: 3-7 words, noun phrase
+- title: 3-7 words, noun phrase, not a sentence
 
 Must contain:
 - At least one concrete element from the keywords
@@ -100,7 +104,7 @@ For titles:
 1. VISUAL TEST: Can I picture a real moment, object, or action?
 2. MEMORY TEST: Would I remember this title 10 minutes later?
 3. MONETIZATION TEST: Is the title led by subscription, marketplace, SaaS, pricing, or monetization language? If yes, rewrite unless product form itself is the novelty.
-4. LENGTH TEST: title_ko is 6-14 characters and title_en is 3-7 words.
+4. LENGTH TEST: title is 3-7 words.
 
 For summaries:
 5. 3-ELEMENT TEST: WHO+ACTION, DIFFERENCE, and OUTCOME are all present.
@@ -124,7 +128,7 @@ It may be one or two short natural sentences, but it must read like one connecte
 Do not write the one-line idea as segmented labels or template fragments.
 Do not use label-led formats like WHO:, ACTION:, DIFFERENCE:, OUTCOME:, MOMENT:, TWIST:, or PAYOFF:.
 
-Each one-line idea must make these 4 things clear in a single sentence:
+Each one-line idea must make these 4 things clear:
 1. WHO: exactly who this is for
 2. MOMENT: when or why they reach for it
 3. TWIST: what new behavior or mechanism makes it different
@@ -153,7 +157,7 @@ Before writing the title or summary, verify the one-line idea:
     combo_sections = []
     for combo in combos:
         kw_list = ", ".join(
-            f"{kw['en']} ({kw['category'].upper()})" for kw in combo["keywords"]
+            f"{kw['label']} ({kw['category'].upper()})" for kw in combo["keywords"]
         )
         instruction = tier_instructions[combo["tier_type"]]
         combo_sections.append(
@@ -178,11 +182,8 @@ Global guardrails:
 
 Each idea must have:
 - sort_order
-- idea_line_ko
-- idea_line_en
-- title_ko
-- title_en
-- summary_ko
-- summary_en"""
+- idea_line
+- title
+- summary"""
 
     return system_prompt, user_prompt

@@ -16,17 +16,8 @@ from app.prompts.mining import build_mining_prompt
 from app.services.combo_builder import build_keyword_combos
 
 DEFAULT_MODEL = "gpt-5-nano"
-DEFAULT_PROMPT_VERSION = "v6"
+DEFAULT_PROMPT_VERSION = "v10-single-fields"
 
-KOREAN_BUZZWORDS = [
-    "ai 기반",
-    "맞춤형",
-    "혁신",
-    "스마트",
-    "종합",
-    "플랫폼",
-    "솔루션",
-]
 ENGLISH_BUZZWORDS = [
     "ai-powered",
     "smart",
@@ -43,11 +34,6 @@ MONETIZATION_TERMS = [
     "pricing plan",
     "paid tier",
     "plan",
-    "구독",
-    "마켓",
-    "플랜",
-    "요금제",
-    "유료",
 ]
 SYSTEM_VOICE_TERMS = [
     "provides",
@@ -57,11 +43,6 @@ SYSTEM_VOICE_TERMS = [
     "helps users",
     "service",
     "platform",
-    "제공",
-    "지원",
-    "가능하게",
-    "서비스",
-    "플랫폼",
 ]
 ACTION_TERMS = [
     "open",
@@ -91,19 +72,6 @@ ACTION_TERMS = [
     "completes",
     "compare",
     "compares",
-    "찍",
-    "촬영",
-    "올리",
-    "공유",
-    "기록",
-    "확인",
-    "예약",
-    "입력",
-    "선택",
-    "비교",
-    "주문",
-    "시작",
-    "완료",
 ]
 DIFFERENCE_TERMS = [
     "unlike",
@@ -111,32 +79,26 @@ DIFFERENCE_TERMS = [
     "rather than",
     "different from",
     "without",
-    "달리",
-    "대신",
-    "기존",
-    "없이",
 ]
 CONCRETE_OUTCOME_PATTERN = re.compile(
-    r"(\d+)|(\bminute|\bminutes|\bhour|\bhours|\bday|\bdays|\bweek|\bweeks|\bmonth|\bmonths|\busers\b|\bsessions\b)|([0-9]+분|[0-9]+시간|[0-9]+일|[0-9]+주|[0-9]+개월|[0-9]+명|[0-9]+번)"
+    r"(\d+)|(\bminute\b|\bminutes\b|\bhour\b|\bhours\b|\bday\b|\bdays\b|\bweek\b|\bweeks\b|\bmonth\b|\bmonths\b|\busers\b|\bsessions\b)",
 )
 TITLE_WORD_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9-]*")
 
 CHECK_WEIGHTS = {
-    "title_ko_length_ok": 8,
-    "title_en_word_count_ok": 8,
+    "title_word_count_ok": 12,
     "title_not_buzzword": 10,
     "title_not_monetization_led": 15,
-    "summary_has_user_action": 12,
+    "summary_has_user_action": 14,
     "summary_has_difference": 10,
     "summary_has_concrete_outcome": 10,
     "summary_not_system_voice": 10,
     "summary_not_money_feature": 15,
-    "tier_not_default_pivot": 12,
+    "tier_not_default_pivot": 14,
 }
 
 FINDING_LABELS = {
-    "title_ko_length_ok": "title_ko_length",
-    "title_en_word_count_ok": "title_en_length",
+    "title_word_count_ok": "title_length",
     "title_not_buzzword": "title_buzzword",
     "title_not_monetization_led": "title_monetization_hook",
     "summary_has_user_action": "summary_missing_user_action",
@@ -164,8 +126,7 @@ class MiningIdeaScore:
     score: int
     checks: dict[str, bool]
     findings: list[str]
-    title_en: str
-    title_ko: str
+    title: str
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -242,12 +203,12 @@ def get_mining_eval_cases() -> list[MiningEvalCase]:
             seed=42,
             has_ai_keyword=True,
             keywords=[
-                {"slug": "solo-founder", "category": "who", "ko": "1인 창업자", "en": "solo founder"},
-                {"slug": "mobile-app", "category": "tech", "ko": "모바일 앱", "en": "mobile app"},
-                {"slug": "voice-ai", "category": "ai", "ko": "음성 AI", "en": "voice AI"},
-                {"slug": "fitness", "category": "domain", "ko": "피트니스", "en": "fitness"},
-                {"slug": "habit-building", "category": "value", "ko": "습관 형성", "en": "habit building"},
-                {"slug": "subscription", "category": "money", "ko": "구독", "en": "subscription"},
+                {"slug": "solo-founder", "category": "who", "label": "solo founder"},
+                {"slug": "mobile-app", "category": "tech", "label": "mobile app"},
+                {"slug": "voice-ai", "category": "ai", "label": "voice AI"},
+                {"slug": "fitness", "category": "domain", "label": "fitness"},
+                {"slug": "habit-building", "category": "value", "label": "habit building"},
+                {"slug": "subscription", "category": "money", "label": "subscription"},
             ],
         ),
         MiningEvalCase(
@@ -256,12 +217,12 @@ def get_mining_eval_cases() -> list[MiningEvalCase]:
             seed=7,
             has_ai_keyword=True,
             keywords=[
-                {"slug": "restaurant-owner", "category": "who", "ko": "식당 사장", "en": "restaurant owner"},
-                {"slug": "dashboard", "category": "tech", "ko": "대시보드", "en": "dashboard"},
-                {"slug": "vision-ai", "category": "ai", "ko": "비전 AI", "en": "vision AI"},
-                {"slug": "inventory", "category": "domain", "ko": "재고 관리", "en": "inventory"},
-                {"slug": "waste-reduction", "category": "value", "ko": "폐기 절감", "en": "waste reduction"},
-                {"slug": "monthly-subscription", "category": "money", "ko": "월 구독", "en": "monthly subscription"},
+                {"slug": "restaurant-owner", "category": "who", "label": "restaurant owner"},
+                {"slug": "dashboard", "category": "tech", "label": "dashboard"},
+                {"slug": "vision-ai", "category": "ai", "label": "vision AI"},
+                {"slug": "inventory", "category": "domain", "label": "inventory"},
+                {"slug": "waste-reduction", "category": "value", "label": "waste reduction"},
+                {"slug": "monthly-subscription", "category": "money", "label": "monthly subscription"},
             ],
         ),
         MiningEvalCase(
@@ -270,12 +231,12 @@ def get_mining_eval_cases() -> list[MiningEvalCase]:
             seed=19,
             has_ai_keyword=True,
             keywords=[
-                {"slug": "frontend-dev", "category": "who", "ko": "프론트엔드 개발자", "en": "frontend developer"},
-                {"slug": "browser-extension", "category": "tech", "ko": "브라우저 확장", "en": "browser extension"},
-                {"slug": "language-model", "category": "ai", "ko": "언어 모델", "en": "language model"},
-                {"slug": "documentation", "category": "domain", "ko": "문서 작성", "en": "documentation"},
-                {"slug": "error-reduction", "category": "value", "ko": "실수 감소", "en": "error reduction"},
-                {"slug": "usage-based", "category": "money", "ko": "사용량 과금", "en": "usage-based pricing"},
+                {"slug": "frontend-dev", "category": "who", "label": "frontend developer"},
+                {"slug": "browser-extension", "category": "tech", "label": "browser extension"},
+                {"slug": "language-model", "category": "ai", "label": "language model"},
+                {"slug": "documentation", "category": "domain", "label": "documentation"},
+                {"slug": "error-reduction", "category": "value", "label": "error reduction"},
+                {"slug": "usage-based", "category": "money", "label": "usage-based pricing"},
             ],
         ),
         MiningEvalCase(
@@ -284,28 +245,25 @@ def get_mining_eval_cases() -> list[MiningEvalCase]:
             seed=31,
             has_ai_keyword=False,
             keywords=[
-                {"slug": "working-parent", "category": "who", "ko": "워킹맘", "en": "working parent"},
-                {"slug": "mobile-app", "category": "tech", "ko": "모바일 앱", "en": "mobile app"},
-                {"slug": "meal-planning", "category": "domain", "ko": "식단 계획", "en": "meal planning"},
-                {"slug": "time-saving", "category": "value", "ko": "시간 절약", "en": "time saving"},
-                {"slug": "freemium", "category": "money", "ko": "프리미엄", "en": "freemium"},
+                {"slug": "working-parent", "category": "who", "label": "working parent"},
+                {"slug": "mobile-app", "category": "tech", "label": "mobile app"},
+                {"slug": "meal-planning", "category": "domain", "label": "meal planning"},
+                {"slug": "time-saving", "category": "value", "label": "time saving"},
+                {"slug": "freemium", "category": "money", "label": "freemium"},
             ],
         ),
     ]
 
 
 def score_mining_idea(idea: dict, combo: dict) -> MiningIdeaScore:
-    title_ko = str(idea.get("title_ko", "")).strip()
-    title_en = str(idea.get("title_en", "")).strip()
-    summary_ko = str(idea.get("summary_ko", "")).strip()
-    summary_en = str(idea.get("summary_en", "")).strip()
-    title_text = _normalize_text(title_ko, title_en)
-    summary_text = _normalize_text(summary_ko, summary_en)
+    title = str(idea.get("title", "")).strip()
+    summary = str(idea.get("summary", "")).strip()
+    title_text = _normalize_text(title)
+    summary_text = _normalize_text(summary)
 
     checks = {
-        "title_ko_length_ok": 6 <= len(title_ko.replace(" ", "")) <= 14,
-        "title_en_word_count_ok": 3 <= len(TITLE_WORD_PATTERN.findall(title_en)) <= 7,
-        "title_not_buzzword": not _contains_any(title_text, KOREAN_BUZZWORDS + ENGLISH_BUZZWORDS),
+        "title_word_count_ok": 3 <= len(TITLE_WORD_PATTERN.findall(title)) <= 7,
+        "title_not_buzzword": not _contains_any(title_text, ENGLISH_BUZZWORDS),
         "title_not_monetization_led": not _contains_any(title_text, MONETIZATION_TERMS),
         "summary_has_user_action": _contains_any(summary_text, ACTION_TERMS),
         "summary_has_difference": _contains_any(summary_text, DIFFERENCE_TERMS),
@@ -316,11 +274,7 @@ def score_mining_idea(idea: dict, combo: dict) -> MiningIdeaScore:
     }
 
     score = _weighted_score(checks)
-    findings = [
-        FINDING_LABELS[name]
-        for name, passed in checks.items()
-        if not passed
-    ]
+    findings = [FINDING_LABELS[name] for name, passed in checks.items() if not passed]
 
     return MiningIdeaScore(
         sort_order=int(idea.get("sort_order", combo.get("sort_order", 0))),
@@ -328,8 +282,7 @@ def score_mining_idea(idea: dict, combo: dict) -> MiningIdeaScore:
         score=score,
         checks=checks,
         findings=findings,
-        title_en=title_en,
-        title_ko=title_ko,
+        title=title,
     )
 
 
@@ -396,8 +349,7 @@ def run_mining_eval(
         if message.refusal:
             raise RuntimeError(f"{case.name} refused: {message.refusal}")
 
-        parsed = message.parsed
-        ideas = [idea.model_dump() for idea in parsed.ideas]
+        ideas = [idea.model_dump() for idea in message.parsed.ideas]
         batch_score = score_mining_batch(ideas=ideas, combos=combos)
 
         case_results.append(
@@ -427,15 +379,12 @@ def run_mining_eval(
 def save_report(report: MiningEvalReport, output_path: str) -> None:
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(report.to_dict(), ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    path.write_text(json.dumps(report.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
 
 
 def render_report_markdown(report: MiningEvalReport) -> str:
     lines = [
-        f"# Mining Eval Report",
+        "# Mining Eval Report",
         f"- generated_at: {report.generated_at}",
         f"- prompt_version: {report.prompt_version}",
         f"- model: {report.model}",
@@ -487,19 +436,15 @@ def _passes_pivot_check(summary_text: str, title_text: str, combo: dict) -> bool
 
 
 def _weighted_score(checks: dict[str, bool]) -> int:
-    earned = sum(
-        CHECK_WEIGHTS[name]
-        for name, passed in checks.items()
-        if passed
-    )
+    earned = sum(CHECK_WEIGHTS[name] for name, passed in checks.items() if passed)
     total = sum(CHECK_WEIGHTS.values())
     return round(earned / total * 100)
 
 
 def _classify_output_format(idea: dict) -> str:
-    title_en = str(idea.get("title_en", "")).lower()
-    summary_en = str(idea.get("summary_en", "")).lower()
-    text = f"{title_en} {summary_en}"
+    title = str(idea.get("title", "")).lower()
+    summary = str(idea.get("summary", "")).lower()
+    text = f"{title} {summary}"
 
     if "marketplace" in text:
         return "marketplace"
@@ -521,7 +466,7 @@ def _classify_output_format(idea: dict) -> str:
 
 
 def _normalize_title_key(idea: dict) -> str:
-    title = _normalize_text(str(idea.get("title_en", "")))
+    title = _normalize_text(str(idea.get("title", "")))
     cleaned = title
     for term in MONETIZATION_TERMS + ENGLISH_BUZZWORDS:
         cleaned = cleaned.replace(term, " ")

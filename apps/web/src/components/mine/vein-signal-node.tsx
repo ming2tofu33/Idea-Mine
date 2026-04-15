@@ -57,8 +57,8 @@ export function VeinSignalNode({
   const animateMotion = prefersReducedMotion === false;
   const rarity = RARITY_STYLES[vein.rarity];
   const rarityLabel = MINE_LABELS.rarity[vein.rarity][lang];
-  const primaryKeyword = vein.keywords[0]?.[lang] ?? vein.keywords[0]?.en ?? "signal";
-  const secondaryKeyword = vein.keywords[1]?.[lang] ?? vein.keywords[1]?.en;
+  const primaryKeyword = vein.keywords[0]?.label ?? "signal";
+  const secondaryKeyword = vein.keywords[1]?.label;
   const positionLabel = MINE_LABELS.positionLabels[position][lang];
 
   return (

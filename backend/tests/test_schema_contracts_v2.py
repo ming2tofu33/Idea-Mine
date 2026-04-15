@@ -201,7 +201,6 @@ def test_profiles_contract(schema):
     assert set(columns) >= {
         "id",
         "nickname",
-        "language",
         "tier",
         "role",
         "persona_tier",
@@ -218,9 +217,6 @@ def test_profiles_contract(schema):
     details = schema.column_details("public", "profiles")
     assert details["id"]["data_type"] == "uuid"
     assert details["id"]["is_nullable"] is False
-    assert details["language"]["data_type"] == "text"
-    assert details["language"]["is_nullable"] is False
-    assert "'ko'::text" in details["language"]["column_default"]
     assert details["tier"]["data_type"] == "text"
     assert details["tier"]["is_nullable"] is False
     assert "'free'::text" in details["tier"]["column_default"]
@@ -246,7 +242,6 @@ def test_profiles_contract(schema):
 
     constraint_definitions = schema.constraint_definitions("public", "profiles")
     assert any("FOREIGN KEY (id) REFERENCES auth.users(id) ON DELETE CASCADE" in item for item in constraint_definitions)
-    assert any("language" in item and "'ko'" in item and "'en'" in item for item in constraint_definitions)
     assert any("tier" in item and "'free'" in item and "'lite'" in item and "'pro'" in item for item in constraint_definitions)
     assert any("role" in item and "'user'" in item and "'admin'" in item for item in constraint_definitions)
     assert any("persona_tier" in item and "'free'" in item and "'lite'" in item and "'pro'" in item for item in constraint_definitions)
@@ -288,8 +283,7 @@ def test_keywords_contract(schema):
         "slug",
         "category",
         "subtype",
-        "ko",
-        "en",
+        "label",
         "aliases",
         "weight",
         "is_premium",
@@ -307,10 +301,8 @@ def test_keywords_contract(schema):
     assert details["category"]["is_nullable"] is False
     assert details["subtype"]["data_type"] == "text"
     assert details["subtype"]["is_nullable"] is False
-    assert details["ko"]["data_type"] == "text"
-    assert details["ko"]["is_nullable"] is False
-    assert details["en"]["data_type"] == "text"
-    assert details["en"]["is_nullable"] is False
+    assert details["label"]["data_type"] == "text"
+    assert details["label"]["is_nullable"] is False
     assert details["aliases"]["data_type"] == "ARRAY"
     assert details["aliases"]["is_nullable"] is False
     assert details["weight"]["data_type"] == "real"
@@ -542,12 +534,9 @@ def test_ideas_contract(schema):
         "id",
         "user_id",
         "vein_id",
-        "idea_line_ko",
-        "idea_line_en",
-        "title_ko",
-        "title_en",
-        "summary_ko",
-        "summary_en",
+        "idea_line",
+        "title",
+        "summary",
         "keyword_combo",
         "tier_type",
         "sort_order",
@@ -562,18 +551,12 @@ def test_ideas_contract(schema):
     assert details["user_id"]["is_nullable"] is False
     assert details["vein_id"]["data_type"] == "uuid"
     assert details["vein_id"]["is_nullable"] is False
-    assert details["idea_line_ko"]["data_type"] == "text"
-    assert details["idea_line_ko"]["is_nullable"] is False
-    assert details["idea_line_en"]["data_type"] == "text"
-    assert details["idea_line_en"]["is_nullable"] is False
-    assert details["title_ko"]["data_type"] == "text"
-    assert details["title_ko"]["is_nullable"] is False
-    assert details["title_en"]["data_type"] == "text"
-    assert details["title_en"]["is_nullable"] is False
-    assert details["summary_ko"]["data_type"] == "text"
-    assert details["summary_ko"]["is_nullable"] is False
-    assert details["summary_en"]["data_type"] == "text"
-    assert details["summary_en"]["is_nullable"] is False
+    assert details["idea_line"]["data_type"] == "text"
+    assert details["idea_line"]["is_nullable"] is False
+    assert details["title"]["data_type"] == "text"
+    assert details["title"]["is_nullable"] is False
+    assert details["summary"]["data_type"] == "text"
+    assert details["summary"]["is_nullable"] is False
     assert details["keyword_combo"]["data_type"] == "jsonb"
     assert details["keyword_combo"]["is_nullable"] is False
     assert details["tier_type"]["data_type"] == "text"
@@ -617,16 +600,6 @@ def test_ideas_contract(schema):
         for item in constraint_definitions
     )
 
-    idea_triggers = schema.trigger_names("public", "ideas")
-    assert "sync_idea_one_liners_before_write" in idea_triggers
-    idea_trigger_details = schema.trigger_details("public", "ideas")
-    assert idea_trigger_details["sync_idea_one_liners_before_write"]["action_timing"] == "BEFORE"
-    sync_one_liners_definition = schema.function_definition("public", "sync_idea_one_liners")
-    assert "new.idea_line_ko" in sync_one_liners_definition.lower()
-    assert "new.idea_line_en" in sync_one_liners_definition.lower()
-    assert "new.summary_ko" in sync_one_liners_definition.lower()
-    assert "new.summary_en" in sync_one_liners_definition.lower()
-
     assert schema.row_count("ideas") == 0
 
 
@@ -636,20 +609,13 @@ def test_overviews_contract(schema):
         "id",
         "idea_id",
         "user_id",
-        "concept_ko",
-        "concept_en",
-        "problem_ko",
-        "problem_en",
-        "target_ko",
-        "target_en",
-        "features_ko",
-        "features_en",
-        "differentiator_ko",
-        "differentiator_en",
-        "revenue_ko",
-        "revenue_en",
-        "mvp_scope_ko",
-        "mvp_scope_en",
+        "concept",
+        "problem",
+        "target",
+        "features",
+        "differentiator",
+        "revenue",
+        "mvp_scope",
         "created_at",
         "updated_at",
     }
@@ -662,20 +628,13 @@ def test_overviews_contract(schema):
     assert details["user_id"]["data_type"] == "uuid"
     assert details["user_id"]["is_nullable"] is False
     for field in (
-        "concept_ko",
-        "concept_en",
-        "problem_ko",
-        "problem_en",
-        "target_ko",
-        "target_en",
-        "features_ko",
-        "features_en",
-        "differentiator_ko",
-        "differentiator_en",
-        "revenue_ko",
-        "revenue_en",
-        "mvp_scope_ko",
-        "mvp_scope_en",
+        "concept",
+        "problem",
+        "target",
+        "features",
+        "differentiator",
+        "revenue",
+        "mvp_scope",
     ):
         assert details[field]["data_type"] == "text"
         assert details[field]["is_nullable"] is False
@@ -726,18 +685,12 @@ def test_appraisals_contract(schema):
         "user_id",
         "overview_id",
         "depth",
-        "market_fit_ko",
-        "market_fit_en",
-        "feasibility_ko",
-        "feasibility_en",
-        "risk_ko",
-        "risk_en",
-        "problem_fit_ko",
-        "problem_fit_en",
-        "differentiation_ko",
-        "differentiation_en",
-        "scalability_ko",
-        "scalability_en",
+        "market_fit",
+        "feasibility",
+        "risk",
+        "problem_fit",
+        "differentiation",
+        "scalability",
         "created_at",
     }
 
@@ -751,18 +704,12 @@ def test_appraisals_contract(schema):
     assert details["depth"]["data_type"] == "text"
     assert details["depth"]["is_nullable"] is False
     for field in (
-        "market_fit_ko",
-        "market_fit_en",
-        "feasibility_ko",
-        "feasibility_en",
-        "risk_ko",
-        "risk_en",
-        "problem_fit_ko",
-        "problem_fit_en",
-        "differentiation_ko",
-        "differentiation_en",
-        "scalability_ko",
-        "scalability_en",
+        "market_fit",
+        "feasibility",
+        "risk",
+        "problem_fit",
+        "differentiation",
+        "scalability",
     ):
         assert details[field]["data_type"] == "text"
         assert details[field]["is_nullable"] is False
@@ -917,7 +864,6 @@ def test_ai_usage_logs_contract(schema):
         "total_cost_usd",
         "response_time_ms",
         "status",
-        "language",
         "source",
         "created_at",
     }
@@ -954,9 +900,6 @@ def test_ai_usage_logs_contract(schema):
     assert details["status"]["data_type"] == "text"
     assert details["status"]["is_nullable"] is False
     assert "'success'::text" in details["status"]["column_default"]
-    assert details["language"]["data_type"] == "text"
-    assert details["language"]["is_nullable"] is False
-    assert "'ko'::text" in details["language"]["column_default"]
     assert details["source"]["data_type"] == "text"
     assert details["source"]["is_nullable"] is False
     assert "'app'::text" in details["source"]["column_default"]
@@ -978,6 +921,9 @@ def test_ai_usage_logs_contract(schema):
         and "'overview'" in item
         and "'appraisal'" in item
         and "'full_overview'" in item
+        and "'product_design'" in item
+        and "'blueprint'" in item
+        and "'roadmap'" in item
         for item in constraint_definitions
     )
     assert any(
@@ -987,7 +933,6 @@ def test_ai_usage_logs_contract(schema):
         and "'filtered'" in item
         for item in constraint_definitions
     )
-    assert any("language" in item and "'ko'" in item and "'en'" in item for item in constraint_definitions)
     assert any(
         "source" in item
         and "'app'" in item
@@ -1043,7 +988,7 @@ def test_rls_policies_contract(schema):
         "authenticated",
         "UPDATE",
     )
-    assert profile_update_columns == ["language", "nickname"]
+    assert profile_update_columns == ["nickname"]
 
 
 def test_hot_indexes_contract(schema):

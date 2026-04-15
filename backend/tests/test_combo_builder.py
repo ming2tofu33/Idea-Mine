@@ -4,12 +4,12 @@ from app.services.combo_builder import build_keyword_combos
 
 
 KEYWORDS_WITH_AI = [
-    {"slug": "solo-founder", "category": "who", "ko": "1인 창업자", "en": "solo founder"},
-    {"slug": "mobile-app", "category": "tech", "ko": "모바일 앱", "en": "mobile app"},
-    {"slug": "voice-ai", "category": "ai", "ko": "음성 AI", "en": "voice AI"},
-    {"slug": "fitness", "category": "domain", "ko": "피트니스", "en": "fitness"},
-    {"slug": "habit-building", "category": "value", "ko": "습관 형성", "en": "habit building"},
-    {"slug": "subscription", "category": "money", "ko": "구독", "en": "subscription"},
+    {"slug": "solo-founder", "category": "who", "label": "solo founder"},
+    {"slug": "mobile-app", "category": "tech", "label": "mobile app"},
+    {"slug": "voice-ai", "category": "ai", "label": "voice AI"},
+    {"slug": "fitness", "category": "domain", "label": "fitness"},
+    {"slug": "habit-building", "category": "value", "label": "habit building"},
+    {"slug": "subscription", "category": "money", "label": "subscription"},
 ]
 
 
@@ -40,7 +40,6 @@ def test_build_keyword_combos_with_ai_reserves_non_ai_slots():
     )
 
     combos_without_ai = [combo for combo in combos if not _has_category(combo, "ai")]
-
     assert len(combos_without_ai) == 4
 
 

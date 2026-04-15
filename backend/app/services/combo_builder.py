@@ -79,8 +79,7 @@ def build_keyword_combos(
                     {
                         "slug": kw["slug"],
                         "category": kw["category"],
-                        "ko": kw["ko"],
-                        "en": kw["en"],
+                        "label": kw["label"],
                     }
                     for kw in selected
                 ],

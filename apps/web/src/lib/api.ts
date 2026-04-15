@@ -321,17 +321,6 @@ const realProfileApi = {
     if (error) throw error;
     return data as UserProfile;
   },
-
-  async updateLanguage(language: "ko" | "en"): Promise<void> {
-    const supabase = (await import("@/lib/supabase/client")).createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Not authenticated");
-    const { error } = await supabase
-      .from("profiles")
-      .update({ language })
-      .eq("id", user.id);
-    if (error) throw error;
-  },
 };
 
 export const profileApi = proxy(realProfileApi, mockProfileApi);

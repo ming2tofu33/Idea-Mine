@@ -6,11 +6,11 @@ SAMPLE_COMBOS = [
         "tier_type": "stable",
         "sort_order": 1,
         "keywords": [
-            {"slug": "solo-founder", "category": "who", "ko": "1인 창업자", "en": "solo founder"},
-            {"slug": "mobile-app", "category": "tech", "ko": "모바일 앱", "en": "mobile app"},
-            {"slug": "voice-ai", "category": "ai", "ko": "음성 AI", "en": "voice AI"},
-            {"slug": "fitness", "category": "domain", "ko": "피트니스", "en": "fitness"},
-            {"slug": "subscription", "category": "money", "ko": "구독", "en": "subscription"},
+            {"slug": "solo-founder", "category": "who", "label": "solo founder"},
+            {"slug": "mobile-app", "category": "tech", "label": "mobile app"},
+            {"slug": "voice-ai", "category": "ai", "label": "voice AI"},
+            {"slug": "fitness", "category": "domain", "label": "fitness"},
+            {"slug": "subscription", "category": "money", "label": "subscription"},
         ],
     }
 ]

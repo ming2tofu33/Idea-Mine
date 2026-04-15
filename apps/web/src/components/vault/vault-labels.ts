@@ -1,20 +1,15 @@
 type LocalizedText = {
-  ko: string;
   en: string;
 };
 
 type LocalizedCount = {
-  ko: (value: number) => string;
   en: (value: number) => string;
 };
 
-const copy = (value: string): LocalizedText => ({ ko: value, en: value });
-const copyCount = (formatter: (value: number) => string): LocalizedCount => ({
-  ko: formatter,
-  en: formatter,
-});
+const copy = (value: string): LocalizedText => ({ en: value });
+const copyCount = (formatter: (value: number) => string): LocalizedCount => ({ en: formatter });
 
-export type VaultLanguage = "ko" | "en";
+export type VaultLanguage = "en";
 
 export const VAULT_LABELS = {
   eyebrow: copy("VAULT"),

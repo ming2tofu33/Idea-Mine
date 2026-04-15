@@ -1,17 +1,15 @@
-export type LandingLanguage = "ko" | "en";
+export type LandingLanguage = "en";
 
 type Localized = {
-  ko: string;
   en: string;
 };
 
 type LocalizedList = {
-  ko: string[];
   en: string[];
 };
 
-const copy = (value: string): Localized => ({ ko: value, en: value });
-const copyList = (values: string[]): LocalizedList => ({ ko: values, en: values });
+const copy = (value: string): Localized => ({ en: value });
+const copyList = (values: string[]): LocalizedList => ({ en: values });
 
 export const LANDING_LABELS = {
   hero: {

@@ -15,14 +15,13 @@ const DEMO_VEINS: ExperienceVein[] = [
     codename: "apex return",
     rarity: "golden",
     keywords: [
-      { category: "ai", ko: "Voice Emotion AI", en: "Voice Emotion AI" },
-      { category: "who", ko: "Senior Solo Households", en: "Senior Solo Households" },
-      { category: "domain", ko: "Mental Health", en: "Mental Health" },
-      { category: "tech", ko: "Mobile App", en: "Mobile App" },
-      { category: "value", ko: "Daily Monitoring", en: "Daily Monitoring" },
+      { category: "ai", label: "Voice Emotion AI" },
+      { category: "who", label: "Senior Solo Households" },
+      { category: "domain", label: "Mental Health" },
+      { category: "tech", label: "Mobile App" },
+      { category: "value", label: "Daily Monitoring" },
     ],
-    previewLineKo: "Detect senior isolation through voice signals",
-    previewLineEn: "Detect senior isolation through voice signals",
+    previewLine: "Detect senior isolation through voice signals",
   },
   {
     id: "demo-commerce",
@@ -30,14 +29,13 @@ const DEMO_VEINS: ExperienceVein[] = [
     codename: "lateral echo",
     rarity: "rare",
     keywords: [
-      { category: "ai", ko: "Image Generation AI", en: "Image Generation AI" },
-      { category: "who", ko: "Small Creators", en: "Small Creators" },
-      { category: "domain", ko: "Commerce", en: "Commerce" },
-      { category: "tech", ko: "Web Platform", en: "Web Platform" },
-      { category: "money", ko: "Subscription", en: "Subscription" },
+      { category: "ai", label: "Image Generation AI" },
+      { category: "who", label: "Small Creators" },
+      { category: "domain", label: "Commerce" },
+      { category: "tech", label: "Web Platform" },
+      { category: "money", label: "Subscription" },
     ],
-    previewLineKo: "Creators finish product images in one minute",
-    previewLineEn: "Creators finish product images in one minute",
+    previewLine: "Creators finish product images in one minute",
   },
   {
     id: "demo-education",
@@ -45,14 +43,13 @@ const DEMO_VEINS: ExperienceVein[] = [
     codename: "edge echo",
     rarity: "common",
     keywords: [
-      { category: "ai", ko: "Personalized Tutor AI", en: "Personalized Tutor AI" },
-      { category: "who", ko: "Elementary School Parents", en: "Elementary School Parents" },
-      { category: "domain", ko: "EdTech", en: "EdTech" },
-      { category: "tech", ko: "Tablet App", en: "Tablet App" },
-      { category: "value", ko: "Progress Management", en: "Progress Management" },
+      { category: "ai", label: "Personalized Tutor AI" },
+      { category: "who", label: "Elementary School Parents" },
+      { category: "domain", label: "EdTech" },
+      { category: "tech", label: "Tablet App" },
+      { category: "value", label: "Progress Management" },
     ],
-    previewLineKo: "Summarize child learning flow for parents in real time",
-    previewLineEn: "Summarize child learning flow for parents in real time",
+    previewLine: "Summarize child learning flow for parents in real time",
   },
 ];
 
@@ -60,106 +57,70 @@ const DEMO_IDEAS: Record<string, ExperienceIdea[]> = {
   "demo-health": [
     {
       id: "demo-health-1",
-      titleKo: "Voice Diary - Senior Isolation Detector",
-      titleEn: "Voice Diary - Senior Isolation Detector",
-      summaryKo:
+      title: "Voice Diary - Senior Isolation Detector",
+      summary:
         "AI analyzes five minutes of daily voice from seniors and alerts families about signs of depression, anxiety, or cognitive decline.",
-      summaryEn:
-        "AI analyzes five minutes of daily voice from seniors and alerts families about signs of depression, anxiety, or cognitive decline.",
-      signalLineKo: "Continuous observation at home instead of a nursing facility",
-      signalLineEn: "Continuous observation at home instead of a nursing facility",
+      signalLine: "Continuous observation at home instead of a nursing facility",
     },
     {
       id: "demo-health-2",
-      titleKo: "Family Conversation Bridge - Emotion Summary Report",
-      titleEn: "Family Conversation Bridge - Emotion Summary Report",
-      summaryKo:
+      title: "Family Conversation Bridge - Emotion Summary Report",
+      summary:
         "Weekly emotion summaries are sent to adult children with suggested topics that energize their parents.",
-      summaryEn:
-        "Weekly emotion summaries are sent to adult children with suggested topics that energize their parents.",
-      signalLineKo: "Turns weekly calls from obligation into designed care",
-      signalLineEn: "Turns weekly calls from obligation into designed care",
+      signalLine: "Turns weekly calls from obligation into designed care",
     },
     {
       id: "demo-health-3",
-      titleKo: "Emergency Signal Escalation Line",
-      titleEn: "Emergency Signal Escalation Line",
-      summaryKo:
+      title: "Emergency Signal Escalation Line",
+      summary:
         "When acute depression or self-harm signals appear, alerts are sent simultaneously to local emergency services and family.",
-      summaryEn:
-        "When acute depression or self-harm signals appear, alerts are sent simultaneously to local emergency services and family.",
-      signalLineKo: "An entry point that connects to public health budgets",
-      signalLineEn: "An entry point that connects to public health budgets",
+      signalLine: "An entry point that connects to public health budgets",
     },
   ],
   "demo-commerce": [
     {
       id: "demo-commerce-1",
-      titleKo: "Product Photos Without a Studio",
-      titleEn: "Product Photos Without a Studio",
-      summaryKo:
+      title: "Product Photos Without a Studio",
+      summary:
         "AI converts smartphone shots into studio-quality product images and auto-adjusts background and lighting to brand tone.",
-      summaryEn:
-        "AI converts smartphone shots into studio-quality product images and auto-adjusts background and lighting to brand tone.",
-      signalLineKo: "Shrinks monthly photo cost to near zero for solo merchants",
-      signalLineEn: "Shrinks monthly photo cost to near zero for solo merchants",
+      signalLine: "Shrinks monthly photo cost to near zero for solo merchants",
     },
     {
       id: "demo-commerce-2",
-      titleKo: "Seasonal Campaign Auto Generator",
-      titleEn: "Seasonal Campaign Auto Generator",
-      summaryKo:
+      title: "Seasonal Campaign Auto Generator",
+      summary:
         "Type a season, holiday, or trend keyword to generate product images, banners, and captions ready for social posts.",
-      summaryEn:
-        "Type a season, holiday, or trend keyword to generate product images, banners, and captions ready for social posts.",
-      signalLineKo: "A creator workflow that eliminates campaign planning meetings",
-      signalLineEn: "A creator workflow that eliminates campaign planning meetings",
+      signalLine: "A creator workflow that eliminates campaign planning meetings",
     },
     {
       id: "demo-commerce-3",
-      titleKo: "Brand Memory Vault",
-      titleEn: "Brand Memory Vault",
-      summaryKo:
+      title: "Brand Memory Vault",
+      summary:
         "Learns past colors, fonts, logos, and image styles so every new asset stays on brand.",
-      summaryEn:
-        "Learns past colors, fonts, logos, and image styles so every new asset stays on brand.",
-      signalLineKo: "Brand consistency becomes the paid conversion trigger",
-      signalLineEn: "Brand consistency becomes the paid conversion trigger",
+      signalLine: "Brand consistency becomes the paid conversion trigger",
     },
   ],
   "demo-education": [
     {
       id: "demo-education-1",
-      titleKo: "Daily Learning Report",
-      titleEn: "Daily Learning Report",
-      summaryKo:
+      title: "Daily Learning Report",
+      summary:
         "A one-page summary of what the child solved, where they got stuck, and which concepts clicked, delivered to parents.",
-      summaryEn:
-        "A one-page summary of what the child solved, where they got stuck, and which concepts clicked, delivered to parents.",
-      signalLineKo: "A transparent daily window instead of quarterly tutor meetings",
-      signalLineEn: "A transparent daily window instead of quarterly tutor meetings",
+      signalLine: "A transparent daily window instead of quarterly tutor meetings",
     },
     {
       id: "demo-education-2",
-      titleKo: "Why Did I Miss This? - Explanation Tutor",
-      titleEn: "Why Did I Miss This? - Explanation Tutor",
-      summaryKo:
+      title: "Why Did I Miss This? - Explanation Tutor",
+      summary:
         "Provides step-by-step explanations matched to the child's level and recommends similar practice problems.",
-      summaryEn:
-        "Provides step-by-step explanations matched to the child's level and recommends similar practice problems.",
-      signalLineKo: "A structure where wrong answers become deeper learning",
-      signalLineEn: "A structure where wrong answers become deeper learning",
+      signalLine: "A structure where wrong answers become deeper learning",
     },
     {
       id: "demo-education-3",
-      titleKo: "Parent Question Translator",
-      titleEn: "Parent Question Translator",
-      summaryKo:
+      title: "Parent Question Translator",
+      summary:
         "Translates everyday parent questions into curriculum terms and formats them for sharing with teachers.",
-      summaryEn:
-        "Translates everyday parent questions into curriculum terms and formats them for sharing with teachers.",
-      signalLineKo: "A tool that removes the language gap between parents and teachers",
-      signalLineEn: "A tool that removes the language gap between parents and teachers",
+      signalLine: "A tool that removes the language gap between parents and teachers",
     },
   ],
 };
@@ -183,10 +144,9 @@ function experienceKeywordToKeyword(
 ): Keyword {
   return {
     id: `${veinId}-kw-${index}`,
-    slug: keyword.en.toLowerCase().replace(/\s+/g, "-"),
+    slug: keyword.label.toLowerCase().replace(/\s+/g, "-"),
     category: keyword.category,
-    ko: keyword.en,
-    en: keyword.en,
+    label: keyword.label,
     is_premium: false,
   };
 }
@@ -236,16 +196,15 @@ export function experienceIdeaToIdea(
   const keyword_combo: KeywordComboEntry[] =
     vein?.keywords.slice(0, 4).map((keyword) => ({
       category: keyword.category,
-      slug: keyword.en.toLowerCase().replace(/\s+/g, "-"),
-      ko: keyword.en,
-      en: keyword.en,
+      slug: keyword.label.toLowerCase().replace(/\s+/g, "-"),
+      label: keyword.label,
     })) ?? [];
 
   return {
     id: idea.id,
-    idea_line: idea.signalLineEn,
-    title: idea.titleEn,
-    summary: idea.summaryEn,
+    idea_line: idea.signalLine,
+    title: idea.title,
+    summary: idea.summary,
     keyword_combo,
     sort_order: sortOrder,
     is_vaulted: true,

@@ -114,7 +114,7 @@ async def _create_veins(
     # 단일 쿼리로 전체 active 키워드 조회 후 Python에서 분류
     all_keywords = (
         supabase.table("keywords")
-        .select("id, slug, category, ko, en, is_premium")
+        .select("id, slug, category, label, is_premium")
         .eq("is_active", True)
         .in_("category", categories)
         .execute()
@@ -173,7 +173,7 @@ async def resolve_vein_keywords(
 
     result = (
         supabase.table("keywords")
-        .select("id, slug, category, ko, en, is_premium")
+        .select("id, slug, category, label, is_premium")
         .in_("id", list(all_ids))
         .execute()
     )

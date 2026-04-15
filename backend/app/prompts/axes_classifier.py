@@ -3,7 +3,7 @@ def build_axes_prompt(
     keywords: list[dict],
     product_type: str,
 ) -> tuple[str, str]:
-    """아이디어의 Interface/Business/Technical 복잡도를 분류."""
+    """Classify an idea across interface, business, and technical complexity."""
 
     system_prompt = """You classify product ideas by 3 complexity axes.
 
@@ -24,18 +24,18 @@ AXES:
   low = standard CRUD, well-known patterns, no special infrastructure
 
 Provide brief reasoning (1-2 sentences) explaining your classification.
-Each axis is independent — a product can be high on one and low on another.
+Each axis is independent - a product can be high on one and low on another.
 
 VERIFICATION: Before outputting, verify each axis classification matches the definitions above."""
 
-    kw_text = ", ".join(f"{k.get('category', '')}: {k.get('en', '')}" for k in keywords)
+    kw_text = ", ".join(f"{k.get('category', '')}: {k.get('label', '')}" for k in keywords)
 
     user_prompt = f"""Classify this product idea:
 
-Concept: {concept.get("concept_en", "")}
+Concept: {concept.get("concept", "")}
 Product Type: {product_type}
 Keywords: {kw_text}
-Primary User: {concept.get("primary_user_en", "")}
-Core Experience: {concept.get("core_experience_en", "")}"""
+Primary User: {concept.get("primary_user", "")}
+Core Experience: {concept.get("core_experience", "")}"""
 
     return system_prompt, user_prompt

@@ -1,10 +1,17 @@
 import asyncio
 from datetime import date
+
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
-from app.dependencies import get_supabase, get_current_user, get_effective_tier, get_effective_role
-from app.services import vein_service, idea_service, rate_limiter
-from app.models.schemas import TodayVeinsResponse, RerollResponse, MineResponse
+
+from app.dependencies import (
+    get_current_user,
+    get_effective_role,
+    get_effective_tier,
+    get_supabase,
+)
+from app.models.schemas import MineResponse, RerollResponse, TodayVeinsResponse
+from app.services import idea_service, rate_limiter, vein_service
 from app.utils import validate_uuid
 
 router = APIRouter(prefix="/mining", tags=["mining"])
@@ -15,14 +22,21 @@ async def get_today_veins(
     user: dict = Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
 ):
-    """오늘의 광맥 3개 조회 (없으면 생성)."""
     tier = get_effective_tier(user)
     role = get_effective_role(user)
 
-    # 광맥 조회와 daily state 조회를 병렬 실행
-    veins_task = vein_service.get_or_create_today_veins(supabase, user["id"], tier, role=role)
+    veins_task = vein_service.get_or_create_today_veins(
+        supabase,
+        user["id"],
+        tier,
+        role=role,
+    )
     state_task = rate_limiter.check_daily_limit_l2(
-        supabase, user["id"], tier, action="none", role=role
+        supabase,
+        user["id"],
+        tier,
+        action="none",
+        role=role,
     )
     veins, state = await asyncio.gather(veins_task, state_task)
 
@@ -43,25 +57,29 @@ async def reroll(
     user: dict = Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
 ):
-    """광맥 3개를 새로 뽑기 (리롤 횟수 차감)."""
     tier = get_effective_tier(user)
     role = get_effective_role(user)
 
     rate_limiter.check_rate_limit_l1(user["id"], role=role)
-    state = await rate_limiter.check_daily_limit_l2(supabase, user["id"], tier, action="reroll", role=role)
+    state = await rate_limiter.check_daily_limit_l2(
+        supabase,
+        user["id"],
+        tier,
+        action="reroll",
+        role=role,
+    )
 
     veins = await vein_service.reroll_veins(supabase, user["id"], tier, role=role)
-
-    # keyword resolve와 increment를 병렬 실행
     resolve_task = vein_service.resolve_vein_keywords(supabase, veins)
     increment_task = rate_limiter.increment_daily_count(
-        supabase, user["id"], "reroll", current_state=state
+        supabase,
+        user["id"],
+        "reroll",
+        current_state=state,
     )
     veins, _ = await asyncio.gather(resolve_task, increment_task)
 
     limits = rate_limiter.TIER_LIMITS.get(tier, rate_limiter.TIER_LIMITS["free"])
-
-    # state를 재사용 (중복 check_daily_limit_l2 호출 제거)
     return RerollResponse(
         veins=veins,
         rerolls_used=state["rerolls_used"] + 1,
@@ -75,14 +93,19 @@ async def mine_vein(
     user: dict = Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
 ):
-    """광맥 선택 -> 아이디어 10개 생성."""
     validate_uuid(vein_id, "vein_id")
 
     tier = get_effective_tier(user)
     role = get_effective_role(user)
 
     rate_limiter.check_rate_limit_l1(user["id"], role=role)
-    state = await rate_limiter.check_daily_limit_l2(supabase, user["id"], tier, action="generation", role=role)
+    state = await rate_limiter.check_daily_limit_l2(
+        supabase,
+        user["id"],
+        tier,
+        action="generation",
+        role=role,
+    )
     await rate_limiter.check_cost_limit_l4(supabase, user["id"], tier, role=role)
 
     vein = await asyncio.to_thread(
@@ -102,12 +125,15 @@ async def mine_vein(
     if vein_data.get("is_selected"):
         raise HTTPException(
             status_code=400,
-            detail={"error": "already_mined", "message": "이미 채굴한 광맥이에요"}
+            detail={
+                "error": "already_mined",
+                "message": "This vein has already been mined.",
+            },
         )
 
     keywords = await asyncio.to_thread(
         lambda: supabase.table("keywords")
-        .select("id, slug, category, ko, en, is_premium")
+        .select("id, slug, category, label, is_premium")
         .in_("id", vein_data["keyword_ids"])
         .execute()
     )
@@ -118,10 +144,13 @@ async def mine_vein(
         tier=tier,
         vein_id=vein_id,
         keywords=keywords.data,
-        language=user.get("language", "ko"),
+        source="web",
     )
 
     await rate_limiter.increment_daily_count(
-        supabase, user["id"], "generation", current_state=state
+        supabase,
+        user["id"],
+        "generation",
+        current_state=state,
     )
     return MineResponse(ideas=ideas, vein_id=vein_id)

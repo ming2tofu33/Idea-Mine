@@ -156,7 +156,7 @@ export function LandingHero({ hasUser, lang }: LandingHeroProps) {
                 <div>
                   {heroSignals.map((item, index) => (
                     <SignalWorkbenchRow
-                      key={item.title.en}
+                      key={item.title[lang]}
                       title={item.title[lang]}
                       detail={item.detail[lang]}
                       status={

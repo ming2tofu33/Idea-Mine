@@ -35,16 +35,16 @@ function pickRandom<T>(arr: T[], n: number): T[] {
 }
 
 const KEYWORDS: Keyword[] = [
-  { id: "k1", slug: "healthcare", category: "domain", ko: "Healthcare", en: "Healthcare", is_premium: false },
-  { id: "k2", slug: "gen-z", category: "who", ko: "Gen Z", en: "Gen Z", is_premium: false },
-  { id: "k3", slug: "voice-ai", category: "tech", ko: "Voice AI", en: "Voice AI", is_premium: false },
-  { id: "k4", slug: "time-saving", category: "value", ko: "Time Saving", en: "Time Saving", is_premium: false },
-  { id: "k5", slug: "subscription", category: "money", ko: "Subscription", en: "Subscription", is_premium: false },
-  { id: "k6", slug: "edtech", category: "domain", ko: "EdTech", en: "EdTech", is_premium: false },
-  { id: "k7", slug: "freelancer", category: "who", ko: "Freelancer", en: "Freelancer", is_premium: false },
-  { id: "k8", slug: "llm", category: "ai", ko: "LLM", en: "LLM", is_premium: true },
-  { id: "k9", slug: "pet-care", category: "domain", ko: "Pet Care", en: "Pet Care", is_premium: false },
-  { id: "k10", slug: "multimodal", category: "ai", ko: "Multimodal AI", en: "Multimodal AI", is_premium: true },
+  { id: "k1", slug: "healthcare", category: "domain", label: "Healthcare", is_premium: false },
+  { id: "k2", slug: "gen-z", category: "who", label: "Gen Z", is_premium: false },
+  { id: "k3", slug: "voice-ai", category: "tech", label: "Voice AI", is_premium: false },
+  { id: "k4", slug: "time-saving", category: "value", label: "Time Saving", is_premium: false },
+  { id: "k5", slug: "subscription", category: "money", label: "Subscription", is_premium: false },
+  { id: "k6", slug: "edtech", category: "domain", label: "EdTech", is_premium: false },
+  { id: "k7", slug: "freelancer", category: "who", label: "Freelancer", is_premium: false },
+  { id: "k8", slug: "llm", category: "ai", label: "LLM", is_premium: true },
+  { id: "k9", slug: "pet-care", category: "domain", label: "Pet Care", is_premium: false },
+  { id: "k10", slug: "multimodal", category: "ai", label: "Multimodal AI", is_premium: true },
 ];
 
 function makeVein(slot: number): Vein {
@@ -107,8 +107,7 @@ function makeIdeas(): Idea[] {
     keyword_combo: pickRandom(KEYWORDS, 3).map((keyword) => ({
       category: keyword.category,
       slug: keyword.slug,
-      ko: keyword.en,
-      en: keyword.en,
+      label: keyword.label,
     })),
     sort_order: index + 1,
     is_vaulted: false,
@@ -490,7 +489,6 @@ export const mockCollectionApi = {
 const MOCK_PROFILE: UserProfile = {
   id: "mock-user-001",
   nickname: "Test Miner",
-  language: "en",
   tier: "free",
   role: "admin",
   persona_tier: null,
@@ -502,11 +500,6 @@ export const mockProfileApi = {
   async getProfile(): Promise<UserProfile> {
     await delay(100);
     return MOCK_PROFILE;
-  },
-
-  async updateLanguage(language: "ko" | "en"): Promise<void> {
-    await delay(100);
-    MOCK_PROFILE.language = language;
   },
 };
 

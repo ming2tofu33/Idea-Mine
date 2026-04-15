@@ -45,11 +45,6 @@ body {
     sans-serif;
 }
 
-html:lang(ko) body {
-  word-break: keep-all;
-  line-break: strict;
-}
-
 @keyframes observatoryGlowPulse {
   0%,
   100% {

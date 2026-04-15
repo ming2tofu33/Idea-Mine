@@ -1,12 +1,17 @@
 import time
 import uuid
+
 from openai import OpenAI
 from supabase import Client
+
 from app.config import settings
-from app.models.llm_schemas import FullOverviewResponse, IdeaAxesResponse, CritiqueResponse
-from app.prompts.full_overview import build_full_overview_prompt, build_full_overview_prompt_with_feedback
+from app.models.llm_schemas import CritiqueResponse, FullOverviewResponse, IdeaAxesResponse
 from app.prompts.axes_classifier import build_axes_prompt
 from app.prompts.critique import build_critique_prompt
+from app.prompts.full_overview import (
+    build_full_overview_prompt,
+    build_full_overview_prompt_with_feedback,
+)
 from app.services.depth_guide import build_depth_guide
 from app.services.market_research import research_market
 
@@ -23,8 +28,7 @@ AXES_COST_OUTPUT = 0.0004
 CRITIQUE_COST_INPUT = 0.00075
 CRITIQUE_COST_OUTPUT = 0.0045
 
-PROMPT_VERSION = "full-overview-v3"
-
+PROMPT_VERSION = "full-overview-v4-single-fields"
 CRITIQUE_THRESHOLD = 70
 
 
@@ -35,6 +39,17 @@ def get_openai() -> OpenAI:
     return _openai
 
 
+def _overview_to_concept(overview: dict) -> dict:
+    target = overview.get("target", "")
+    features = overview.get("features", "")
+    return {
+        "concept": overview.get("concept", ""),
+        "product_type": overview.get("product_type", "B2C"),
+        "primary_user": target.split(".")[0] if target else "",
+        "core_experience": features.split(".")[0] if features else "",
+    }
+
+
 async def generate_full_overview(
     supabase: Client,
     user_id: str,
@@ -43,43 +58,24 @@ async def generate_full_overview(
     idea: dict,
     source: str = "app",
 ) -> dict:
-    """풀 개요서 생성: Pipeline v2.
+    """Generate the full overview document."""
 
-    Step 1: 축 분류 (gpt-5-nano) — Interface/Business/Technical 복잡도
-    Step 2: 섹션 가중치 생성 (Python, LLM 없음)
-    Step 3: 풀 개요 생성 (gpt-5, depth guide 포함)
-    Step 4: Self-Critique (gpt-5-mini)
-    Step 4.5: 점수 < 70이면 재생성 (1회만)
-    Step 5: DB 저장
-    """
     session_id = str(uuid.uuid4())
     client = get_openai()
+    concept = _overview_to_concept(overview)
 
-    # concept 복원 (라이트 개요서에서)
-    concept = {
-        "concept_en": overview.get("concept_en", ""),
-        "concept_ko": overview.get("concept_ko", ""),
-        "product_type": overview.get("product_type", "B2C"),
-        "primary_user_en": overview.get("target_en", "").split(".")[0] if overview.get("target_en") else "",
-        "core_experience_en": overview.get("features_en", "").split("—")[0] if overview.get("features_en") else "",
-    }
-
-    # 시장 리서치
     market_data = await research_market(
-        title_en=idea["title_en"],
-        summary_en=idea["summary_en"],
+        title=idea["title"],
+        summary=idea["summary"],
         keywords=idea["keyword_combo"],
     )
 
-    # ── Step 1: 축 분류 (gpt-5-nano) ──
-    print(f"[full_overview] Step 1: axes classification starting...")
     axes_start = time.time()
     axes_sys, axes_user = build_axes_prompt(
         concept=concept,
         keywords=idea["keyword_combo"],
         product_type=concept["product_type"],
     )
-
     axes_response = client.beta.chat.completions.parse(
         model=AXES_MODEL,
         messages=[
@@ -114,17 +110,12 @@ async def generate_full_overview(
         source=source,
     )
 
-    print(f"[full_overview] Step 1 done: {axes} ({axes_elapsed}ms)")
-
-    # ── Step 2: 섹션 가중치 생성 (Python) ──
     depth_guide = build_depth_guide(
         axes["interface_complexity"],
         axes["business_complexity"],
         axes["technical_complexity"],
     )
 
-    # ── Step 3: 풀 개요 생성 (gpt-5, depth guide 포함) ──
-    print(f"[full_overview] Step 3: generation starting (model={MODEL})...")
     gen_start = time.time()
     system_prompt, user_prompt = build_full_overview_prompt(
         concept=concept,
@@ -186,7 +177,6 @@ async def generate_full_overview(
         )
         raise
 
-    # ── Step 4: Self-Critique (gpt-5-mini) ──
     overview_text = _format_for_critique(result)
     critique_start = time.time()
 
@@ -226,7 +216,6 @@ async def generate_full_overview(
             source=source,
         )
 
-        # ── Step 4.5: 재생성 (조건부, 1회만) ──
         if critique.needs_regeneration and critique.score < CRITIQUE_THRESHOLD:
             regen_start = time.time()
             regen_sys, regen_user = build_full_overview_prompt_with_feedback(
@@ -271,7 +260,6 @@ async def generate_full_overview(
                     source=source,
                 )
             except Exception:
-                # 재생성 실패해도 원본 result 사용 — 치명적이지 않음
                 regen_elapsed = int((time.time() - regen_start) * 1000)
                 await _log_ai_usage(
                     supabase,
@@ -288,9 +276,7 @@ async def generate_full_overview(
                     status="error",
                     source=source,
                 )
-
     except Exception:
-        # Critique 실패해도 원본 result 사용 — 치명적이지 않음
         critique_elapsed = int((time.time() - critique_start) * 1000)
         await _log_ai_usage(
             supabase,
@@ -308,37 +294,37 @@ async def generate_full_overview(
             source=source,
         )
 
-    # ── Step 5: DB 저장 ──
     row = (
         supabase.table("full_overviews")
-        .insert({
-            "user_id": user_id,
-            "overview_id": overview["id"],
-            "concept": result.concept,
-            "problem": result.problem,
-            "target_user": result.target_user,
-            "features_must": _as_string_list(result.features_must),
-            "features_should": _as_string_list(result.features_should),
-            "features_later": _as_string_list(result.features_later),
-            "user_flow": _as_string_list(result.user_flow),
-            "screens": _as_string_list(result.screens),
-            "business_model": result.business_model,
-            "business_rules": _as_string_list(result.business_rules),
-            "mvp_scope": result.mvp_scope,
-            "tech_stack": _as_string_list(result.tech_stack),
-            "data_model_sql": result.data_model_sql,
-            "api_endpoints": _as_string_list(result.api_endpoints),
-            "file_structure": result.file_structure,
-            "external_services": _as_string_list(result.external_services),
-            "auth_flow": _as_string_list(result.auth_flow),
-        })
+        .insert(
+            {
+                "user_id": user_id,
+                "overview_id": overview["id"],
+                "concept": result.concept,
+                "problem": result.problem,
+                "target_user": result.target_user,
+                "features_must": _as_string_list(result.features_must),
+                "features_should": _as_string_list(result.features_should),
+                "features_later": _as_string_list(result.features_later),
+                "user_flow": _as_string_list(result.user_flow),
+                "screens": _as_string_list(result.screens),
+                "business_model": result.business_model,
+                "business_rules": _as_string_list(result.business_rules),
+                "mvp_scope": result.mvp_scope,
+                "tech_stack": _as_string_list(result.tech_stack),
+                "data_model_sql": result.data_model_sql,
+                "api_endpoints": _as_string_list(result.api_endpoints),
+                "file_structure": result.file_structure,
+                "external_services": _as_string_list(result.external_services),
+                "auth_flow": _as_string_list(result.auth_flow),
+            }
+        )
         .execute()
     )
     return row.data[0]
 
 
 def _format_for_critique(result: FullOverviewResponse) -> str:
-    """Pydantic 결과를 읽기 좋은 텍스트로 변환 (critique 입력용)."""
     nl = "\n"
     sections = [
         f"CONCEPT: {result.concept}",
@@ -369,19 +355,20 @@ def _as_string_list(value: object) -> list[str]:
 
 
 async def _log_ai_usage(supabase: Client, **fields) -> None:
-    supabase.table("ai_usage_logs").insert({
-        "user_id": fields["user_id"],
-        "tier": fields["tier"],
-        "session_id": fields["session_id"],
-        "feature_type": fields["feature_type"],
-        "feature_variant": fields.get("feature_variant"),
-        "model": fields.get("model", MODEL),
-        "prompt_version": PROMPT_VERSION,
-        "input_tokens": fields["input_tokens"],
-        "output_tokens": fields["output_tokens"],
-        "total_cost_usd": fields["total_cost"],
-        "response_time_ms": fields["response_time_ms"],
-        "status": fields["status"],
-        "language": "en",
-        "source": fields.get("source", "app"),
-    }).execute()
+    supabase.table("ai_usage_logs").insert(
+        {
+            "user_id": fields["user_id"],
+            "tier": fields["tier"],
+            "session_id": fields["session_id"],
+            "feature_type": fields["feature_type"],
+            "feature_variant": fields.get("feature_variant"),
+            "model": fields.get("model", MODEL),
+            "prompt_version": PROMPT_VERSION,
+            "input_tokens": fields["input_tokens"],
+            "output_tokens": fields["output_tokens"],
+            "total_cost_usd": fields["total_cost"],
+            "response_time_ms": fields["response_time_ms"],
+            "status": fields["status"],
+            "source": fields.get("source", "app"),
+        }
+    ).execute()

@@ -1,7 +1,9 @@
 import time
 import uuid
+
 from openai import OpenAI
 from supabase import Client
+
 from app.config import settings
 from app.models.llm_schemas import MiningResponse
 from app.prompts.mining import build_mining_prompt
@@ -10,7 +12,7 @@ from app.services.combo_builder import build_keyword_combos
 _openai: OpenAI | None = None
 
 MODEL = "gpt-5-nano"
-PROMPT_VERSION = "v8"
+PROMPT_VERSION = "v10-single-fields"
 
 COST_PER_1K_INPUT = 0.00005
 COST_PER_1K_OUTPUT = 0.0004
@@ -29,10 +31,8 @@ async def generate_ideas(
     tier: str,
     vein_id: str,
     keywords: list[dict],
-    language: str,
     source: str = "app",
 ) -> list[dict]:
-    """v2: Python 키워드 선택 + LLM 한/영 생성."""
     session_id = str(uuid.uuid4())
     has_ai_keyword = any(kw["category"] == "ai" for kw in keywords)
 
@@ -54,7 +54,6 @@ async def generate_ideas(
 
         elapsed_ms = int((time.time() - start_time) * 1000)
 
-        # Check for refusal
         if response.choices[0].message.refusal:
             raise RuntimeError(f"Model refused: {response.choices[0].message.refusal}")
 
@@ -79,11 +78,10 @@ async def generate_ideas(
             total_cost=total_cost,
             response_time_ms=elapsed_ms,
             status="success",
-            language=language,
             source=source,
         )
 
-    except Exception as e:
+    except Exception:
         elapsed_ms = int((time.time() - start_time) * 1000)
         await _log_ai_usage(
             supabase,
@@ -96,7 +94,6 @@ async def generate_ideas(
             total_cost=0,
             response_time_ms=elapsed_ms,
             status="error",
-            language=language,
             source=source,
         )
         raise
@@ -109,38 +106,42 @@ async def generate_ideas(
     for combo in combos:
         order = combo["sort_order"]
         idea_text = ideas_by_order.get(order, {})
-        rows_to_insert.append({
-            "user_id": user_id,
-            "vein_id": vein_id,
-            "idea_line_ko": idea_text.get("idea_line_ko", idea_text.get("summary_ko", "한줄 아이디어 없음")),
-            "idea_line_en": idea_text.get("idea_line_en", idea_text.get("summary_en", "No one-line idea")),
-            "title_ko": idea_text.get("title_ko", "제목 없음"),
-            "title_en": idea_text.get("title_en", "Untitled"),
-            "summary_ko": idea_text.get("summary_ko", "요약 없음"),
-            "summary_en": idea_text.get("summary_en", "No summary"),
-            "keyword_combo": combo["keywords"],
-            "tier_type": combo["tier_type"],
-            "sort_order": order,
-        })
+        idea_line = idea_text.get("idea_line", idea_text.get("summary", "No one-line idea"))
+        title = idea_text.get("title", "Untitled")
+        summary = idea_text.get("summary", "No summary")
+
+        rows_to_insert.append(
+            {
+                "user_id": user_id,
+                "vein_id": vein_id,
+                "idea_line": idea_line,
+                "title": title,
+                "summary": summary,
+                "keyword_combo": combo["keywords"],
+                "tier_type": combo["tier_type"],
+                "sort_order": order,
+            }
+        )
 
     result = supabase.table("ideas").insert(rows_to_insert).execute()
     return result.data
 
 
 async def _log_ai_usage(supabase: Client, **fields) -> None:
-    supabase.table("ai_usage_logs").insert({
-        "user_id": fields["user_id"],
-        "tier": fields["tier"],
-        "session_id": fields["session_id"],
-        "feature_type": fields["feature_type"],
-        "feature_variant": fields.get("feature_variant"),
-        "model": MODEL,
-        "prompt_version": PROMPT_VERSION,
-        "input_tokens": fields["input_tokens"],
-        "output_tokens": fields["output_tokens"],
-        "total_cost_usd": fields["total_cost"],
-        "response_time_ms": fields["response_time_ms"],
-        "status": fields["status"],
-        "language": fields["language"],
-        "source": fields.get("source", "app"),
-    }).execute()
+    supabase.table("ai_usage_logs").insert(
+        {
+            "user_id": fields["user_id"],
+            "tier": fields["tier"],
+            "session_id": fields["session_id"],
+            "feature_type": fields["feature_type"],
+            "feature_variant": fields.get("feature_variant"),
+            "model": MODEL,
+            "prompt_version": PROMPT_VERSION,
+            "input_tokens": fields["input_tokens"],
+            "output_tokens": fields["output_tokens"],
+            "total_cost_usd": fields["total_cost"],
+            "response_time_ms": fields["response_time_ms"],
+            "status": fields["status"],
+            "source": fields.get("source", "app"),
+        }
+    ).execute()

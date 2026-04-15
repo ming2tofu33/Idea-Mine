@@ -1,11 +1,13 @@
 import time
 import uuid
+
 from openai import OpenAI
 from supabase import Client
+
 from app.config import settings
-from app.models.llm_schemas import ProductDesignResponse, IdeaAxesResponse
-from app.prompts.product_design import build_product_design_prompt
+from app.models.llm_schemas import IdeaAxesResponse, ProductDesignResponse
 from app.prompts.axes_classifier import build_axes_prompt
+from app.prompts.product_design import build_product_design_prompt
 from app.services.depth_guide import build_depth_guide
 from app.services.market_research import research_market
 
@@ -13,7 +15,7 @@ _openai: OpenAI | None = None
 
 MODEL = "gpt-5"
 AXES_MODEL = "gpt-5-nano"
-PROMPT_VERSION = "product-design-v1"
+PROMPT_VERSION = "product-design-v2-single-fields"
 COST_PER_1K_INPUT = 0.00125
 COST_PER_1K_OUTPUT = 0.01
 AXES_COST_INPUT = 0.00005
@@ -27,6 +29,17 @@ def get_openai() -> OpenAI:
     return _openai
 
 
+def _overview_to_concept(overview: dict) -> dict:
+    target = overview.get("target", "")
+    features = overview.get("features", "")
+    return {
+        "concept": overview.get("concept", ""),
+        "product_type": overview.get("product_type", "B2C"),
+        "primary_user": target.split(".")[0] if target else "",
+        "core_experience": features.split(".")[0] if features else "",
+    }
+
+
 async def generate_product_design(
     supabase: Client,
     user_id: str,
@@ -34,37 +47,19 @@ async def generate_product_design(
     overview: dict,
     idea: dict,
     source: str = "app",
-    language: str = "ko",
 ) -> dict:
-    """제품 설계서 생성: Pipeline v2.
+    """Generate a product design document."""
 
-    Step 1: 축 분류 (gpt-5-nano)
-    Step 2: 섹션 가중치 생성 (Python)
-    Step 3: 시장 리서치
-    Step 4: 제품 설계서 생성 (gpt-5)
-    Step 5: DB 저장
-    """
     session_id = str(uuid.uuid4())
     client = get_openai()
+    concept = _overview_to_concept(overview)
 
-    # concept 복원 (개요서에서)
-    concept = {
-        "concept_en": overview.get("concept_en", ""),
-        "concept_ko": overview.get("concept_ko", ""),
-        "product_type": overview.get("product_type", "B2C"),
-        "primary_user_en": overview.get("target_en", "").split(".")[0] if overview.get("target_en") else "",
-        "core_experience_en": overview.get("features_en", "").split("—")[0] if overview.get("features_en") else "",
-    }
-
-    # ── Step 1: 축 분류 (gpt-5-nano) ──
-    print(f"[product_design] Step 1: axes classification starting...")
     axes_start = time.time()
     axes_sys, axes_user = build_axes_prompt(
         concept=concept,
         keywords=idea["keyword_combo"],
         product_type=concept["product_type"],
     )
-
     axes_response = client.beta.chat.completions.parse(
         model=AXES_MODEL,
         messages=[
@@ -99,31 +94,24 @@ async def generate_product_design(
         source=source,
     )
 
-    print(f"[product_design] Step 1 done: {axes} ({axes_elapsed}ms)")
-
-    # ── Step 2: 섹션 가중치 생성 (Python) ──
     depth_guide = build_depth_guide(
         axes["interface_complexity"],
         axes["business_complexity"],
         axes["technical_complexity"],
     )
 
-    # ── Step 3: 시장 리서치 ──
     market_data = await research_market(
-        title_en=idea["title_en"],
-        summary_en=idea["summary_en"],
+        title=idea["title"],
+        summary=idea["summary"],
         keywords=idea["keyword_combo"],
     )
 
-    # ── Step 4: 제품 설계서 생성 (gpt-5) ──
-    print(f"[product_design] Step 4: generation starting (model={MODEL})...")
     gen_start = time.time()
     system_prompt, user_prompt = build_product_design_prompt(
         concept=concept,
         overview=overview,
         market_research=market_data,
         depth_guide=depth_guide,
-        language=language,
     )
 
     try:
@@ -179,22 +167,23 @@ async def generate_product_design(
         )
         raise
 
-    # ── Step 5: DB 저장 ──
     row = (
         supabase.table("product_designs")
-        .insert({
-            "user_id": user_id,
-            "overview_id": overview["id"],
-            "user_flow": _as_string_list(result.user_flow),
-            "screens": _as_string_list(result.screens),
-            "features_must": _as_string_list(result.features_must),
-            "features_should": _as_string_list(result.features_should),
-            "features_later": _as_string_list(result.features_later),
-            "business_model": result.business_model,
-            "business_rules": _as_string_list(result.business_rules),
-            "mvp_scope": result.mvp_scope,
-            "axes": axes,
-        })
+        .insert(
+            {
+                "user_id": user_id,
+                "overview_id": overview["id"],
+                "user_flow": _as_string_list(result.user_flow),
+                "screens": _as_string_list(result.screens),
+                "features_must": _as_string_list(result.features_must),
+                "features_should": _as_string_list(result.features_should),
+                "features_later": _as_string_list(result.features_later),
+                "business_model": result.business_model,
+                "business_rules": _as_string_list(result.business_rules),
+                "mvp_scope": result.mvp_scope,
+                "axes": axes,
+            }
+        )
         .execute()
     )
     return row.data[0]
@@ -207,19 +196,20 @@ def _as_string_list(value: object) -> list[str]:
 
 
 async def _log_ai_usage(supabase: Client, **fields) -> None:
-    supabase.table("ai_usage_logs").insert({
-        "user_id": fields["user_id"],
-        "tier": fields["tier"],
-        "session_id": fields["session_id"],
-        "feature_type": fields["feature_type"],
-        "feature_variant": fields.get("feature_variant"),
-        "model": fields.get("model", MODEL),
-        "prompt_version": PROMPT_VERSION,
-        "input_tokens": fields["input_tokens"],
-        "output_tokens": fields["output_tokens"],
-        "total_cost_usd": fields["total_cost"],
-        "response_time_ms": fields["response_time_ms"],
-        "status": fields["status"],
-        "language": "en",
-        "source": fields.get("source", "app"),
-    }).execute()
+    supabase.table("ai_usage_logs").insert(
+        {
+            "user_id": fields["user_id"],
+            "tier": fields["tier"],
+            "session_id": fields["session_id"],
+            "feature_type": fields["feature_type"],
+            "feature_variant": fields.get("feature_variant"),
+            "model": fields.get("model", MODEL),
+            "prompt_version": PROMPT_VERSION,
+            "input_tokens": fields["input_tokens"],
+            "output_tokens": fields["output_tokens"],
+            "total_cost_usd": fields["total_cost"],
+            "response_time_ms": fields["response_time_ms"],
+            "status": fields["status"],
+            "source": fields.get("source", "app"),
+        }
+    ).execute()

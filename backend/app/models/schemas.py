@@ -1,13 +1,13 @@
-from pydantic import BaseModel
 from typing import Optional
+
+from pydantic import BaseModel
 
 
 class KeywordOut(BaseModel):
     id: str
     slug: str
     category: str
-    ko: str
-    en: str
+    label: str
     is_premium: bool
 
 
@@ -30,12 +30,9 @@ class TodayVeinsResponse(BaseModel):
 
 class IdeaOut(BaseModel):
     id: str
-    idea_line_ko: str
-    idea_line_en: str
-    title_ko: str
-    title_en: str
-    summary_ko: str
-    summary_en: str
+    idea_line: str
+    title: str
+    summary: str
     keyword_combo: list[dict]
     sort_order: int
     is_vaulted: bool
@@ -56,11 +53,13 @@ class OverviewOut(BaseModel):
     id: str
     idea_id: str
     user_id: str
-    title: str
-    one_liner: str
-    language: str
-    content: dict
-    internal_meta: dict
+    concept: str
+    problem: str
+    target: str
+    features: str
+    differentiator: str
+    revenue: str
+    mvp_scope: str
     created_at: str
     updated_at: str
 
@@ -68,19 +67,13 @@ class OverviewOut(BaseModel):
 class AppraisalOut(BaseModel):
     id: str
     overview_id: str
-    depth: str  # basic_free, basic, precise_lite, precise_pro
-    market_fit_ko: str
-    market_fit_en: str
-    problem_fit_ko: Optional[str] = None
-    problem_fit_en: Optional[str] = None
-    feasibility_ko: str
-    feasibility_en: str
-    differentiation_ko: Optional[str] = None
-    differentiation_en: Optional[str] = None
-    scalability_ko: Optional[str] = None
-    scalability_en: Optional[str] = None
-    risk_ko: str
-    risk_en: str
+    depth: str
+    market_fit: str
+    problem_fit: Optional[str] = None
+    feasibility: str
+    differentiation: Optional[str] = None
+    scalability: Optional[str] = None
+    risk: str
 
 
 class ErrorResponse(BaseModel):

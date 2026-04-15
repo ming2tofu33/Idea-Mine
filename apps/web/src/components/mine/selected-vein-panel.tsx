@@ -183,8 +183,8 @@ export function SelectedVeinPanel({
   const rarityLabel = MINE_LABELS.rarity[vein.rarity][lang];
   const keywords = vein.keywords.slice(0, 4);
   const displayName = getVeinDisplayName(vein, lang);
-  const primaryKeyword = vein.keywords[0]?.[lang] ?? vein.keywords[0]?.en ?? "signal";
-  const secondaryKeyword = vein.keywords[1]?.[lang] ?? vein.keywords[1]?.en;
+  const primaryKeyword = vein.keywords[0]?.label ?? "signal";
+  const secondaryKeyword = vein.keywords[1]?.label;
   const instruction = secondaryKeyword
     ? MINE_LABELS.instructionWithSecondary[lang](primaryKeyword, secondaryKeyword)
     : MINE_LABELS.instructionSingle[lang];

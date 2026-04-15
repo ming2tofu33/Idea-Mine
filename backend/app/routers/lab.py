@@ -10,6 +10,17 @@ from app.utils import validate_uuid
 router = APIRouter(prefix="/lab", tags=["lab"])
 
 
+def _build_concept_from_overview(overview: dict) -> dict:
+    target = overview.get("target", "")
+    features = overview.get("features", "")
+    return {
+        "concept": overview.get("concept", ""),
+        "product_type": overview.get("product_type", "B2C"),
+        "primary_user": target.split(".")[0] if target else "",
+        "core_experience": features.split(".")[0] if features else "",
+    }
+
+
 @router.get("/usage")
 async def get_usage(
     user: dict = Depends(get_current_user),
@@ -74,7 +85,7 @@ async def create_overview(
         user_id=user["id"],
         tier=effective_tier,
         idea=idea,
-        source="app",
+        source="web",
     )
 
     await increment_daily_count(supabase, user["id"], "overview", current_state=state)
@@ -137,7 +148,7 @@ async def create_full_overview(
         tier=effective_tier,
         overview=overview,
         idea=idea,
-        source="app",
+        source="web",
     )
 
     await increment_daily_count(supabase, user["id"], "overview", current_state=state)
@@ -206,15 +217,13 @@ async def create_design(
 
     idea = idea_result.data[0]
 
-    user_language = user.get("language", "ko")
     design = await product_design_service.generate_product_design(
         supabase=supabase,
         user_id=user["id"],
         tier=effective_tier,
         overview=overview,
         idea=idea,
-        source="app",
-        language=user_language,
+        source="web",
     )
 
     await increment_daily_count(supabase, user["id"], "overview", current_state=state)
@@ -277,7 +286,7 @@ async def create_blueprint(
         overview=overview,
         product_design=product_design,
         axes=axes,
-        source="app",
+        source="web",
     )
 
     await increment_daily_count(supabase, user["id"], "overview", current_state=state)
@@ -342,15 +351,8 @@ async def create_roadmap(
 
     overview = overview_result.data[0]
 
-    concept = {
-        "concept_en": overview.get("concept_en", ""),
-        "concept_ko": overview.get("concept_ko", ""),
-        "product_type": overview.get("product_type", "B2C"),
-        "primary_user_en": overview.get("target_en", "").split(".")[0] if overview.get("target_en") else "",
-        "core_experience_en": overview.get("features_en", "").split("—")[0] if overview.get("features_en") else "",
-    }
+    concept = _build_concept_from_overview(overview)
 
-    user_language = user.get("language", "ko")
     rm = await roadmap_service.generate_roadmap(
         supabase=supabase,
         user_id=user["id"],
@@ -358,8 +360,7 @@ async def create_roadmap(
         concept=concept,
         product_design=product_design,
         blueprint=blueprint,
-        source="app",
-        language=user_language,
+        source="web",
     )
 
     await increment_daily_count(supabase, user["id"], "overview", current_state=state)
@@ -377,8 +378,6 @@ async def generate_all(
 
     effective_role = user.get("role", "user")
     effective_tier = user.get("tier", "free")
-
-    user_language = user.get("language", "ko")
 
     # Pro 전용 체크
     if effective_tier != "pro" and effective_role != "admin":
@@ -431,7 +430,7 @@ async def generate_all(
             tier=effective_tier,
             overview=overview,
             idea=idea,
-            source="app",
+            source="web",
         )
 
     # ── Step 2: 기술 청사진 (이미 있으면 재사용) ──
@@ -453,7 +452,7 @@ async def generate_all(
             overview=overview,
             product_design=design_data,
             axes=axes,
-            source="app",
+            source="web",
         )
 
     # ── Step 3: 실행 로드맵 (이미 있으면 재사용) ──
@@ -467,13 +466,7 @@ async def generate_all(
     if existing_rm.data:
         roadmap_data = existing_rm.data[0]
     else:
-        concept = {
-            "concept_en": overview.get("concept_en", ""),
-            "concept_ko": overview.get("concept_ko", ""),
-            "product_type": overview.get("product_type", "B2C"),
-            "primary_user_en": overview.get("target_en", "").split(".")[0] if overview.get("target_en") else "",
-            "core_experience_en": overview.get("features_en", "").split("—")[0] if overview.get("features_en") else "",
-        }
+        concept = _build_concept_from_overview(overview)
         roadmap_data = await roadmap_service.generate_roadmap(
             supabase=supabase,
             user_id=user["id"],
@@ -481,8 +474,7 @@ async def generate_all(
             concept=concept,
             product_design=design_data,
             blueprint=blueprint_data,
-            source="app",
-            language=user_language,
+            source="web",
         )
 
     await increment_daily_count(supabase, user["id"], "overview", current_state=state)

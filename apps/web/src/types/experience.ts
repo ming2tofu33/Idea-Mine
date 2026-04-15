@@ -5,19 +5,14 @@ export type ExperienceVein = {
   rarity: "common" | "rare" | "golden";
   keywords: Array<{
     category: "ai" | "who" | "domain" | "tech" | "value" | "money";
-    ko: string;
-    en: string;
+    label: string;
   }>;
-  previewLineKo: string;
-  previewLineEn: string;
+  previewLine: string;
 };
 
 export type ExperienceIdea = {
   id: string;
-  titleKo: string;
-  titleEn: string;
-  summaryKo: string;
-  summaryEn: string;
-  signalLineKo: string;
-  signalLineEn: string;
+  title: string;
+  summary: string;
+  signalLine: string;
 };

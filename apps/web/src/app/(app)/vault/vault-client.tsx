@@ -9,15 +9,13 @@ import { PageHeader } from "@/components/shared/page-header";
 import { SkeletonCard } from "@/components/vault/skeleton-card";
 import { VaultIdeaCard } from "@/components/vault/vault-idea-card";
 import { VAULT_LABELS, type VaultLanguage } from "@/components/vault/vault-labels";
-import { useProfile } from "@/hooks/use-profile";
 import { vaultApi } from "@/lib/api";
 
 // --- Page ---
 
 export function VaultClient() {
   const queryClient = useQueryClient();
-  const { profile } = useProfile();
-  const lang: VaultLanguage = (profile?.language ?? "en") as VaultLanguage;
+  const lang: VaultLanguage = "en";
 
   const {
     data: ideas,

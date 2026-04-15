@@ -1,7 +1,9 @@
 import time
 import uuid
+
 from openai import OpenAI
 from supabase import Client
+
 from app.config import settings
 from app.models.llm_schemas import ConceptResponse, OverviewResponse
 from app.prompts.concept import build_concept_prompt
@@ -10,17 +12,15 @@ from app.services.market_research import research_market
 
 _openai: OpenAI | None = None
 
-# Step 1 (concept): 가벼운 모델로 방향 잡기
 CONCEPT_MODEL = "gpt-5-nano"
 CONCEPT_COST_INPUT = 0.00005
 CONCEPT_COST_OUTPUT = 0.0004
 
-# Step 2 (overview): 품질 모델로 본문 작성
 OVERVIEW_MODEL = "gpt-5-mini"
 OVERVIEW_COST_INPUT = 0.00075
 OVERVIEW_COST_OUTPUT = 0.0045
 
-PROMPT_VERSION = "overview-v9-one-liner-anchor"  # concept/overview anchored on selected one-line idea
+PROMPT_VERSION = "overview-v11-single-fields"
 
 
 def get_openai() -> OpenAI:
@@ -39,23 +39,19 @@ async def generate_overview(
 ) -> dict:
     session_id = str(uuid.uuid4())
     client = get_openai()
-    idea_line_en = idea.get("idea_line_en") or idea["summary_en"]
-    idea_line_ko = idea.get("idea_line_ko") or idea.get("summary_ko") or idea_line_en
+    idea_line = idea.get("idea_line") or idea["summary"]
 
-    # ── Step 0: Tavily 시장 조사 ──
     market_data = await research_market(
-        title_en=idea["title_en"],
-        summary_en=idea["summary_en"],
+        title=idea["title"],
+        summary=idea["summary"],
         keywords=idea["keyword_combo"],
     )
 
-    # ── Step 1: Concept 생성 (gpt-5-nano) ──
     system_prompt, user_prompt = build_concept_prompt(
-        title_en=idea["title_en"],
-        summary_en=idea["summary_en"],
+        title=idea["title"],
+        summary=idea["summary"],
         keywords=idea["keyword_combo"],
-        idea_line_en=idea_line_en,
-        idea_line_ko=idea_line_ko,
+        idea_line=idea_line,
     )
 
     step1_start = time.time()
@@ -65,7 +61,6 @@ async def generate_overview(
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
-
         response_format=ConceptResponse,
     )
     step1_elapsed = int((time.time() - step1_start) * 1000)
@@ -98,15 +93,13 @@ async def generate_overview(
         source=source,
     )
 
-    # ── Step 2: Full Overview (gpt-5-mini) ──
     system_prompt, user_prompt = build_overview_prompt(
-        title_en=idea["title_en"],
-        summary_en=idea["summary_en"],
+        title=idea["title"],
+        summary=idea["summary"],
         keywords=idea["keyword_combo"],
         market_research=market_data,
         concept=concept,
-        idea_line_en=idea_line_en,
-        idea_line_ko=idea_line_ko,
+        idea_line=idea_line,
     )
 
     step2_start = time.time()
@@ -117,7 +110,6 @@ async def generate_overview(
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-
             response_format=OverviewResponse,
         )
         step2_elapsed = int((time.time() - step2_start) * 1000)
@@ -171,43 +163,39 @@ async def generate_overview(
 
     row = (
         supabase.table("overviews")
-        .insert({
-            "user_id": user_id,
-            "idea_id": idea["id"],
-            "concept_ko": result["concept_ko"],
-            "concept_en": result["concept_en"],
-            "problem_ko": result["problem_ko"],
-            "problem_en": result["problem_en"],
-            "target_ko": result["target_ko"],
-            "target_en": result["target_en"],
-            "features_ko": result["features_ko"],
-            "features_en": result["features_en"],
-            "differentiator_ko": result["differentiator_ko"],
-            "differentiator_en": result["differentiator_en"],
-            "revenue_ko": result["revenue_ko"],
-            "revenue_en": result["revenue_en"],
-            "mvp_scope_ko": result["mvp_scope_ko"],
-            "mvp_scope_en": result["mvp_scope_en"],
-        })
+        .insert(
+            {
+                "user_id": user_id,
+                "idea_id": idea["id"],
+                "concept": result["concept"],
+                "problem": result["problem"],
+                "target": result["target"],
+                "features": result["features"],
+                "differentiator": result["differentiator"],
+                "revenue": result["revenue"],
+                "mvp_scope": result["mvp_scope"],
+            }
+        )
         .execute()
     )
     return row.data[0]
 
 
 async def _log_ai_usage(supabase: Client, **fields) -> None:
-    supabase.table("ai_usage_logs").insert({
-        "user_id": fields["user_id"],
-        "tier": fields["tier"],
-        "session_id": fields["session_id"],
-        "feature_type": fields["feature_type"],
-        "feature_variant": fields.get("feature_variant"),
-        "model": fields.get("model", OVERVIEW_MODEL),
-        "prompt_version": PROMPT_VERSION,
-        "input_tokens": fields["input_tokens"],
-        "output_tokens": fields["output_tokens"],
-        "total_cost_usd": fields["total_cost"],
-        "response_time_ms": fields["response_time_ms"],
-        "status": fields["status"],
-        "language": "ko",
-        "source": fields.get("source", "app"),
-    }).execute()
+    supabase.table("ai_usage_logs").insert(
+        {
+            "user_id": fields["user_id"],
+            "tier": fields["tier"],
+            "session_id": fields["session_id"],
+            "feature_type": fields["feature_type"],
+            "feature_variant": fields.get("feature_variant"),
+            "model": fields.get("model", OVERVIEW_MODEL),
+            "prompt_version": PROMPT_VERSION,
+            "input_tokens": fields["input_tokens"],
+            "output_tokens": fields["output_tokens"],
+            "total_cost_usd": fields["total_cost"],
+            "response_time_ms": fields["response_time_ms"],
+            "status": fields["status"],
+            "source": fields.get("source", "app"),
+        }
+    ).execute()

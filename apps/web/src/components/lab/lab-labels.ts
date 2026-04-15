@@ -1,11 +1,10 @@
 type LocalizedText = {
-  ko: string;
   en: string;
 };
 
-const copy = (value: string): LocalizedText => ({ ko: value, en: value });
+const copy = (value: string): LocalizedText => ({ en: value });
 
-export type LabLanguage = "ko" | "en";
+export type LabLanguage = "en";
 
 export const LAB_LABELS = {
   eyebrow: copy("LAB"),

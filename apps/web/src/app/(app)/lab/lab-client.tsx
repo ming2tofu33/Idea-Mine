@@ -11,15 +11,13 @@ import { SectionHeader } from "@/components/lab/section-header";
 import { SkeletonRow } from "@/components/lab/skeleton-row";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
-import { useProfile } from "@/hooks/use-profile";
 import { vaultApi } from "@/lib/api";
 import type { Overview } from "@/types/api";
 
 // --- Page ---
 
 export function LabClient() {
-  const { profile } = useProfile();
-  const lang: LabLanguage = (profile?.language ?? "en") as LabLanguage;
+  const lang: LabLanguage = "en";
 
   // Load all vaulted ideas
   const ideasQuery = useQuery({

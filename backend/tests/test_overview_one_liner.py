@@ -8,57 +8,52 @@ from app.services import overview_service
 
 def _sample_keywords() -> list[dict]:
     return [
-        {"category": "WHO", "en": "Solo Founder"},
-        {"category": "TECH", "en": "Mobile app"},
-        {"category": "AI", "en": "Voice AI"},
-        {"category": "DOMAIN", "en": "Fitness"},
-        {"category": "VALUE", "en": "consistent workout starts"},
-        {"category": "MONEY", "en": "subscription"},
+        {"category": "WHO", "label": "Solo Founder"},
+        {"category": "TECH", "label": "Mobile app"},
+        {"category": "AI", "label": "Voice AI"},
+        {"category": "DOMAIN", "label": "Fitness"},
+        {"category": "VALUE", "label": "consistent workout starts"},
+        {"category": "MONEY", "label": "subscription"},
     ]
 
 
 def _sample_concept() -> dict:
     return {
-        "concept_en": "A mobile app for solo founders that uses Voice AI to deliver consistent workout starts in fitness, monetized via subscription.",
-        "concept_ko": "1인 창업가가 운동을 바로 시작할 수 있게 돕는 보이스 AI 피트니스 앱.",
+        "concept": "A mobile app for solo founders that uses Voice AI to deliver consistent workout starts in fitness, monetized via subscription.",
         "product_type": "B2C",
-        "primary_user_en": "Solo founders who keep delaying workouts",
-        "primary_user_ko": "운동을 계속 미루는 1인 창업가",
-        "core_experience_en": "Opens the app, speaks their current energy level, and starts a short routine immediately.",
-        "core_experience_ko": "앱을 열고 지금 컨디션을 말하면 바로 짧은 운동 루틴이 시작된다.",
+        "primary_user": "Solo founders who keep delaying workouts",
+        "core_experience": "Opens the app, speaks their current energy level, and starts a short routine immediately.",
     }
 
 
 def test_concept_prompt_uses_one_liner_as_primary_anchor():
     _, user_prompt = build_concept_prompt(
-        title_en="Voice-first fitness coach",
-        summary_en="A voice coach that gets solo founders to start short workouts.",
+        title="Voice-first fitness coach",
+        summary="A voice coach that gets solo founders to start short workouts.",
         keywords=_sample_keywords(),
-        idea_line_en="A voice coach that gets a solo founder from hesitation to workout start in under 30 seconds.",
-        idea_line_ko="운동을 미루는 1인 창업가가 30초 안에 운동을 시작하게 만드는 보이스 코치.",
+        idea_line="A voice coach that gets a solo founder from hesitation to workout start in under 30 seconds.",
     )
 
-    assert "One-line idea EN:" in user_prompt
-    assert "One-line idea KO:" in user_prompt
+    assert "One-line idea:" in user_prompt
     assert "The selected one-line idea is the source of truth." in user_prompt
     assert "If title, summary, and one-line idea conflict, follow the one-line idea." in user_prompt
+    assert "Provide English only." in user_prompt
 
 
 def test_overview_prompt_uses_one_liner_as_primary_anchor():
     _, user_prompt = build_overview_prompt(
-        title_en="Voice-first fitness coach",
-        summary_en="A voice coach that gets solo founders to start short workouts.",
+        title="Voice-first fitness coach",
+        summary="A voice coach that gets solo founders to start short workouts.",
         keywords=_sample_keywords(),
         market_research="Users compare Calm and Nike Training Club pricing.",
         concept=_sample_concept(),
-        idea_line_en="A voice coach that gets a solo founder from hesitation to workout start in under 30 seconds.",
-        idea_line_ko="운동을 미루는 1인 창업가가 30초 안에 운동을 시작하게 만드는 보이스 코치.",
+        idea_line="A voice coach that gets a solo founder from hesitation to workout start in under 30 seconds.",
     )
 
-    assert "Selected one-line idea EN:" in user_prompt
-    assert "Selected one-line idea KO:" in user_prompt
+    assert "Selected one-line idea:" in user_prompt
     assert "The selected one-line idea is the source of truth for what product was chosen." in user_prompt
     assert "Do not broaden, rename, or swap the product described by the one-line idea." in user_prompt
+    assert "Write all sections in English only." in user_prompt
 
 
 class _FakeParsed:
@@ -85,20 +80,13 @@ class _FakeCompletions:
             return _FakeResponse(_sample_concept())
         return _FakeResponse(
             {
-                "concept_ko": "1인 창업가가 운동을 바로 시작할 수 있게 돕는 보이스 AI 피트니스 앱.",
-                "concept_en": "A voice-first fitness app for solo founders.",
-                "problem_ko": "문제",
-                "problem_en": "Problem",
-                "target_ko": "타깃",
-                "target_en": "Target",
-                "features_ko": "기능",
-                "features_en": "Features",
-                "differentiator_ko": "차별점",
-                "differentiator_en": "Differentiator",
-                "revenue_ko": "수익",
-                "revenue_en": "Revenue",
-                "mvp_scope_ko": "MVP",
-                "mvp_scope_en": "MVP",
+                "concept": "A voice-first fitness app for solo founders.",
+                "problem": "Problem",
+                "target": "Target",
+                "features": "Features",
+                "differentiator": "Differentiator",
+                "revenue": "Revenue",
+                "mvp_scope": "MVP",
             }
         )
 
@@ -156,10 +144,9 @@ def test_generate_overview_passes_one_liner_to_prompt_builders(monkeypatch):
 
     idea = {
         "id": "idea-1",
-        "title_en": "Voice-first fitness coach",
-        "summary_en": "A voice coach that gets solo founders to start short workouts.",
-        "idea_line_en": "A voice coach that gets a solo founder from hesitation to workout start in under 30 seconds.",
-        "idea_line_ko": "운동을 미루는 1인 창업가가 30초 안에 운동을 시작하게 만드는 보이스 코치.",
+        "title": "Voice-first fitness coach",
+        "summary": "A voice coach that gets solo founders to start short workouts.",
+        "idea_line": "A voice coach that gets a solo founder from hesitation to workout start in under 30 seconds.",
         "keyword_combo": _sample_keywords(),
     }
 
@@ -172,8 +159,7 @@ def test_generate_overview_passes_one_liner_to_prompt_builders(monkeypatch):
         )
     )
 
-    assert captured["concept"]["idea_line_en"] == idea["idea_line_en"]
-    assert captured["concept"]["idea_line_ko"] == idea["idea_line_ko"]
-    assert captured["overview"]["idea_line_en"] == idea["idea_line_en"]
-    assert captured["overview"]["idea_line_ko"] == idea["idea_line_ko"]
+    assert captured["concept"]["idea_line"] == idea["idea_line"]
+    assert captured["overview"]["idea_line"] == idea["idea_line"]
     assert result["idea_id"] == "idea-1"
+    assert result["concept"] == "A voice-first fitness app for solo founders."

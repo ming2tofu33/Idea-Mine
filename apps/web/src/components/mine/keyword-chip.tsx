@@ -16,8 +16,9 @@ type KeywordChipProps = {
 };
 
 export function KeywordChip({ keyword, lang = "en" }: KeywordChipProps) {
+  void lang;
   const color = CATEGORY_COLORS[keyword.category];
-  const label = keyword[lang] || keyword.en || "signal";
+  const label = keyword.label || "signal";
 
   return (
     <span

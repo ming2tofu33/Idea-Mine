@@ -140,8 +140,7 @@ export default function VaultDetailPage({
                             | "tech"
                             | "value"
                             | "money",
-                          ko: keyword.en,
-                          en: keyword.en,
+                          label: keyword.label,
                           is_premium: false,
                         }}
                       />

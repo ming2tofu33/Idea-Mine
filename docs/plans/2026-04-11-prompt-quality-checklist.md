@@ -2,7 +2,11 @@
 
 **Date:** 2026-04-11
 
-**Scope:** `backend/app/prompts/*`, `backend/app/services/*`, `backend/app/routers/*`, and the web/mobile lab flow that exposes these outputs
+**Updated:** 2026-04-15
+
+**Scope:** `backend/app/prompts/*`, `backend/app/services/*`, `backend/app/routers/*`, and the web lab flow that exposes these outputs
+
+**Runtime contract status:** As of migrations `00016` and `00017`, runtime content is English-only and the public API no longer exposes `*_ko`, `*_en`, `keywords.ko/en`, or `profiles.language`.
 
 **Decision:** We will improve prompt quality one stage at a time with a fixed checklist and a stable evaluation loop. The core production chain to optimize first is:
 
@@ -14,7 +18,7 @@
 
 ## Actual Flow
 
-- `Mining` creates idea title + summary.
+- `Mining` creates an idea hook, title, and summary.
 - `Overview` is already a 2-step pipeline: `concept -> overview`.
 - `Appraisal` is currently a separate step, not a hard quality gate.
 - `Product Design -> Blueprint -> Roadmap` is a separate implementation chain.
@@ -42,8 +46,7 @@ Every stage should pass these shared checks:
 - [ ] Output gives the reader something they can immediately understand or act on.
 - [ ] Output does not fabricate market data, pricing, or competitor facts.
 - [ ] Output matches the schema cleanly without awkward stuffing.
-- [ ] Korean reads naturally, not like a translation artifact.
-- [ ] English and Korean say the same thing when both are present.
+- [ ] English reads naturally and does not sound like a translation artifact.
 
 ## Improvement Order
 
@@ -106,7 +109,7 @@ Every stage should pass these shared checks:
 
 ### Acceptance checks
 
-- [ ] `concept_ko` and `concept_en` exactly echo the concept anchor.
+- [ ] `concept` exactly echoes the concept anchor.
 - [ ] `problem` describes current behavior, frequency, and failure of the workaround.
 - [ ] `target` describes one person in one real moment, not a market segment paragraph.
 - [ ] `features` are screen/action/result oriented, not feature-label fluff.

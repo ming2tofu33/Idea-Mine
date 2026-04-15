@@ -47,7 +47,7 @@ export function ReturnLoop({ lang }: { lang: LandingLanguage }) {
           <div className="grid gap-2.5 sm:grid-cols-3 sm:gap-3 lg:border-l lg:border-line-steel/16 lg:pl-7">
             {labels.beats.map((beat) => (
               <ReturnBeat
-                key={beat.title.en}
+                key={beat.title[lang]}
                 title={beat.title[lang]}
                 copy={beat.copy[lang]}
               />
