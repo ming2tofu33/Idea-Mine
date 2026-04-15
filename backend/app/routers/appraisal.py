@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from supabase import Client
 
 from app.dependencies import get_current_user, get_supabase
+from app.models.schemas import AppraisalOut
 from app.services import appraisal_service
 from app.services.market_research import research_market
 from app.services.rate_limiter import (
@@ -22,7 +23,7 @@ class AppraisalRequest(BaseModel):
     depth: Literal["basic_free", "basic", "precise_lite", "precise_pro"] = "basic"
 
 
-@router.post("/appraisal")
+@router.post("/appraisal", response_model=AppraisalOut)
 async def create_appraisal(
     req: AppraisalRequest,
     user: dict = Depends(get_current_user),

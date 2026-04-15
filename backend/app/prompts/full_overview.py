@@ -85,7 +85,9 @@ Add [REVIEW], [DRAFT], or [READY] to each section title.
    Provide IN, OUT, core hypothesis, validation questions, and the cheapest test method.
 
 10. TECH STACK
-    Recommend concrete technologies for frontend, backend, database, AI/ML, auth, and hosting.
+    Return an object with exactly these keys:
+    frontend, backend, database, ai_ml, auth, hosting
+    Each value must be a short concrete technology choice with no extra prose.
 
 11. DATA MODEL
     Write SQL CREATE TABLE statements for the MVP, with UUID keys and timestamps.

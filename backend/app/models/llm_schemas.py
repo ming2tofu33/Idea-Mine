@@ -74,7 +74,7 @@ class FullOverviewResponse(BaseModel):
     business_rules: list[str]
     mvp_scope: str
     # Technical
-    tech_stack: list[str]
+    tech_stack: dict[str, str]
     data_model_sql: str
     api_endpoints: list[str]
     file_structure: str

@@ -2,6 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from supabase import Client
 from app.dependencies import get_supabase, get_current_user
+from app.models.schemas import (
+    BlueprintOut,
+    FullOverviewOut,
+    GenerateAllOut,
+    OverviewOut,
+    ProductDesignOut,
+    RoadmapOut,
+    UsageInfoOut,
+)
 from app.services import overview_service, full_overview_service
 from app.services import product_design_service, blueprint_service, roadmap_service
 from app.services.rate_limiter import check_rate_limit_l1, check_daily_limit_l2, check_cost_limit_l4, increment_daily_count, TIER_LIMITS
@@ -21,7 +30,7 @@ def _build_concept_from_overview(overview: dict) -> dict:
     }
 
 
-@router.get("/usage")
+@router.get("/usage", response_model=UsageInfoOut)
 async def get_usage(
     user: dict = Depends(get_current_user),
     supabase: Client = Depends(get_supabase),
@@ -53,7 +62,7 @@ class OverviewRequest(BaseModel):
     idea_id: str
 
 
-@router.post("/overview")
+@router.post("/overview", response_model=OverviewOut)
 async def create_overview(
     req: OverviewRequest,
     user: dict = Depends(get_current_user),
@@ -96,7 +105,7 @@ class FullOverviewRequest(BaseModel):
     overview_id: str
 
 
-@router.post("/overview/full")
+@router.post("/overview/full", response_model=FullOverviewOut)
 async def create_full_overview(
     req: FullOverviewRequest,
     user: dict = Depends(get_current_user),
@@ -171,7 +180,7 @@ class GenerateAllRequest(BaseModel):
     overview_id: str
 
 
-@router.post("/design")
+@router.post("/design", response_model=ProductDesignOut)
 async def create_design(
     req: DesignRequest,
     user: dict = Depends(get_current_user),
@@ -230,7 +239,7 @@ async def create_design(
     return design
 
 
-@router.post("/blueprint")
+@router.post("/blueprint", response_model=BlueprintOut)
 async def create_blueprint(
     req: BlueprintRequest,
     user: dict = Depends(get_current_user),
@@ -293,7 +302,7 @@ async def create_blueprint(
     return bp
 
 
-@router.post("/roadmap")
+@router.post("/roadmap", response_model=RoadmapOut)
 async def create_roadmap(
     req: RoadmapRequest,
     user: dict = Depends(get_current_user),
@@ -367,7 +376,7 @@ async def create_roadmap(
     return rm
 
 
-@router.post("/generate-all")
+@router.post("/generate-all", response_model=GenerateAllOut)
 async def generate_all(
     req: GenerateAllRequest,
     user: dict = Depends(get_current_user),
