@@ -17,6 +17,41 @@ CATALOG = {
         family_bias=["real_world_companion", "dashboard_ops"],
         premium_only=False,
     ),
+    "solo creator": KeywordMetadata(
+        label="solo creator",
+        primary_role="actor",
+        secondary_roles=[],
+        family_bias=[],
+        premium_only=False,
+    ),
+    "scattered research": KeywordMetadata(
+        label="scattered research",
+        primary_role="tension",
+        secondary_roles=[],
+        family_bias=[],
+        premium_only=False,
+    ),
+    "usable first draft": KeywordMetadata(
+        label="usable first draft",
+        primary_role="outcome",
+        secondary_roles=[],
+        family_bias=[],
+        premium_only=False,
+    ),
+    "while browsing": KeywordMetadata(
+        label="while browsing",
+        primary_role="surface_hint",
+        secondary_roles=[],
+        family_bias=[],
+        premium_only=False,
+    ),
+    "browser-based": KeywordMetadata(
+        label="browser-based",
+        primary_role="mechanism_hint",
+        secondary_roles=[],
+        family_bias=[],
+        premium_only=False,
+    ),
 }
 
 
