@@ -5,6 +5,13 @@ from app.services.ideation_v2.types import KeywordSignal, NormalizedSeed
 CORE_BUCKET_COUNT = 4
 THIN_THRESHOLD = 0.6
 DENSE_THRESHOLD = 0.9
+CATEGORY_ROLE_FALLBACKS = {
+    "who": "actor",
+    "value": "outcome",
+    "tech": "mechanism_hint",
+    "ai": "premium_modifier",
+    "domain": "environment",
+}
 
 
 def _seed_strength_label(strength_score: float) -> str:
@@ -27,7 +34,7 @@ def normalize_keywords(selected_keywords: list[dict]) -> NormalizedSeed:
 
     for item in selected_keywords:
         meta = resolve_keyword_metadata(item["label"], item["source"], item["premium_only"])
-        role = meta.primary_role
+        role = meta.primary_role or CATEGORY_ROLE_FALLBACKS.get(item.get("category"))
 
         if role == "actor":
             actors.append(item["label"])
