@@ -175,3 +175,99 @@ def test_build_v2_mining_context_prefers_assistant_family_for_voice_ai_case():
 
     assert "assistant_copilot" in context.normalized_seed.family_biases
     assert context.branch_plan.primary_family == "assistant_copilot"
+
+
+def test_build_v2_mining_context_limits_active_seed_keywords_to_core_four():
+    context = build_v2_mining_context(
+        [
+            {
+                "slug": "solo-traveler",
+                "category": "who",
+                "subtype": "lifestyle",
+                "label": "Solo Traveler",
+                "is_premium": False,
+            },
+            {
+                "slug": "wearable",
+                "category": "tech",
+                "subtype": "product-form",
+                "label": "Wearable",
+                "is_premium": False,
+            },
+            {
+                "slug": "creator-economy",
+                "category": "domain",
+                "subtype": "ecosystem",
+                "label": "Creator Economy",
+                "is_premium": False,
+            },
+            {
+                "slug": "productivity-boost",
+                "category": "value",
+                "subtype": "efficiency",
+                "label": "Productivity Boost",
+                "is_premium": False,
+            },
+            {
+                "slug": "freemium",
+                "category": "money",
+                "subtype": "recurring",
+                "label": "Freemium",
+                "is_premium": False,
+            },
+        ],
+        user_tier="free",
+    )
+
+    assert len(context.active_keywords) == 4
+    assert {item["label"] for item in context.active_keywords} == {
+        "Solo Traveler",
+        "Wearable",
+        "Creator Economy",
+        "Productivity Boost",
+    }
+    assert [item["label"] for item in context.suppressed_keywords] == ["Freemium"]
+
+
+def test_build_v2_mining_context_keeps_ai_when_core_slot_is_open():
+    context = build_v2_mining_context(
+        [
+            {
+                "slug": "single-person-household",
+                "category": "who",
+                "subtype": "household",
+                "label": "Single-person Household",
+                "is_premium": False,
+            },
+            {
+                "slug": "mobile-app",
+                "category": "tech",
+                "subtype": "platform",
+                "label": "Mobile App",
+                "is_premium": False,
+            },
+            {
+                "slug": "voice-ai",
+                "category": "ai",
+                "subtype": "modality",
+                "label": "Voice AI (TTS/STT)",
+                "is_premium": True,
+            },
+            {
+                "slug": "mental-health",
+                "category": "domain",
+                "subtype": "industry",
+                "label": "Mental Health",
+                "is_premium": False,
+            },
+        ],
+        user_tier="premium",
+    )
+
+    assert {item["label"] for item in context.active_keywords} == {
+        "Single-person Household",
+        "Mobile App",
+        "Voice AI (TTS/STT)",
+        "Mental Health",
+    }
+    assert context.suppressed_keywords == []

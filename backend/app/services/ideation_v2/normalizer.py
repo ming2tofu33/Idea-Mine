@@ -59,6 +59,11 @@ def _fallback_role(item: dict) -> str | None:
     )
 
 
+def infer_keyword_role(item: dict) -> str | None:
+    meta = resolve_keyword_metadata(item["label"], item["source"], item["premium_only"])
+    return meta.primary_role or _fallback_role(item)
+
+
 def normalize_keywords(selected_keywords: list[dict]) -> NormalizedSeed:
     actors: list[str] = []
     tensions: list[str] = []

@@ -50,7 +50,7 @@ def _build_slot_plan(selected_keywords: list[dict], context: MiningV2Context) ->
                     "branch_label": branch_label,
                     "family": family,
                     "subfamily": subfamilies[index % len(subfamilies)],
-                    "keywords": selected_keywords,
+                    "keywords": context.active_keywords,
                 }
             )
             sort_order += 1
@@ -64,10 +64,14 @@ def build_mining_prompt_v2(
 ) -> tuple[str, str, list[dict]]:
     kernel = context.kernel_set.primary_kernel
     slots = _build_slot_plan(selected_keywords, context)
-    keyword_block = ", ".join(
+    active_keyword_block = ", ".join(
         f"{item['label']} ({str(item.get('category', 'seed')).upper()})"
-        for item in selected_keywords
+        for item in context.active_keywords
     )
+    suppressed_keyword_block = ", ".join(
+        f"{item['label']} ({str(item.get('category', 'seed')).upper()})"
+        for item in context.suppressed_keywords
+    ) or "none"
     slot_block = "\n".join(
         [
             (
@@ -88,6 +92,8 @@ Generate 10 product ideas from one locked seed and a bounded branch plan.
 Hard rules:
 - Write everything in English only.
 - Preserve the same core actor, tension, and outcome across all 10 ideas.
+- Use only the active seed keywords as the main concept drivers.
+- Treat background keywords as weak context. They may flavor the idea but must not lead it.
 - Change the product surface, interaction model, and delivery shape according to the assigned family and subfamily.
 - Do not fall back to generic platform/API/marketplace ideas unless the assigned family truly requires it.
 - The one-line idea is the primary hook. It should feel specific enough to earn a click.
@@ -112,9 +118,13 @@ Summary quality:
 
 Do not output family names, branch labels, or subfamilies in the final text."""
 
-    user_prompt = f"""=== SELECTED KEYWORDS ===
+    user_prompt = f"""=== ACTIVE SEED KEYWORDS ===
 
-{keyword_block}
+{active_keyword_block}
+
+=== BACKGROUND KEYWORDS ===
+
+{suppressed_keyword_block}
 
 === LOCKED SEED ===
 
