@@ -1,4 +1,4 @@
-from app.services.ideation_v2.types import NormalizedSeed, BranchPlan
+from app.services.ideation_v2.types import KeywordSignal, NormalizedSeed, BranchPlan
 
 
 def test_normalized_seed_and_branch_plan_have_expected_fields():
@@ -10,8 +10,8 @@ def test_normalized_seed_and_branch_plan_have_expected_fields():
         surface_hints=["browser-based"],
         mechanism_hints=["automation"],
         premium_modifiers=[],
-        ambiguous_keywords=[],
-        unresolved_keywords=[],
+        ambiguous_keywords=[{"keyword": "scattered research"}],
+        unresolved_keywords=[KeywordSignal(keyword="browser-based", context=None)],
         role_confidence_map={"actor": 0.9},
         seed_strength_score=0.72,
         seed_strength_label="balanced",
@@ -21,7 +21,6 @@ def test_normalized_seed_and_branch_plan_have_expected_fields():
     plan = BranchPlan(
         primary_family="workflow_utility",
         secondary_family="assistant_copilot",
-        contrast_family="workspace_studio",
         slot_distribution={"primary": 5, "secondary": 3, "contrast": 2},
         primary_allowed_subfamilies=["browser_extension"],
         secondary_allowed_subfamilies=["sidecar_assistant"],
@@ -32,3 +31,6 @@ def test_normalized_seed_and_branch_plan_have_expected_fields():
 
     assert seed.seed_strength_label == "balanced"
     assert plan.slot_distribution["primary"] == 5
+    assert plan.contrast_family is None
+    assert seed.ambiguous_keywords[0].keyword == "scattered research"
+    assert seed.unresolved_keywords[0].context is None
