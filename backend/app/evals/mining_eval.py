@@ -13,10 +13,13 @@ from openai import OpenAI
 from app.config import settings
 from app.models.llm_schemas import MiningResponse
 from app.prompts.mining import build_mining_prompt
+from app.prompts.mining_v2 import build_mining_prompt_v2
 from app.services.combo_builder import build_keyword_combos
+from app.services.ideation_v2.mining import build_v2_mining_context
 
 DEFAULT_MODEL = "gpt-5-nano"
 DEFAULT_PROMPT_VERSION = "v10-single-fields"
+V2_PROMPT_VERSION = "v2-branch-family"
 
 ENGLISH_BUZZWORDS = [
     "ai-powered",
@@ -155,6 +158,7 @@ class MiningEvalCaseResult:
     completion_tokens: int
     combos: list[dict]
     ideas: list[dict]
+    surface_family_spread: dict[str, str | None]
     batch_score: MiningBatchScore
 
     def to_dict(self) -> dict:
@@ -164,6 +168,7 @@ class MiningEvalCaseResult:
             "completion_tokens": self.completion_tokens,
             "combos": self.combos,
             "ideas": self.ideas,
+            "surface_family_spread": self.surface_family_spread,
             "batch_score": self.batch_score.to_dict(),
         }
 
@@ -255,6 +260,18 @@ def get_mining_eval_cases() -> list[MiningEvalCase]:
     ]
 
 
+def build_surface_family_spread(
+    keywords: list[dict],
+    user_tier: str = "free",
+) -> dict[str, str | None]:
+    context = build_v2_mining_context(selected_keywords=keywords, user_tier=user_tier)
+    return {
+        "primary_family": context.branch_plan.primary_family,
+        "secondary_family": context.branch_plan.secondary_family,
+        "contrast_family": context.branch_plan.contrast_family,
+    }
+
+
 def score_mining_idea(idea: dict, combo: dict) -> MiningIdeaScore:
     title = str(idea.get("title", "")).strip()
     summary = str(idea.get("summary", "")).strip()
@@ -330,12 +347,23 @@ def run_mining_eval(
     case_results: list[MiningEvalCaseResult] = []
 
     for case in selected_cases:
-        combos = build_keyword_combos(
-            keywords=case.keywords,
-            has_ai_keyword=case.has_ai_keyword,
-            rng=random.Random(case.seed),
-        )
-        system_prompt, user_prompt = build_mining_prompt(combos)
+        if settings.ideation_v2_enabled:
+            v2_context = build_v2_mining_context(
+                selected_keywords=case.keywords,
+                user_tier="free",
+            )
+            system_prompt, user_prompt, combos = build_mining_prompt_v2(
+                selected_keywords=case.keywords,
+                context=v2_context,
+            )
+        else:
+            combos = build_keyword_combos(
+                keywords=case.keywords,
+                has_ai_keyword=case.has_ai_keyword,
+                rng=random.Random(case.seed),
+            )
+            system_prompt, user_prompt = build_mining_prompt(combos)
+
         response = client.beta.chat.completions.parse(
             model=model,
             messages=[
@@ -359,13 +387,14 @@ def run_mining_eval(
                 completion_tokens=response.usage.completion_tokens,
                 combos=combos,
                 ideas=ideas,
+                surface_family_spread=build_surface_family_spread(case.keywords),
                 batch_score=batch_score,
             )
         )
 
     report = MiningEvalReport(
         generated_at=datetime.now(timezone.utc).isoformat(),
-        prompt_version=DEFAULT_PROMPT_VERSION,
+        prompt_version=V2_PROMPT_VERSION if settings.ideation_v2_enabled else DEFAULT_PROMPT_VERSION,
         model=model,
         case_results=case_results,
     )
@@ -424,7 +453,7 @@ def _passes_pivot_check(summary_text: str, title_text: str, combo: dict) -> bool
 
     introduced_pivot_terms = {"api", "marketplace"}
     keyword_values = {
-        str(keyword.get("en", "")).lower()
+        str(keyword.get("label", "")).lower()
         for keyword in combo.get("keywords", [])
     }
     output_text = f"{title_text} {summary_text}"

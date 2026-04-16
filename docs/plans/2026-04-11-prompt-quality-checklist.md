@@ -72,6 +72,8 @@ Every stage should pass these shared checks:
 - [ ] Title avoids generic AI/SaaS wording.
 - [ ] Summary clearly contains `who + action`, `difference`, and `outcome`.
 - [ ] Summary describes what the user does, not what the system provides.
+- [ ] The 10 ideas preserve the same actor/tension/outcome while changing surface family intentionally.
+- [ ] Family spread is visible in eval output as `primary / secondary / contrast`.
 - [ ] At least 4 of 10 ideas feel clearly different in problem or format.
 - [ ] At least 2 of 10 ideas feel pleasantly surprising.
 - [ ] At least 2 of 10 ideas feel immediately buildable.
@@ -82,6 +84,7 @@ Every stage should pass these shared checks:
 - [ ] Titles feel interchangeable.
 - [ ] Summaries repeat the same sentence frame.
 - [ ] Too many ideas default to "AI recommendation app".
+- [ ] Surface branching is random instead of bounded.
 - [ ] Revenue model leaks into the product summary.
 
 ## 2. Concept Anchor Quality Checklist

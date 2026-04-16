@@ -40,5 +40,10 @@ This project now uses a single-language English content contract.
 - `keywords` now expose one public field: `label`.
 - `profiles.language` was removed from the schema and public API.
 - `ai_usage_logs.language` was removed; English is now implicit runtime behavior.
+- `ideation_v2_enabled` is the runtime flag for the new mining/overview path. It is `False` by default.
+- when `ideation_v2_enabled=False`, `ideas.tier_type` keeps legacy internal combo labels such as `stable` and `pivot`.
+- when `ideation_v2_enabled=True`, `ideas.tier_type` becomes internal branch metadata in `family|subfamily` form, for example `workflow_utility|browser_extension`.
+- API clients still receive the same public idea contract: `idea_line`, `title`, `summary`, `keyword_combo`, `sort_order`, `is_vaulted`.
+- overview V2 rebuilds or consumes internal `kernel + family` anchors but still writes the same flat overview fields.
 - Historical migration files still contain the old bilingual column names by design.
 - Older planning documents may mention bilingual fields because they were written before migrations `00016` and `00017`.

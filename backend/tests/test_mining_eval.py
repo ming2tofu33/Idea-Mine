@@ -1,4 +1,5 @@
 from app.evals.mining_eval import (
+    build_surface_family_spread,
     get_mining_eval_cases,
     score_mining_batch,
     score_mining_idea,
@@ -81,3 +82,19 @@ def test_get_mining_eval_cases_returns_seeded_coverage():
     assert len({case.seed for case in cases}) == len(cases)
     assert any(case.has_ai_keyword for case in cases)
     assert any(not case.has_ai_keyword for case in cases)
+
+
+def test_build_surface_family_spread_reports_v2_family_selection():
+    spread = build_surface_family_spread(
+        [
+            {"label": "solo creator", "category": "who", "is_premium": False},
+            {"label": "scattered research", "category": "domain", "is_premium": False},
+            {"label": "usable first draft", "category": "value", "is_premium": False},
+            {"label": "while browsing", "category": "tech", "is_premium": False},
+            {"label": "browser-based", "category": "tech", "is_premium": False},
+        ]
+    )
+
+    assert spread["primary_family"] == "workflow_utility"
+    assert spread["secondary_family"] == "assistant_copilot"
+    assert "contrast_family" in spread
