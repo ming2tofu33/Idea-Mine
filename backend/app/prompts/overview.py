@@ -5,6 +5,8 @@ def build_overview_prompt(
     market_research: str,
     concept: dict,
     idea_line: str = "",
+    kernel: dict | None = None,
+    family: str | None = None,
 ) -> tuple[str, str]:
     """Build the detailed project overview prompt from the selected idea."""
 
@@ -83,6 +85,21 @@ Fix any section that fails its relevant tests before outputting.
 - Primary user is the only persona. No other user type appears anywhere.
 """
 
+    v2_block = ""
+    if kernel or family:
+        v2_block = f"""
+
+=== V2 ANCHORS ===
+
+Chosen family: {family or "none"}
+Locked actor: {kernel.get('primary_actor', '') if kernel else ''}
+Locked tension: {kernel.get('primary_tension', '') if kernel else ''}
+Locked outcome: {kernel.get('primary_outcome', '') if kernel else ''}
+Locked environment: {kernel.get('primary_environment', '') if kernel else ''}
+
+Do not change these anchors while expanding the overview.
+"""
+
     user_prompt = f"""=== SELECTED IDEA (source of truth) ===
 
 Selected one-line idea: {idea_line}
@@ -105,6 +122,7 @@ Write all sections in English only.
 === KEYWORDS ===
 
 {kw_block}
+{v2_block}
 
 === MARKET CONTEXT (from web search) ===
 

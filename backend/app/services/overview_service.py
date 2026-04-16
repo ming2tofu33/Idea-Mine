@@ -8,6 +8,7 @@ from app.config import settings
 from app.models.llm_schemas import ConceptResponse, OverviewResponse
 from app.prompts.concept import build_concept_prompt
 from app.prompts.overview import build_overview_prompt
+from app.services.ideation_v2.overview import build_v2_overview_input
 from app.services.market_research import research_market
 
 _openai: OpenAI | None = None
@@ -40,18 +41,32 @@ async def generate_overview(
     session_id = str(uuid.uuid4())
     client = get_openai()
     idea_line = idea.get("idea_line") or idea["summary"]
+    title = idea["title"]
+    summary = idea["summary"]
+    kernel = None
+    family = None
+
+    if settings.ideation_v2_enabled:
+        overview_input = build_v2_overview_input(idea, user_tier=tier)
+        idea_line = overview_input["idea_line"]
+        title = overview_input["title"]
+        summary = overview_input["summary"]
+        kernel = overview_input["kernel"]
+        family = overview_input["family"]
 
     market_data = await research_market(
-        title=idea["title"],
-        summary=idea["summary"],
+        title=title,
+        summary=summary,
         keywords=idea["keyword_combo"],
     )
 
     system_prompt, user_prompt = build_concept_prompt(
-        title=idea["title"],
-        summary=idea["summary"],
+        title=title,
+        summary=summary,
         keywords=idea["keyword_combo"],
         idea_line=idea_line,
+        kernel=kernel,
+        family=family,
     )
 
     step1_start = time.time()
@@ -94,12 +109,14 @@ async def generate_overview(
     )
 
     system_prompt, user_prompt = build_overview_prompt(
-        title=idea["title"],
-        summary=idea["summary"],
+        title=title,
+        summary=summary,
         keywords=idea["keyword_combo"],
         market_research=market_data,
         concept=concept,
         idea_line=idea_line,
+        kernel=kernel,
+        family=family,
     )
 
     step2_start = time.time()

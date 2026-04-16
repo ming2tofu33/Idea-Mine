@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     supabase_db_url: str = ""
     tavily_api_key: str = ""
     port: int = 8000
+    ideation_v2_enabled: bool = False
 
     model_config = SettingsConfigDict(env_file=str(BACKEND_ENV_FILE), extra="ignore")
 

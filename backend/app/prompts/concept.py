@@ -3,6 +3,8 @@ def build_concept_prompt(
     summary: str,
     keywords: list[dict],
     idea_line: str = "",
+    kernel: dict | None = None,
+    family: str | None = None,
 ) -> tuple[str, str]:
     """Step 1: 제품 컨셉 생성 프롬프트 v3.
 
@@ -72,6 +74,21 @@ If any test fails, revise before outputting."""
 
     # ── User prompt (Task + dynamic data) ──
 
+    v2_block = ""
+    if kernel or family:
+        v2_block = f"""
+
+=== V2 ANCHORS ===
+
+Locked family: {family or "none"}
+Locked actor: {kernel.get('primary_actor', '') if kernel else ''}
+Locked tension: {kernel.get('primary_tension', '') if kernel else ''}
+Locked outcome: {kernel.get('primary_outcome', '') if kernel else ''}
+Locked environment: {kernel.get('primary_environment', '') if kernel else ''}
+
+Do not change the actor, tension, outcome, or chosen product family.
+"""
+
     user_prompt = f"""=== INPUT ===
 
 Title: {title}
@@ -80,6 +97,7 @@ One-line idea: {idea_line}
 
 Keywords:
 {kw_block}
+{v2_block}
 
 === TASK ===
 

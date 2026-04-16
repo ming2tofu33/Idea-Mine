@@ -7,7 +7,9 @@ from supabase import Client
 from app.config import settings
 from app.models.llm_schemas import MiningResponse
 from app.prompts.mining import build_mining_prompt
+from app.prompts.mining_v2 import build_mining_prompt_v2
 from app.services.combo_builder import build_keyword_combos
+from app.services.ideation_v2.mining import build_v2_mining_context
 
 _openai: OpenAI | None = None
 
@@ -35,9 +37,17 @@ async def generate_ideas(
 ) -> list[dict]:
     session_id = str(uuid.uuid4())
     has_ai_keyword = any(kw["category"] == "ai" for kw in keywords)
+    idea_slots: list[dict]
 
-    combos = build_keyword_combos(keywords, has_ai_keyword)
-    system_prompt, user_prompt = build_mining_prompt(combos)
+    if settings.ideation_v2_enabled:
+        context = build_v2_mining_context(selected_keywords=keywords, user_tier=tier)
+        system_prompt, user_prompt, idea_slots = build_mining_prompt_v2(
+            selected_keywords=keywords,
+            context=context,
+        )
+    else:
+        idea_slots = build_keyword_combos(keywords, has_ai_keyword)
+        system_prompt, user_prompt = build_mining_prompt(idea_slots)
 
     client = get_openai()
     start_time = time.time()
@@ -103,12 +113,17 @@ async def generate_ideas(
     ideas_by_order = {idea["sort_order"]: idea for idea in ideas_raw}
 
     rows_to_insert = []
-    for combo in combos:
-        order = combo["sort_order"]
+    for slot in idea_slots:
+        order = slot["sort_order"]
         idea_text = ideas_by_order.get(order, {})
         idea_line = idea_text.get("idea_line", idea_text.get("summary", "No one-line idea"))
         title = idea_text.get("title", "Untitled")
         summary = idea_text.get("summary", "No summary")
+        tier_type = (
+            f"{slot['family']}|{slot['subfamily']}"
+            if settings.ideation_v2_enabled
+            else slot["tier_type"]
+        )
 
         rows_to_insert.append(
             {
@@ -117,8 +132,8 @@ async def generate_ideas(
                 "idea_line": idea_line,
                 "title": title,
                 "summary": summary,
-                "keyword_combo": combo["keywords"],
-                "tier_type": combo["tier_type"],
+                "keyword_combo": slot["keywords"],
+                "tier_type": tier_type,
                 "sort_order": order,
             }
         )
