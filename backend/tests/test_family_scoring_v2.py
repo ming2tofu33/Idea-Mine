@@ -30,4 +30,14 @@ def test_score_families_boosts_real_world_companion_for_physical_context():
         )
     )
     scores = score_families(seed, kernel_set)
+    assert set(scores) == {
+        "workflow_utility",
+        "workspace_studio",
+        "dashboard_ops",
+        "assistant_copilot",
+        "agent_automation",
+        "platform_network",
+        "real_world_companion",
+    }
     assert scores["real_world_companion"].score > scores["platform_network"].score
+    assert scores["real_world_companion"].reasons
