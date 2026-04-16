@@ -10,6 +10,7 @@ def test_normalized_seed_and_branch_plan_have_expected_fields():
         surface_hints=["browser-based"],
         mechanism_hints=["automation"],
         premium_modifiers=[],
+        family_biases=["workflow_utility"],
         ambiguous_keywords=[{"keyword": "scattered research"}],
         unresolved_keywords=[{"keyword": "browser-based", "context": None}],
         role_confidence_map={"actor": 0.9},
@@ -33,6 +34,7 @@ def test_normalized_seed_and_branch_plan_have_expected_fields():
     assert seed.seed_strength_label == "balanced"
     assert plan.slot_distribution["primary"] == 5
     assert plan.contrast_family is None
+    assert seed.family_biases == ["workflow_utility"]
     assert seed.ambiguous_keywords[0].keyword == "scattered research"
     assert isinstance(seed.unresolved_keywords[0], KeywordSignal)
     assert seed.unresolved_keywords[0].keyword == "browser-based"

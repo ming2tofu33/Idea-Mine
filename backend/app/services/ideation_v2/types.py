@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class KeywordSignal(BaseModel):
@@ -14,6 +14,7 @@ class NormalizedSeed(BaseModel):
     surface_hints: list[str]
     mechanism_hints: list[str]
     premium_modifiers: list[str]
+    family_biases: list[str] = Field(default_factory=list)
     ambiguous_keywords: list[KeywordSignal]
     unresolved_keywords: list[KeywordSignal]
     role_confidence_map: dict[str, float]

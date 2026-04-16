@@ -1,3 +1,5 @@
+from collections import Counter
+
 from pydantic import BaseModel
 
 
@@ -24,6 +26,7 @@ def score_families(seed, kernel_set) -> dict[str, FamilyScore]:
     surface_texts = [hint.lower() for hint in seed.surface_hints + seed.mechanism_hints]
     premium_texts = [hint.lower() for hint in seed.premium_modifiers]
     environment_texts = [hint.lower() for hint in seed.environments]
+    explicit_bias_counts = Counter(seed.family_biases)
     browser_context = surface_texts
     has_browser_context = any("browser" in hint for hint in browser_context)
     has_dashboard_surface = any(
@@ -140,6 +143,14 @@ def score_families(seed, kernel_set) -> dict[str, FamilyScore]:
     if seed.outcomes:
         raw["workspace_studio"] += 0.2
         reasons["workspace_studio"].append("seed includes a concrete outcome")
+    for family, count in explicit_bias_counts.items():
+        if family not in raw:
+            continue
+        raw[family] += 0.8 * count
+        reasons[family].append(
+            f"explicit keyword bias favors {family}" if count == 1 else
+            f"explicit keyword bias favors {family} across {count} signals"
+        )
 
     primary_kernel = kernel_set.primary_kernel
     if primary_kernel.primary_environment:

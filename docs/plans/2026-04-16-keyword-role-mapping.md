@@ -140,10 +140,40 @@ When a keyword has no explicit per-label override:
 
 This keeps the system compatible with the current keyword catalog while moving ideation quality toward the V2 branch-family design.
 
+## Explicit Label Overrides
+
+We now also keep a small explicit-override catalog for high-impact labels that carry stronger product-shape meaning than their raw category alone.
+
+Current explicit labels include:
+
+- `Browser Extension`
+- `Dashboard`
+- `Marketplace`
+- `Community Platform`
+- `API Service`
+- `Automation Workflow`
+- `Desktop App`
+- `Mobile App`
+- `Chatbot`
+- `Voice Interface`
+- `Plugin/Widget`
+- `Wearable`
+- `IoT/Sensor`
+- `Creator Economy`
+- `Voice AI (TTS/STT)`
+
+Implementation rule:
+
+- label override wins first
+- category + subtype fallback runs only when no explicit label override exists
+- explicit label bias is carried into family scoring as an additional branch-weight signal
+
+This keeps the visible seed system stable while letting especially strong product-form keywords push ideation toward the right branch family.
+
 ## Next Cleanup
 
 After this mapping layer stabilizes, the next cleanup should be:
 
-1. add broader explicit label overrides for high-impact keywords
+1. expand explicit label coverage only where mining outputs still collapse into the wrong family
 2. decide whether selected `keyword_combo` rows should retain hidden internal metadata long-term
 3. only then consider a DB-level taxonomy rewrite

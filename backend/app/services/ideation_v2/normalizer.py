@@ -67,11 +67,13 @@ def normalize_keywords(selected_keywords: list[dict]) -> NormalizedSeed:
     surface_hints: list[str] = []
     mechanism_hints: list[str] = []
     premium_modifiers: list[str] = []
+    family_biases: list[str] = []
     unresolved_keywords: list[KeywordSignal] = []
 
     for item in selected_keywords:
         meta = resolve_keyword_metadata(item["label"], item["source"], item["premium_only"])
         role = meta.primary_role or _fallback_role(item)
+        family_biases.extend(meta.family_bias)
 
         if role == "actor":
             actors.append(item["label"])
@@ -106,6 +108,7 @@ def normalize_keywords(selected_keywords: list[dict]) -> NormalizedSeed:
         surface_hints=surface_hints,
         mechanism_hints=mechanism_hints,
         premium_modifiers=premium_modifiers,
+        family_biases=family_biases,
         ambiguous_keywords=[],
         unresolved_keywords=unresolved_keywords,
         role_confidence_map={},

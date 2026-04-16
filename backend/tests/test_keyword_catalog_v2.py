@@ -18,3 +18,10 @@ def test_resolve_keyword_metadata_falls_back_for_unknown_label():
     assert meta.secondary_roles == []
     assert meta.family_bias == []
     assert meta.premium_only is True
+
+
+def test_resolve_keyword_metadata_uses_case_insensitive_label_overrides():
+    meta = resolve_keyword_metadata("Voice AI (TTS/STT)", source="system", premium_only=True)
+    assert meta.primary_role == "premium_modifier"
+    assert "assistant_copilot" in meta.family_bias
+    assert meta.premium_only is True

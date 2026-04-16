@@ -129,3 +129,49 @@ def test_build_v2_mining_context_prefers_platform_family_for_marketplace_shape()
 
     assert context.normalized_seed.surface_hints == ["Marketplace"]
     assert context.branch_plan.primary_family == "platform_network"
+
+
+def test_build_v2_mining_context_prefers_assistant_family_for_voice_ai_case():
+    context = build_v2_mining_context(
+        [
+            {
+                "slug": "single-person-household",
+                "category": "who",
+                "subtype": "household",
+                "label": "Single-person Household",
+                "is_premium": False,
+            },
+            {
+                "slug": "mobile-app",
+                "category": "tech",
+                "subtype": "platform",
+                "label": "Mobile App",
+                "is_premium": False,
+            },
+            {
+                "slug": "voice-ai",
+                "category": "ai",
+                "subtype": "modality",
+                "label": "Voice AI (TTS/STT)",
+                "is_premium": True,
+            },
+            {
+                "slug": "mental-health",
+                "category": "domain",
+                "subtype": "industry",
+                "label": "Mental Health",
+                "is_premium": False,
+            },
+            {
+                "slug": "emotional-care",
+                "category": "value",
+                "subtype": "emotional",
+                "label": "Emotional Care",
+                "is_premium": False,
+            },
+        ],
+        user_tier="premium",
+    )
+
+    assert "assistant_copilot" in context.normalized_seed.family_biases
+    assert context.branch_plan.primary_family == "assistant_copilot"

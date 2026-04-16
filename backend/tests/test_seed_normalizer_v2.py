@@ -67,3 +67,27 @@ def test_normalize_keywords_uses_subtype_fallbacks_and_ignores_money():
     assert seed.premium_modifiers == ["AI Copilot"]
     assert seed.outcomes == ["Operational Efficiency"]
     assert seed.unresolved_keywords == []
+
+
+def test_normalize_keywords_collects_explicit_family_biases():
+    seed = normalize_keywords(
+        [
+            {
+                "label": "Voice AI (TTS/STT)",
+                "source": "system",
+                "premium_only": True,
+                "category": "ai",
+                "subtype": "modality",
+            },
+            {
+                "label": "Creator Economy",
+                "source": "system",
+                "premium_only": False,
+                "category": "domain",
+                "subtype": "ecosystem",
+            },
+        ]
+    )
+
+    assert "assistant_copilot" in seed.family_biases
+    assert "platform_network" in seed.family_biases
