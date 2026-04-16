@@ -21,13 +21,17 @@ CATALOG = {
 
 
 def resolve_keyword_metadata(label: str, source: str, premium_only: bool) -> KeywordMetadata:
-    return CATALOG.get(
-        label,
-        KeywordMetadata(
-            label=label,
-            primary_role=None,
-            secondary_roles=[],
-            family_bias=[],
-            premium_only=premium_only,
-        ),
+    # `source` is intentionally reserved for future source-aware routing.
+    _ = source
+
+    metadata = CATALOG.get(label)
+    if metadata is not None:
+        return metadata.model_copy(deep=True)
+
+    return KeywordMetadata(
+        label=label,
+        primary_role=None,
+        secondary_roles=[],
+        family_bias=[],
+        premium_only=premium_only,
     )
