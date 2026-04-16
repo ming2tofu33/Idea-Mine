@@ -12,6 +12,33 @@ CATEGORY_ROLE_FALLBACKS = {
     "ai": "premium_modifier",
     "domain": "environment",
 }
+SUBTYPE_ROLE_FALLBACKS = {
+    ("who", "demographic"): "actor",
+    ("who", "household"): "actor",
+    ("who", "life-stage"): "actor",
+    ("who", "lifestyle"): "actor",
+    ("who", "role"): "actor",
+    ("domain", "ecosystem"): "environment",
+    ("domain", "function"): "environment",
+    ("domain", "industry"): "environment",
+    ("tech", "delivery"): "surface_hint",
+    ("tech", "interface"): "surface_hint",
+    ("tech", "platform"): "surface_hint",
+    ("tech", "product-form"): "surface_hint",
+    ("value", "efficiency"): "outcome",
+    ("value", "emotional"): "outcome",
+    ("value", "engagement"): "outcome",
+    ("value", "growth"): "outcome",
+    ("value", "trust"): "outcome",
+    ("value", "wellbeing"): "outcome",
+    ("ai", "agent"): "premium_modifier",
+    ("ai", "generation"): "premium_modifier",
+    ("ai", "modality"): "premium_modifier",
+    ("ai", "optimization"): "premium_modifier",
+    ("ai", "prediction"): "premium_modifier",
+    ("ai", "retrieval"): "premium_modifier",
+}
+IGNORED_CATEGORIES = {"money"}
 
 
 def _seed_strength_label(strength_score: float) -> str:
@@ -20,6 +47,16 @@ def _seed_strength_label(strength_score: float) -> str:
     if strength_score <= DENSE_THRESHOLD:
         return "balanced"
     return "dense"
+
+
+def _fallback_role(item: dict) -> str | None:
+    category = item.get("category")
+    subtype = item.get("subtype")
+    if category in IGNORED_CATEGORIES:
+        return None
+    return SUBTYPE_ROLE_FALLBACKS.get((category, subtype)) or CATEGORY_ROLE_FALLBACKS.get(
+        category
+    )
 
 
 def normalize_keywords(selected_keywords: list[dict]) -> NormalizedSeed:
@@ -34,7 +71,7 @@ def normalize_keywords(selected_keywords: list[dict]) -> NormalizedSeed:
 
     for item in selected_keywords:
         meta = resolve_keyword_metadata(item["label"], item["source"], item["premium_only"])
-        role = meta.primary_role or CATEGORY_ROLE_FALLBACKS.get(item.get("category"))
+        role = meta.primary_role or _fallback_role(item)
 
         if role == "actor":
             actors.append(item["label"])
@@ -50,6 +87,8 @@ def normalize_keywords(selected_keywords: list[dict]) -> NormalizedSeed:
             mechanism_hints.append(item["label"])
         elif role == "premium_modifier":
             premium_modifiers.append(item["label"])
+        elif item.get("category") in IGNORED_CATEGORIES:
+            continue
         else:
             unresolved_keywords.append(KeywordSignal(keyword=item["label"], context=item.get("source")))
 

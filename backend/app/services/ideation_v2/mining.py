@@ -19,12 +19,14 @@ def _prepare_runtime_keywords(selected_keywords: list[dict]) -> list[dict]:
     for item in selected_keywords:
         prepared.append(
             {
+                "slug": item.get("slug"),
                 "label": item["label"],
                 "source": item.get("source", "system"),
                 "premium_only": bool(
                     item.get("premium_only", item.get("is_premium", False))
                 ),
                 "category": item.get("category"),
+                "subtype": item.get("subtype"),
             }
         )
     return prepared

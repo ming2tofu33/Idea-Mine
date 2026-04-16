@@ -133,7 +133,7 @@ async def mine_vein(
 
     keywords = await asyncio.to_thread(
         lambda: supabase.table("keywords")
-        .select("id, slug, category, label, is_premium")
+        .select("id, slug, category, subtype, label, is_premium")
         .in_("id", vein_data["keyword_ids"])
         .execute()
     )

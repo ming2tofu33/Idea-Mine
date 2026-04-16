@@ -51,3 +51,81 @@ def test_build_v2_mining_context_accepts_runtime_keyword_shape():
 
     assert context.branch_plan.ai_variant_budget == 1
     assert context.family_scores["workflow_utility"].score >= 0.0
+
+
+def test_build_v2_mining_context_prefers_dashboard_family_for_dashboard_shape():
+    context = build_v2_mining_context(
+        [
+            {
+                "slug": "small-business-owner",
+                "category": "who",
+                "subtype": "role",
+                "label": "Small Business Owner",
+                "is_premium": False,
+            },
+            {
+                "slug": "dashboard",
+                "category": "tech",
+                "subtype": "platform",
+                "label": "Dashboard",
+                "is_premium": False,
+            },
+            {
+                "slug": "devops-infra",
+                "category": "domain",
+                "subtype": "function",
+                "label": "DevOps/Infra",
+                "is_premium": False,
+            },
+            {
+                "slug": "operational-efficiency",
+                "category": "value",
+                "subtype": "efficiency",
+                "label": "Operational Efficiency",
+                "is_premium": False,
+            },
+        ],
+        user_tier="free",
+    )
+
+    assert context.normalized_seed.surface_hints == ["Dashboard"]
+    assert context.branch_plan.primary_family == "dashboard_ops"
+
+
+def test_build_v2_mining_context_prefers_platform_family_for_marketplace_shape():
+    context = build_v2_mining_context(
+        [
+            {
+                "slug": "solopreneur",
+                "category": "who",
+                "subtype": "role",
+                "label": "Solopreneur",
+                "is_premium": False,
+            },
+            {
+                "slug": "marketplace",
+                "category": "tech",
+                "subtype": "product-form",
+                "label": "Marketplace",
+                "is_premium": False,
+            },
+            {
+                "slug": "creator-economy",
+                "category": "domain",
+                "subtype": "ecosystem",
+                "label": "Creator Economy",
+                "is_premium": False,
+            },
+            {
+                "slug": "sense-of-belonging",
+                "category": "value",
+                "subtype": "emotional",
+                "label": "Sense of Belonging",
+                "is_premium": False,
+            },
+        ],
+        user_tier="free",
+    )
+
+    assert context.normalized_seed.surface_hints == ["Marketplace"]
+    assert context.branch_plan.primary_family == "platform_network"
