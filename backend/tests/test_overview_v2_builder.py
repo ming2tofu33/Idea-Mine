@@ -40,3 +40,24 @@ def test_build_v2_overview_input_rebuilds_missing_v2_metadata():
 
     assert payload["family"] == "workflow_utility"
     assert payload["kernel"]["primary_actor"] == "solo creator"
+
+
+def test_build_v2_overview_input_uses_stored_v2_family_from_tier_type():
+    selected_idea = {
+        "title": "Research Draft Sidecar",
+        "idea_line": "Turn scattered browsing fragments into a usable draft before momentum dies.",
+        "summary": "A browser-adjacent tool for solo creators.",
+        "tier_type": "assistant_copilot|side_panel",
+        "keyword_combo": [
+            {"label": "solo creator", "category": "who", "is_premium": False},
+            {"label": "scattered research", "category": "domain", "is_premium": False},
+            {"label": "usable first draft", "category": "value", "is_premium": False},
+            {"label": "while browsing", "category": "tech", "is_premium": False},
+            {"label": "browser-based", "category": "tech", "is_premium": False},
+        ],
+    }
+
+    payload = build_v2_overview_input(selected_idea, user_tier="free")
+
+    assert payload["family"] == "assistant_copilot"
+    assert payload["kernel"]["primary_actor"] == "solo creator"
