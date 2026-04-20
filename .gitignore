@@ -54,3 +54,4 @@ supabase/.branches/
 /*.png
 .codex-review-*/
 .playwright-mcp/
+output/

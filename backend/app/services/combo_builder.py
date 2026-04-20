@@ -14,17 +14,11 @@ AI_TIER_EXPOSURE = {
     "rare": 1,
 }
 
-MONEY_TIER_EXPOSURE = {
-    "stable": 2,
-    "expansion": 1,
-    "pivot": 1,
-    "rare": 0,
-}
-
 OPTIONAL_CATEGORY_EXPOSURE = {
     "ai": AI_TIER_EXPOSURE,
-    "money": MONEY_TIER_EXPOSURE,
 }
+
+EXCLUDED_CATEGORIES = {"money"}
 
 
 def build_keyword_combos(
@@ -39,7 +33,10 @@ def build_keyword_combos(
         if kw["category"] in OPTIONAL_CATEGORY_EXPOSURE
     }
     core_keywords = [
-        kw for kw in keywords if kw["category"] not in OPTIONAL_CATEGORY_EXPOSURE
+        kw
+        for kw in keywords
+        if kw["category"] not in OPTIONAL_CATEGORY_EXPOSURE
+        and kw["category"] not in EXCLUDED_CATEGORIES
     ]
 
     optional_slots_by_category = _plan_optional_category_slots(

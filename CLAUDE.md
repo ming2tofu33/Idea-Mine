@@ -5,7 +5,6 @@ AI 기술 조합 기반 아이디어 탐사 플랫폼. 웹 우선 + 프리미엄
 ## 프로젝트 구조
 
 - `apps/web/` — Next.js 웹 프론트엔드 (v2 주력)
-- `apps/mobile/` — Expo 모바일 앱 (v1 코드, 웹 검증 후 확장 예정)
 - `backend/` — Python 백엔드 (FastAPI + OpenAI)
 - `supabase/` — Supabase 마이그레이션, 시드
 - `mind/` — Obsidian mind (기획 문서 전체)
@@ -31,7 +30,7 @@ AI 기술 조합 기반 아이디어 탐사 플랫폼. 웹 우선 + 프리미엄
 - **Graphics:** CSS + Canvas (선택적으로 React Three Fiber)
 - **Backend:** Supabase (Auth + DB + Storage) + Python (FastAPI)
 - **AI:** OpenAI API — gpt-5-nano(채굴/컨셉), gpt-5-mini(개요/감정), gpt-5(풀 개요)
-- **결제:** Polar.sh (웹), RevenueCat (모바일, 나중에)
+- **결제:** Polar.sh (웹)
 - **개발 환경:** Windows 11, Claude Code
 
 ## Mind 규칙

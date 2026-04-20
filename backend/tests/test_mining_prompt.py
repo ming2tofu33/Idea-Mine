@@ -19,8 +19,9 @@ SAMPLE_COMBOS = [
 def test_build_mining_prompt_treats_money_as_background_context():
     system_prompt, _ = build_mining_prompt(SAMPLE_COMBOS)
 
-    assert "MONEY should almost never be the main hook of the idea." in system_prompt
+    assert "MONEY:" not in system_prompt
     assert "Do not build the title around monetization words" in system_prompt
+    assert "Treat it as background context" not in system_prompt
 
 
 def test_build_mining_prompt_prevents_default_api_marketplace_pivots():

@@ -14,7 +14,7 @@ from app.services.ideation_v2.mining import build_v2_mining_context
 _openai: OpenAI | None = None
 
 MODEL = "gpt-5-nano"
-PROMPT_VERSION = "v10-single-fields"
+PROMPT_VERSION = "v11-no-money-seed"
 
 COST_PER_1K_INPUT = 0.00005
 COST_PER_1K_OUTPUT = 0.0004

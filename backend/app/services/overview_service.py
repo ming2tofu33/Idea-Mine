@@ -21,7 +21,7 @@ OVERVIEW_MODEL = "gpt-5-mini"
 OVERVIEW_COST_INPUT = 0.00075
 OVERVIEW_COST_OUTPUT = 0.0045
 
-PROMPT_VERSION = "overview-v11-single-fields"
+PROMPT_VERSION = "overview-v12-money-removed"
 
 
 def get_openai() -> OpenAI:
@@ -54,16 +54,20 @@ async def generate_overview(
         kernel = overview_input["kernel"]
         family = overview_input["family"]
 
+    concept_keywords = [
+        kw for kw in idea["keyword_combo"] if kw["category"].lower() != "money"
+    ]
+
     market_data = await research_market(
         title=title,
         summary=summary,
-        keywords=idea["keyword_combo"],
+        keywords=concept_keywords,
     )
 
     system_prompt, user_prompt = build_concept_prompt(
         title=title,
         summary=summary,
-        keywords=idea["keyword_combo"],
+        keywords=concept_keywords,
         idea_line=idea_line,
         kernel=kernel,
         family=family,
@@ -111,7 +115,7 @@ async def generate_overview(
     system_prompt, user_prompt = build_overview_prompt(
         title=title,
         summary=summary,
-        keywords=idea["keyword_combo"],
+        keywords=concept_keywords,
         market_research=market_data,
         concept=concept,
         idea_line=idea_line,

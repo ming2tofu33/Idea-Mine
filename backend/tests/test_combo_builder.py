@@ -63,23 +63,11 @@ def test_build_keyword_combos_spreads_ai_across_tiers_instead_of_forcing_every_c
     }
 
 
-def test_build_keyword_combos_keeps_money_as_background_signal():
+def test_build_keyword_combos_excludes_money_from_idea_generation_inputs():
     combos = build_keyword_combos(
         KEYWORDS_WITH_AI,
         has_ai_keyword=True,
         rng=random.Random(23),
     )
 
-    money_counts_by_tier = {}
-    for tier in ("stable", "expansion", "pivot", "rare"):
-        tier_combos = [combo for combo in combos if combo["tier_type"] == tier]
-        money_counts_by_tier[tier] = sum(
-            1 for combo in tier_combos if _has_category(combo, "money")
-        )
-
-    assert money_counts_by_tier == {
-        "stable": 2,
-        "expansion": 1,
-        "pivot": 1,
-        "rare": 0,
-    }
+    assert all(not _has_category(combo, "money") for combo in combos)

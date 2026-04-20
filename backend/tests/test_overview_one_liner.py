@@ -13,13 +13,12 @@ def _sample_keywords() -> list[dict]:
         {"category": "AI", "label": "Voice AI"},
         {"category": "DOMAIN", "label": "Fitness"},
         {"category": "VALUE", "label": "consistent workout starts"},
-        {"category": "MONEY", "label": "subscription"},
     ]
 
 
 def _sample_concept() -> dict:
     return {
-        "concept": "A mobile app for solo founders that uses Voice AI to deliver consistent workout starts in fitness, monetized via subscription.",
+        "concept": "A mobile app for solo founders that uses Voice AI to deliver consistent workout starts in fitness.",
         "product_type": "B2C",
         "primary_user": "Solo founders who keep delaying workouts",
         "core_experience": "Opens the app, speaks their current energy level, and starts a short routine immediately.",
@@ -161,5 +160,7 @@ def test_generate_overview_passes_one_liner_to_prompt_builders(monkeypatch):
 
     assert captured["concept"]["idea_line"] == idea["idea_line"]
     assert captured["overview"]["idea_line"] == idea["idea_line"]
+    assert all(kw["category"] != "MONEY" for kw in captured["concept"]["keywords"])
+    assert all(kw["category"] != "MONEY" for kw in captured["overview"]["keywords"])
     assert result["idea_id"] == "idea-1"
     assert result["concept"] == "A voice-first fitness app for solo founders."

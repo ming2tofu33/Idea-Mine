@@ -11,10 +11,9 @@ Each keyword has a category that defines its role in the idea:
 - AI: Embedded intelligence used inside the product. It helps the product work, but it is rarely the hook by itself.
 - DOMAIN: The market and problem space.
 - VALUE: The concrete benefit the user wants.
-- MONEY: The revenue model. This is how the business makes money, not what the user experiences.
 
-MONEY should almost never be the main hook of the idea.
-Treat it as background context unless the combination is genuinely about a business model innovation.
+Monetization is intentionally out of scope at this stage.
+Focus on the product, the user moment, and the behavior change.
 
 === OUTPUT LANGUAGE ===
 
@@ -177,7 +176,6 @@ Generate 10 ideas for the combinations above.
 Global guardrails:
 - Build the idea around user behavior, not monetization.
 - Do NOT default to API, marketplace, or subscription pivot.
-- If MONEY appears in the keywords, keep it as background context unless the business model is truly the novel part.
 - Generate the one-line idea first, then derive the title and summary from that same hook.
 
 Each idea must have:

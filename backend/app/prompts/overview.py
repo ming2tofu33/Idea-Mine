@@ -15,7 +15,7 @@ def build_overview_prompt(
         kw_by_role[kw["category"].upper()] = kw["label"]
 
     kw_lines = []
-    for cat in ["WHO", "TECH", "AI", "DOMAIN", "VALUE", "MONEY"]:
+    for cat in ["WHO", "TECH", "AI", "DOMAIN", "VALUE"]:
         if cat in kw_by_role:
             kw_lines.append(f"  {cat}: {kw_by_role[cat]}")
 
@@ -54,13 +54,13 @@ Before writing each sentence, ask yourself these 3 tests:
 
 === USING MARKET RESEARCH ===
 
-Extract from the market context and use in specific sections:
+Extract from the market context and use only where it is directly supported:
 - PROBLEM: Pain frequency and current behavior patterns
-- TARGET USER: Demographic context and usage timing
-- DIFFERENTIATOR: Actual competitor names from the research
-- BUSINESS MODEL: Competitor price benchmarks with actual dollar amounts
+- TARGET USER: usage timing and current workaround
+- DIFFERENTIATOR: broad alternative behavior or existing tool category
+- REVENUE: only a lightweight commercial hypothesis if the market context clearly supports it
 
-If a section has no relevant market data, rely on concrete user scenarios. Never invent statistics.
+If a section has no relevant market data, rely on concrete user scenarios. Never invent statistics, named competitors, or specific pricing.
 
 === VERIFICATION ===
 
@@ -70,7 +70,7 @@ Before outputting, apply only the tests that make sense for each section:
 2. TARGET USER: SPECIFICITY + HUMAN
 3. CORE FEATURES: SCREEN + SPECIFICITY + HUMAN
 4. DIFFERENTIATOR: HUMAN
-5. BUSINESS MODEL: SPECIFICITY
+5. REVENUE: HUMAN + realism
 6. MVP SCOPE: HUMAN + cheapest-test realism
 
 Fix any section that fails its relevant tests before outputting.
@@ -151,18 +151,19 @@ Write all sections in English only.
    Ads, subscriptions, payments, and premium upgrades are never core features.
 
 4. DIFFERENTIATOR (3-5 sentences)
-   Name 1-2 products the user has tried or knows.
-   Explain the switch in user language:
-   "I used [product], but [specific frustration]. This solves it by [specific mechanism]."
+   Describe the user's current alternative.
+   You may name a product only if the market context explicitly supports it.
+   Focus on the switch in user behavior:
+   "Today they use [current behavior], but [specific friction]. This is different because [specific mechanism]."
 
-5. BUSINESS MODEL (3-5 sentences)
-   Match the keyword model:
-   - subscription/SaaS/freemium: monthly price, free/paid split, and 2 benchmarks
-   - ad-supported: ad format, CPM estimate, premium ad-free tier, and 2 benchmarks
-   - usage-based: per-unit price, expected monthly spend, and 2 benchmarks
-   - other: specific pricing mechanism and 2 benchmarks
+5. REVENUE (2-4 sentences)
+   Keep this lightweight.
+   Describe only the earliest commercial hypothesis:
+   - how this could make money later
+   - what would need to be true before charging
+   - what must be validated first
 
-   Include at least two specific dollar amounts.
+   Do not include exact pricing, tier tables, benchmarks, or revenue projections.
 
 6. MVP SCOPE (3-5 sentences)
    - IN: 3-4 specific features from the list above
