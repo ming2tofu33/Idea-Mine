@@ -8,6 +8,8 @@ This document is the product direction source for Idea Mine V3. It resets the MV
 
 Idea Mine is not a generic app that immediately generates "good ideas." It is a product that turns attractive keyword combinations into discoverable Idea Ores, then turns selected ores into project-ready documents in Web Lab.
 
+Keyword taxonomy details for the Daily Mine V3 direction are recorded in `docs/Idea-Mine-V3-Daily-Mine-Keyword-Taxonomy.md`.
+
 ## 1. V3 Product Thesis
 
 Idea Mine helps users discover project-worthy Idea Ores from attractive keyword combinations, then turn only the saved ores into buildable project documents in Web Lab.
