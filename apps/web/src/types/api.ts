@@ -63,6 +63,69 @@ export interface MineResponse {
   vein_id: string;
 }
 
+// --- Idea Ores ---
+
+export interface OreKeyword {
+  id: string;
+  label: string;
+}
+
+export interface OreDailyVein {
+  id: string;
+  slot_index: number;
+  keywords: OreKeyword[];
+  is_mined: boolean;
+}
+
+export interface OreTodayVeinsResponse {
+  veins: OreDailyVein[];
+  generations_used: number;
+  generations_max: number;
+}
+
+export interface OreVein {
+  id: string;
+  keywords: OreKeyword[];
+}
+
+export interface IdeaOre {
+  id: string;
+  title: string;
+  one_liner: string;
+  short_summary: string;
+  interesting_point: string;
+  project_fit: string;
+  risk: string;
+  mvp_hint: string;
+  selected_keywords: OreKeyword[];
+  sort_order: number;
+  is_vaulted: boolean;
+}
+
+export interface OreDiscoverResponse {
+  vein: OreVein;
+  ores: IdeaOre[];
+}
+
+export interface OreVaultResponse {
+  ore_id: string;
+  is_vaulted: boolean;
+}
+
+export interface ProjectSeedBrief {
+  id: string;
+  ore_id: string;
+  product_concept: string;
+  target_user: string;
+  core_loop: string[];
+  mvp_features: string[];
+  first_screens: string[];
+  not_to_build: string[];
+  data_model_hint: string;
+  api_hint: string;
+  vibe_coding_prompt: string;
+}
+
 // --- Vault ---
 
 export interface VaultResponse {

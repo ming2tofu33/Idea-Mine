@@ -1,4 +1,3 @@
-import { DemoVault } from "@/components/experience/demo-vault";
 import { createClient } from "@/lib/supabase/server";
 import { VaultClient } from "./vault-client";
 
@@ -12,7 +11,7 @@ export default async function VaultPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return <DemoVault />;
+    return <VaultClient mockMode />;
   }
 
   return <VaultClient />;

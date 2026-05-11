@@ -13,6 +13,11 @@ import type {
   FullOverview,
   UsageInfo,
   CostSummaryResponse,
+  IdeaOre,
+  OreDiscoverResponse,
+  OreTodayVeinsResponse,
+  OreVaultResponse,
+  ProjectSeedBrief,
   ProductDesign,
   Blueprint,
   Roadmap,
@@ -23,6 +28,7 @@ import {
   mockVaultApi,
   mockLabApi,
   mockCollectionApi,
+  mockOreApi,
   mockProfileApi,
   mockAdminApi,
 } from "./mock-data";
@@ -112,6 +118,33 @@ const realMiningApi = {
 };
 
 export const miningApi = proxy(realMiningApi, mockMiningApi);
+
+// --- Ore API ---
+
+const realOreApi = {
+  getTodayVeins: () =>
+    apiFetch<OreTodayVeinsResponse>("/ore/veins/today"),
+
+  discover: (veinId: string) =>
+    apiFetch<OreDiscoverResponse>("/ore/discover", {
+      method: "POST",
+      body: JSON.stringify({
+        vein_id: veinId,
+      }),
+    }),
+
+  vault: (oreId: string) =>
+    apiFetch<OreVaultResponse>(`/ore/${oreId}/vault`, { method: "PATCH" }),
+
+  getVaultedOres: () => apiFetch<IdeaOre[]>("/ore/vault"),
+
+  getOre: (oreId: string) => apiFetch<IdeaOre>(`/ore/${oreId}`),
+
+  projectize: (oreId: string) =>
+    apiFetch<ProjectSeedBrief>(`/ore/${oreId}/projectize`, { method: "POST" }),
+};
+
+export const oreApi = proxy(realOreApi, mockOreApi);
 
 // --- Ideas API ---
 

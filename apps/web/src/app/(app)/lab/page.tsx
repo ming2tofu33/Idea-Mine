@@ -1,4 +1,3 @@
-import { DemoLab } from "@/components/experience/demo-lab";
 import { createClient } from "@/lib/supabase/server";
 import { LabClient } from "./lab-client";
 
@@ -12,7 +11,7 @@ export default async function LabPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return <DemoLab />;
+    return <LabClient mockMode />;
   }
 
   return <LabClient />;

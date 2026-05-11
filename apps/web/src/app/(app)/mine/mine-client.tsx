@@ -2,141 +2,291 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { Check, Pickaxe, Save } from "lucide-react";
 import { MineBackground } from "@/components/backgrounds/mine-background";
-import { MineSupportBlock } from "@/components/mine/mine-support-block";
-import { MINE_LABELS, type MineLanguage } from "@/components/mine/mine-labels";
-import { SectorScanStage } from "@/components/mine/sector-scan-stage";
-import { SelectedVeinPanel } from "@/components/mine/selected-vein-panel";
 import { PageHeader } from "@/components/shared/page-header";
-import { miningApi } from "@/lib/api";
-import type { TodayVeinsResponse } from "@/types/api";
+import { oreApi, setMockMode } from "@/lib/api";
+import type { IdeaOre, OreDailyVein } from "@/types/api";
 
-export function MineClient() {
-  const router = useRouter();
+function VeinOptionCard({
+  vein,
+  isSelected,
+  onSelect,
+}: {
+  vein: OreDailyVein;
+  isSelected: boolean;
+  onSelect: (veinId: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(vein.id)}
+      className={[
+        "flex min-h-36 flex-col rounded-xl border p-4 text-left transition-all duration-200",
+        isSelected
+          ? "border-signal-pink/45 bg-signal-pink/10 shadow-[0_0_20px_rgba(255,59,147,0.12)]"
+          : "border-line-steel/25 bg-surface-1/35 hover:border-cold-cyan/25 hover:bg-surface-1/55",
+      ].join(" ")}
+    >
+      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-secondary/65">
+        Vein {vein.slot_index}
+      </span>
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {vein.keywords.map((keyword) => (
+          <span
+            key={keyword.id}
+            className="rounded-full border border-line-steel/35 bg-bg-base/45 px-2.5 py-1 text-xs text-text-secondary"
+          >
+            {keyword.label}
+          </span>
+        ))}
+      </div>
+    </button>
+  );
+}
+
+function FieldBlock({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <dt className="text-[10px] font-semibold uppercase tracking-[0.18em] text-text-secondary/55">
+        {label}
+      </dt>
+      <dd className="mt-1 text-sm leading-relaxed text-text-secondary">{value}</dd>
+    </div>
+  );
+}
+
+function OreCard({
+  ore,
+  isSaving,
+  onVault,
+}: {
+  ore: IdeaOre;
+  isSaving: boolean;
+  onVault: (oreId: string) => void;
+}) {
+  return (
+    <article className="rounded-xl border border-line-steel/25 bg-surface-1/45 p-5 shadow-[inset_0px_1px_rgba(255,255,255,0.05),_0px_10px_24px_rgba(0,0,0,0.24)] backdrop-blur-xl">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h3 className="text-lg font-semibold text-text-primary">{ore.title}</h3>
+          <p className="mt-2 text-sm font-medium leading-relaxed text-text-primary/90">
+            {ore.one_liner}
+          </p>
+        </div>
+        <span className="rounded-md border border-line-steel/35 bg-bg-base/50 px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-text-secondary">
+          Ore {ore.sort_order}
+        </span>
+      </div>
+
+      <p className="mt-4 text-sm leading-relaxed text-text-secondary/85">
+        {ore.short_summary}
+      </p>
+
+      <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+        <FieldBlock label="Interesting point" value={ore.interesting_point} />
+        <FieldBlock label="Project fit" value={ore.project_fit} />
+        <FieldBlock label="Risk" value={ore.risk} />
+        <FieldBlock label="MVP hint" value={ore.mvp_hint} />
+      </dl>
+
+      <div className="mt-5 flex flex-wrap gap-1.5">
+        {ore.selected_keywords.map((keyword) => (
+          <span
+            key={keyword.id}
+            className="rounded-full border border-line-steel/35 bg-bg-base/45 px-2.5 py-1 text-[11px] text-text-secondary"
+          >
+            {keyword.label}
+          </span>
+        ))}
+      </div>
+
+      <div className="mt-5 flex justify-end">
+        <button
+          type="button"
+          disabled={ore.is_vaulted || isSaving}
+          onClick={() => onVault(ore.id)}
+          className={[
+            "inline-flex min-w-32 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-200",
+            ore.is_vaulted
+              ? "cursor-default border border-emerald-400/25 bg-emerald-400/10 text-emerald-300"
+              : "border border-signal-pink/35 bg-signal-pink/15 text-signal-pink hover:bg-signal-pink/25",
+            isSaving ? "cursor-wait opacity-70" : "",
+          ].join(" ")}
+        >
+          {ore.is_vaulted ? (
+            <>
+              <Check className="h-4 w-4" />
+              Saved
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4" />
+              {isSaving ? "Saving" : "Save to Vault"}
+            </>
+          )}
+        </button>
+      </div>
+    </article>
+  );
+}
+
+export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
+  setMockMode(mockMode);
   const queryClient = useQueryClient();
-  const lang: MineLanguage = "en";
-  const [selectedVeinIdState, setSelectedVeinIdState] = useState<string | null>(null);
+  const [selectedVeinId, setSelectedVeinId] = useState<string | null>(null);
+  const [ores, setOres] = useState<IdeaOre[]>([]);
+  const [savingOreId, setSavingOreId] = useState<string | null>(null);
 
-  const {
-    data,
-    isLoading,
-    isFetching,
-    isError,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["todayVeins"],
-    queryFn: miningApi.getTodayVeins,
+  const veinsQuery = useQuery({
+    queryKey: ["oreDailyVeins"],
+    queryFn: oreApi.getTodayVeins,
   });
 
-  const rerollMutation = useMutation({
-    mutationFn: miningApi.reroll,
+  const veins = veinsQuery.data?.veins ?? [];
+  const selectedVein =
+    veins.find((vein) => vein.id === selectedVeinId) ?? veins[0] ?? null;
+
+  const discoverMutation = useMutation({
+    mutationFn: (veinId: string) => oreApi.discover(veinId),
     onSuccess: (response) => {
-      queryClient.setQueryData<TodayVeinsResponse>(["todayVeins"], (current) => {
-        if (!current) {
-          return current;
-        }
-
-        return {
-          ...current,
-          veins: response.veins,
-          rerolls_used: response.rerolls_used,
-          rerolls_max: response.rerolls_max,
-        };
-      });
-
-      setSelectedVeinIdState(response.veins[0]?.id ?? null);
-      queryClient.invalidateQueries({ queryKey: ["todayVeins"] });
+      setOres([...response.ores].sort((a, b) => a.sort_order - b.sort_order));
+      queryClient.invalidateQueries({ queryKey: ["oreDailyVeins"] });
     },
   });
 
-  const canReroll = data != null && data.rerolls_used < data.rerolls_max;
-  const canMine = data != null && data.generations_used < data.generations_max;
-  const hasUsableVeins = (data?.veins.length ?? 0) > 0;
-  const isFatalScanError = isError && !hasUsableVeins;
-  const scanErrorMessage = error instanceof Error ? error.message : undefined;
-  const scanWarningMessage = isError && hasUsableVeins ? scanErrorMessage : undefined;
-  const selectedVeinId =
-    selectedVeinIdState != null &&
-    data?.veins.some((vein) => vein.id === selectedVeinIdState)
-      ? selectedVeinIdState
-      : data?.veins[0]?.id ?? null;
-  const selectedVein =
-    data?.veins.find((vein) => vein.id === selectedVeinId) ?? data?.veins[0] ?? null;
-  const supportStatus = isLoading
-    ? "loading"
-    : isFatalScanError
-      ? "error"
-      : hasUsableVeins
-        ? "ready"
-        : "empty";
-
-  function handleMine(veinId: string) {
-    router.push(`/mine/${veinId}`);
-  }
+  const vaultMutation = useMutation({
+    mutationFn: oreApi.vault,
+    onMutate: (oreId) => {
+      setSavingOreId(oreId);
+    },
+    onSuccess: (response) => {
+      setOres((current) =>
+        current.map((ore) =>
+          ore.id === response.ore_id ? { ...ore, is_vaulted: true } : ore,
+        ),
+      );
+      queryClient.invalidateQueries({ queryKey: ["ideaOresVault"] });
+    },
+    onSettled: () => {
+      setSavingOreId(null);
+    },
+  });
 
   return (
     <div className="relative flex min-h-0 flex-1">
       <MineBackground />
 
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto mb-6 w-full max-w-7xl">
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-6xl space-y-6">
           <PageHeader
-            eyebrow="MINE"
-            title="Today's veins"
-            subtitle="Select one of the detected veins to start mining"
+            eyebrow="DAILY MINE"
+            title="Mine Idea Ores"
+            subtitle="Mine today's Vein into short ores, then save the ones worth opening in Web Lab."
             meta={
-              data && !isError ? (
-                <>
-                  <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.22em] text-text-secondary">
-                    {MINE_LABELS.rerolls[lang]}{" "}
-                    <span className="text-text-primary">
-                      {data.rerolls_used}/{data.rerolls_max}
-                    </span>
-                  </span>
-                  <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.22em] text-text-secondary">
-                    {MINE_LABELS.generations[lang]}{" "}
-                    <span className="text-text-primary">
-                      {data.generations_used}/{data.generations_max}
-                    </span>
-                  </span>
-                </>
-              ) : undefined
+              <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-text-secondary">
+                3 veins / 10 ores
+              </span>
             }
           />
+
+          <section className="rounded-xl border border-line-steel/20 bg-bg-base/30 p-4 backdrop-blur-xl">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-primary">
+                  Today&apos;s Veins
+                </h2>
+                <p className="mt-1 text-sm text-text-secondary">
+                  Three pre-given keyword clusters. No manual keyword setup.
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={discoverMutation.isPending || !selectedVein}
+                onClick={() => {
+                  if (selectedVein) {
+                    discoverMutation.mutate(selectedVein.id);
+                  }
+                }}
+                className={[
+                  "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200",
+                  !discoverMutation.isPending && selectedVein
+                    ? "border border-signal-pink/40 bg-signal-pink text-white hover:bg-signal-pink/90 hover:shadow-[0_0_24px_rgba(255,59,147,0.25)]"
+                    : "cursor-not-allowed border border-line-steel/25 bg-surface-2/40 text-text-secondary/45",
+                ].join(" ")}
+              >
+                <Pickaxe className="h-4 w-4" />
+                {discoverMutation.isPending ? "Mining" : "Mine Ores"}
+              </button>
+            </div>
+
+            <div className="grid gap-3 lg:grid-cols-3">
+              {veinsQuery.isPending ? (
+                Array.from({ length: 3 }, (_, index) => (
+                  <div
+                    key={index}
+                    className="min-h-36 animate-pulse rounded-xl border border-line-steel/20 bg-surface-1/25"
+                  />
+                ))
+              ) : (
+                veins.map((vein) => (
+                  <VeinOptionCard
+                    key={vein.id}
+                    vein={vein}
+                    isSelected={vein.id === selectedVein?.id}
+                    onSelect={(veinId) => {
+                      setSelectedVeinId(veinId);
+                      setOres([]);
+                    }}
+                  />
+                ))
+              )}
+            </div>
+
+          </section>
+
+          {veinsQuery.isError && (
+            <div className="rounded-lg border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-200">
+              {veinsQuery.error instanceof Error
+                ? veinsQuery.error.message
+                : "Failed to load Daily Veins."}
+            </div>
+          )}
+
+          {discoverMutation.isError && (
+            <div className="rounded-lg border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-200">
+              {discoverMutation.error instanceof Error
+                ? discoverMutation.error.message
+                : "Failed to mine Idea Ores."}
+            </div>
+          )}
+
+          {discoverMutation.isPending ? (
+            <div className="flex min-h-64 items-center justify-center rounded-xl border border-dashed border-line-steel/25 bg-surface-1/20">
+              <div className="text-center">
+                <div className="mx-auto mb-4 h-2.5 w-2.5 animate-pulse rounded-full bg-signal-pink" />
+                <p className="text-sm text-text-secondary">Extracting short Idea Ores...</p>
+              </div>
+            </div>
+          ) : ores.length > 0 ? (
+            <section className="grid gap-4 lg:grid-cols-2">
+              {ores.map((ore) => (
+                <OreCard
+                  key={ore.id}
+                  ore={ore}
+                  isSaving={savingOreId === ore.id}
+                  onVault={(oreId) => vaultMutation.mutate(oreId)}
+                />
+              ))}
+            </section>
+          ) : (
+            <div className="rounded-xl border border-dashed border-line-steel/20 bg-surface-1/20 p-8 text-center">
+              <p className="text-sm text-text-secondary">
+                Today&apos;s Vein is ready to mine.
+              </p>
+            </div>
+          )}
         </div>
-
-        <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,380px)] lg:items-stretch">
-          <SectorScanStage
-            veins={data?.veins ?? []}
-            selectedVeinId={selectedVeinId}
-            onSelect={(veinId) => setSelectedVeinIdState(veinId)}
-            isLoading={isLoading}
-            isError={isFatalScanError}
-            errorMessage={scanErrorMessage}
-            warningMessage={scanWarningMessage}
-            lang={lang}
-          />
-
-          <SelectedVeinPanel
-            vein={selectedVein}
-            canMine={canMine}
-            canReroll={canReroll}
-            isRerolling={rerollMutation.isPending}
-            isRefetching={isFetching}
-            isLoading={isLoading}
-            isError={isFatalScanError}
-            errorMessage={scanErrorMessage}
-            warningMessage={scanWarningMessage}
-            onMine={handleMine}
-            onRetry={refetch}
-            onReroll={() => rerollMutation.mutate()}
-            lang={lang}
-          />
-        </div>
-
-        <MineSupportBlock status={supportStatus} lang={lang} />
       </div>
     </div>
   );

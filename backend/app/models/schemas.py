@@ -43,6 +43,77 @@ class MineResponse(BaseModel):
     vein_id: str
 
 
+class OreKeywordIn(BaseModel):
+    id: str
+    label: str
+    category: str
+
+
+class OreDiscoverRequest(BaseModel):
+    vein_id: str
+
+
+class OreVisibleKeyword(BaseModel):
+    id: str
+    label: str
+
+
+class OreDailyVeinOut(BaseModel):
+    id: str
+    slot_index: int
+    keywords: list[OreVisibleKeyword]
+    is_mined: bool
+
+
+class OreTodayVeinsResponse(BaseModel):
+    veins: list[OreDailyVeinOut]
+    generations_used: int
+    generations_max: int
+
+
+class OreVeinOut(BaseModel):
+    id: str
+    keywords: list[OreVisibleKeyword]
+
+
+class IdeaOreOut(BaseModel):
+    id: str
+    title: str
+    one_liner: str
+    short_summary: str
+    interesting_point: str
+    project_fit: str
+    risk: str
+    mvp_hint: str
+    selected_keywords: list[OreVisibleKeyword]
+    sort_order: int
+    is_vaulted: bool
+
+
+class OreDiscoverResponse(BaseModel):
+    vein: OreVeinOut
+    ores: list[IdeaOreOut]
+
+
+class OreVaultResponse(BaseModel):
+    ore_id: str
+    is_vaulted: bool
+
+
+class ProjectSeedBriefOut(BaseModel):
+    id: str
+    ore_id: str
+    product_concept: str
+    target_user: str
+    core_loop: list[str]
+    mvp_features: list[str]
+    first_screens: list[str]
+    not_to_build: list[str]
+    data_model_hint: str
+    api_hint: str
+    vibe_coding_prompt: str
+
+
 class RerollResponse(BaseModel):
     veins: list[VeinOut]
     rerolls_used: int

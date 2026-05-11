@@ -12,9 +12,9 @@ import { createClient } from "@/lib/supabase/client";
 import type { UserProfile } from "@/types/api";
 
 const NAV_ITEMS = [
-  { href: "/mine", label: "Mine" },
+  { href: "/mine", label: "Daily Mine" },
   { href: "/vault", label: "Vault" },
-  { href: "/lab", label: "Lab" },
+  { href: "/lab", label: "Web Lab" },
 ] as const;
 
 type AppHeaderProps = {

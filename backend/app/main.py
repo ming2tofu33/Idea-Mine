@@ -1,7 +1,7 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import mining, ideas, admin, lab, appraisal
+from app.routers import mining, ideas, admin, lab, appraisal, ore
 
 app = FastAPI(title="IDEA MINE API", version="0.1.0")
 
@@ -32,6 +32,7 @@ app.include_router(ideas.router)
 app.include_router(admin.router)
 app.include_router(lab.router)
 app.include_router(appraisal.router)
+app.include_router(ore.router)
 
 
 @app.get("/health")

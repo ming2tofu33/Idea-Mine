@@ -848,6 +848,148 @@ def test_full_overviews_contract(schema):
     assert schema.row_count("full_overviews") == 0
 
 
+def test_idea_ores_contract(schema):
+    columns = schema.columns("idea_ores")
+    assert set(columns) >= {
+        "id",
+        "user_id",
+        "vein_id",
+        "title",
+        "one_liner",
+        "short_summary",
+        "interesting_point",
+        "project_fit",
+        "risk",
+        "mvp_hint",
+        "selected_keywords",
+        "generation_meta",
+        "sort_order",
+        "is_vaulted",
+        "created_at",
+        "updated_at",
+    }
+
+    details = schema.column_details("public", "idea_ores")
+    assert details["id"]["data_type"] == "uuid"
+    assert "gen_random_uuid()" in details["id"]["column_default"]
+    assert details["user_id"]["data_type"] == "uuid"
+    assert details["user_id"]["is_nullable"] is True
+    assert details["vein_id"]["data_type"] == "uuid"
+    assert details["vein_id"]["is_nullable"] is True
+    for field in (
+        "title",
+        "one_liner",
+        "short_summary",
+        "interesting_point",
+        "project_fit",
+        "risk",
+        "mvp_hint",
+    ):
+        assert details[field]["data_type"] == "text"
+        assert details[field]["is_nullable"] is False
+        assert details[field]["column_default"] == "''::text"
+    assert details["selected_keywords"]["data_type"] == "jsonb"
+    assert details["selected_keywords"]["is_nullable"] is False
+    assert details["selected_keywords"]["column_default"] == "'[]'::jsonb"
+    assert details["generation_meta"]["data_type"] == "jsonb"
+    assert details["generation_meta"]["is_nullable"] is False
+    assert details["generation_meta"]["column_default"] == "'{}'::jsonb"
+    assert details["sort_order"]["data_type"] == "integer"
+    assert details["sort_order"]["is_nullable"] is False
+    assert details["is_vaulted"]["data_type"] == "boolean"
+    assert details["is_vaulted"]["is_nullable"] is False
+    assert details["is_vaulted"]["column_default"] == "false"
+    assert details["created_at"]["data_type"] == "timestamp with time zone"
+    assert details["created_at"]["is_nullable"] is False
+    assert "now()" in details["created_at"]["column_default"]
+    assert details["updated_at"]["data_type"] == "timestamp with time zone"
+    assert details["updated_at"]["is_nullable"] is False
+    assert "now()" in details["updated_at"]["column_default"]
+
+    constraint_definitions = schema.constraint_definitions("public", "idea_ores")
+    assert any("PRIMARY KEY (id)" in item for item in constraint_definitions)
+    assert any(
+        "FOREIGN KEY (user_id)" in item
+        and "REFERENCES profiles(id)" in item
+        and "ON DELETE CASCADE" in item
+        for item in constraint_definitions
+    )
+    assert any("sort_order" in item and ">= 1" in item and "<= 10" in item for item in constraint_definitions)
+    assert any("jsonb_typeof(selected_keywords) = 'array'" in item for item in constraint_definitions)
+    assert any("jsonb_typeof(generation_meta) = 'object'" in item for item in constraint_definitions)
+
+    triggers = schema.trigger_names("public", "idea_ores")
+    assert "set_idea_ores_updated_at" in triggers
+
+    assert schema.row_count("idea_ores") == 0
+
+
+def test_project_seed_briefs_contract(schema):
+    columns = schema.columns("project_seed_briefs")
+    assert set(columns) >= {
+        "id",
+        "user_id",
+        "ore_id",
+        "product_concept",
+        "target_user",
+        "core_loop",
+        "mvp_features",
+        "first_screens",
+        "not_to_build",
+        "data_model_hint",
+        "api_hint",
+        "vibe_coding_prompt",
+        "created_at",
+    }
+
+    details = schema.column_details("public", "project_seed_briefs")
+    assert details["id"]["data_type"] == "uuid"
+    assert "gen_random_uuid()" in details["id"]["column_default"]
+    assert details["user_id"]["data_type"] == "uuid"
+    assert details["user_id"]["is_nullable"] is True
+    assert details["ore_id"]["data_type"] == "uuid"
+    assert details["ore_id"]["is_nullable"] is False
+    for field in (
+        "product_concept",
+        "target_user",
+        "data_model_hint",
+        "api_hint",
+        "vibe_coding_prompt",
+    ):
+        assert details[field]["data_type"] == "text"
+        assert details[field]["is_nullable"] is False
+        assert details[field]["column_default"] == "''::text"
+    for field in ("core_loop", "mvp_features", "first_screens", "not_to_build"):
+        assert details[field]["data_type"] == "jsonb"
+        assert details[field]["is_nullable"] is False
+        assert details[field]["column_default"] == "'[]'::jsonb"
+    assert details["created_at"]["data_type"] == "timestamp with time zone"
+    assert details["created_at"]["is_nullable"] is False
+    assert "now()" in details["created_at"]["column_default"]
+
+    constraint_definitions = schema.constraint_definitions("public", "project_seed_briefs")
+    assert any("PRIMARY KEY (id)" in item for item in constraint_definitions)
+    assert any("UNIQUE (ore_id)" in item for item in constraint_definitions)
+    assert any(
+        "FOREIGN KEY (user_id)" in item
+        and "REFERENCES profiles(id)" in item
+        and "ON DELETE CASCADE" in item
+        for item in constraint_definitions
+    )
+    assert any(
+        "FOREIGN KEY (ore_id)" in item
+        and "REFERENCES idea_ores(id)" in item
+        and "ON DELETE CASCADE" in item
+        for item in constraint_definitions
+    )
+    assert any("jsonb_typeof(core_loop) = 'array'" in item for item in constraint_definitions)
+    assert any("jsonb_typeof(mvp_features) = 'array'" in item for item in constraint_definitions)
+    assert any("jsonb_typeof(first_screens) = 'array'" in item for item in constraint_definitions)
+    assert any("jsonb_typeof(not_to_build) = 'array'" in item for item in constraint_definitions)
+
+    assert schema.row_count("project_seed_briefs") == 0
+
+
 def test_ai_usage_logs_contract(schema):
     columns = schema.columns("ai_usage_logs")
     assert set(columns) >= {
@@ -924,6 +1066,8 @@ def test_ai_usage_logs_contract(schema):
         and "'product_design'" in item
         and "'blueprint'" in item
         and "'roadmap'" in item
+        and "'ore_discovery'" in item
+        and "'ore_projectize'" in item
         for item in constraint_definitions
     )
     assert any(
@@ -972,6 +1116,8 @@ def test_rls_policies_contract(schema):
         "overviews": {"overviews_read_own"},
         "appraisals": {"appraisals_read_own"},
         "full_overviews": {"full_overviews_read_own"},
+        "idea_ores": {"idea_ores_read_own", "idea_ores_delete_own"},
+        "project_seed_briefs": {"project_seed_briefs_read_own"},
         "ai_usage_logs": {"ai_usage_logs_read_own"},
     }
 
@@ -1010,3 +1156,18 @@ def test_hot_indexes_contract(schema):
     ai_usage_indexes = schema.index_definitions("public", "ai_usage_logs")
     assert "idx_ai_usage_logs_user_created" in ai_usage_indexes
     assert "(user_id, created_at DESC)" in ai_usage_indexes["idx_ai_usage_logs_user_created"]
+
+    idea_ore_indexes = schema.index_definitions("public", "idea_ores")
+    assert "idx_idea_ores_user_created" in idea_ore_indexes
+    assert "(user_id, created_at DESC)" in idea_ore_indexes["idx_idea_ores_user_created"]
+    assert "idx_idea_ores_vaulted_user_created" in idea_ore_indexes
+    assert "(user_id, created_at DESC)" in idea_ore_indexes["idx_idea_ores_vaulted_user_created"]
+    assert "WHERE (is_vaulted = true)" in idea_ore_indexes["idx_idea_ores_vaulted_user_created"]
+    assert "uq_idea_ores_user_vein_sort" in idea_ore_indexes
+    assert "(user_id, vein_id, sort_order)" in idea_ore_indexes["uq_idea_ores_user_vein_sort"]
+
+    seed_brief_indexes = schema.index_definitions("public", "project_seed_briefs")
+    assert "idx_project_seed_briefs_user_created" in seed_brief_indexes
+    assert "(user_id, created_at DESC)" in seed_brief_indexes["idx_project_seed_briefs_user_created"]
+    assert "idx_project_seed_briefs_ore" in seed_brief_indexes
+    assert "(ore_id)" in seed_brief_indexes["idx_project_seed_briefs_ore"]

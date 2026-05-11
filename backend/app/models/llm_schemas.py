@@ -20,6 +20,40 @@ class MiningResponse(BaseModel):
     ideas: list[MiningIdea]
 
 
+# --- Idea Ore Discovery ---
+
+class OreDiscoveryIdea(BaseModel):
+    sort_order: int
+    title: str
+    one_liner: str
+    short_summary: str
+    interesting_point: str
+    project_fit: str
+    risk: str
+    mvp_hint: str
+    generation_lens: str
+    primary_anchor_keyword: str
+    product_form: str
+    core_loop_signature: str
+    novelty_axis: str
+
+
+class OreDiscoveryResponse(BaseModel):
+    ores: list[OreDiscoveryIdea]
+
+
+class ProjectSeedBriefResponse(BaseModel):
+    product_concept: str
+    target_user: str
+    core_loop: list[str]
+    mvp_features: list[str]
+    first_screens: list[str]
+    not_to_build: list[str]
+    data_model_hint: str
+    api_hint: str
+    vibe_coding_prompt: str
+
+
 # --- Concept ---
 
 class ConceptResponse(BaseModel):

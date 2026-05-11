@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { DemoMine } from "@/components/experience/demo-mine";
 import { MineClient } from "./mine-client";
 
 /**
@@ -12,7 +11,7 @@ export default async function MinePage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return <DemoMine />;
+    return <MineClient mockMode />;
   }
 
   return <MineClient />;

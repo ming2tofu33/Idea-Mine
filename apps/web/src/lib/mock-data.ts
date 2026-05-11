@@ -8,9 +8,16 @@ import type {
   CostSummaryResponse,
   FullOverview,
   Idea,
+  IdeaOre,
   Keyword,
   MineResponse,
+  OreDiscoverResponse,
+  OreDailyVein,
+  OreKeyword,
+  OreTodayVeinsResponse,
+  OreVaultResponse,
   ProductDesign,
+  ProjectSeedBrief,
   RerollResponse,
   Roadmap,
   TodayVeinsResponse,
@@ -293,6 +300,11 @@ let mockFullOverviews: FullOverview[] = [];
 let mockDesigns: ProductDesign[] = [];
 let mockBlueprints: Blueprint[] = [];
 let mockRoadmaps: Roadmap[] = [];
+let mockDiscoveredOres: IdeaOre[] = [];
+let mockDiscoveredOresByVein: Record<string, IdeaOre[]> = {};
+let mockVaultedOres: IdeaOre[] = [];
+let mockProjectSeedBriefs: ProjectSeedBrief[] = [];
+let currentOreVeins: OreDailyVein[] = makeOreDailyVeins();
 
 export function resetMockState(): void {
   mockRerollCount = 0;
@@ -306,6 +318,11 @@ export function resetMockState(): void {
   mockDesigns = [];
   mockBlueprints = [];
   mockRoadmaps = [];
+  mockDiscoveredOres = [];
+  mockDiscoveredOresByVein = {};
+  mockVaultedOres = [];
+  mockProjectSeedBriefs = [];
+  currentOreVeins = makeOreDailyVeins();
 }
 
 export const mockMiningApi = {
@@ -334,6 +351,272 @@ export const mockMiningApi = {
     const ideas = makeIdeas();
     lastMinedIdeas = ideas;
     return { ideas, vein_id: veinId };
+  },
+};
+
+function makeOreDailyVeins(): OreDailyVein[] {
+  return makeVeins().map((vein) => ({
+    id: vein.id,
+    slot_index: vein.slot_index,
+    keywords: vein.keywords.map((keyword) => ({
+      id: keyword.id,
+      label: keyword.label,
+    })),
+    is_mined: false,
+  }));
+}
+
+function makeMockOres(veinId: string, keywords: OreKeyword[]): IdeaOre[] {
+  const keywordLabels = keywords.map((keyword) => keyword.label).join(", ");
+  const now = randomId();
+  const templates = [
+    {
+      title: "Cat Dream Archive",
+      one_liner: "A cozy archive where a guide turns small reflections into collectible symbol cards.",
+      short_summary:
+        "The user captures a short dream, mood, or memory and receives a compact symbolic card. The archive becomes a private trail of recurring emotions and images.",
+      interesting_point:
+        "The selected materials make reflection feel collectible instead of clinical.",
+      project_fit:
+        "This can start as a small MVP with only input, generated cards, and an archive.",
+      risk:
+        "If the output leans into vague fortune telling, it can feel generic quickly.",
+      mvp_hint: "Start with input -> symbol card -> saved archive.",
+    },
+    {
+      title: "One-Minute Ritual Desk",
+      one_liner: "A tiny desktop ritual that turns selected themes into one useful daily prompt.",
+      short_summary:
+        "The user opens a focused desktop surface and receives one short prompt shaped by the chosen materials. The loop is fast enough to repeat daily without becoming a journal app.",
+      interesting_point:
+        "The constraint of one minute keeps the product from becoming a heavy planning tool.",
+      project_fit:
+        "The first version only needs keyword state, prompt generation, and a simple history.",
+      risk:
+        "It may feel too thin if the saved history does not become meaningful over time.",
+      mvp_hint: "Build keyword state -> daily prompt -> lightweight history.",
+    },
+    {
+      title: "Private Pattern Cards",
+      one_liner: "A private card stack that helps users notice patterns across small personal notes.",
+      short_summary:
+        `Using ${keywordLabels}, the product turns repeated notes into compact pattern cards. The user gets a quiet way to revisit signals without writing long reports.`,
+      interesting_point:
+        "Cards make repeated personal signals easier to scan and compare.",
+      project_fit:
+        "A narrow MVP can focus on note input, card extraction, and saved card review.",
+      risk:
+        "The product needs a clear emotional tone or it may feel like another notes wrapper.",
+      mvp_hint: "Ship note input -> pattern card -> card stack.",
+    },
+    {
+      title: "Soft Signal Journal",
+      one_liner: "A lightweight journal that turns recurring feelings into named signals.",
+      short_summary:
+        "The user writes one small note and receives a short signal label. Over time, the product helps them see what keeps returning.",
+      interesting_point:
+        "Signal labels give loose personal material enough structure without turning it into analysis.",
+      project_fit:
+        "The MVP can be just note input, signal naming, and a simple timeline.",
+      risk:
+        "If signal names are too abstract, users may not trust the archive.",
+      mvp_hint: "Start with note input -> signal label -> timeline.",
+    },
+    {
+      title: "Tiny Companion Archive",
+      one_liner: "A small companion that remembers your recurring symbols and turns them into cards.",
+      short_summary:
+        "The user adds fragments and the companion groups them into recurring motifs. The result is a personal archive that feels alive but remains private.",
+      interesting_point:
+        "A companion frame can make repeat use warmer than a utility-only notes app.",
+      project_fit:
+        "The first build needs fragment capture, motif grouping, and card display.",
+      risk:
+        "The companion tone could become distracting if it talks too much.",
+      mvp_hint: "Build fragment input -> motif card -> archive.",
+    },
+    {
+      title: "Mood Object Shelf",
+      one_liner: "A shelf of generated objects that represent what keeps showing up in your notes.",
+      short_summary:
+        "The user saves short entries and receives small object-like cards for repeated themes. The shelf becomes a visual memory surface.",
+      interesting_point:
+        "Objects are easier to revisit than raw journal text.",
+      project_fit:
+        "A simple MVP can use text input, object cards, and a shelf view.",
+      risk:
+        "The generated objects need enough specificity to avoid feeling random.",
+      mvp_hint: "Ship text input -> object card -> shelf.",
+    },
+    {
+      title: "Dream Thread Board",
+      one_liner: "A board that connects repeated dream fragments into short visual threads.",
+      short_summary:
+        "The user logs fragments and sees recurring symbols linked across entries. The product stays short and visual instead of becoming a long dream diary.",
+      interesting_point:
+        "Threading gives old entries new meaning without asking the user to reread everything.",
+      project_fit:
+        "The MVP needs fragment logging, thread extraction, and a board view.",
+      risk:
+        "Too many automatic links could make the board feel noisy.",
+      mvp_hint: "Start with fragment input -> thread extraction -> board.",
+    },
+    {
+      title: "Personal Myth Cards",
+      one_liner: "A card generator that turns private recurring themes into a tiny personal mythology.",
+      short_summary:
+        "The user adds short reflections and gets cards that name characters, objects, or places that keep appearing. The tone is playful but private.",
+      interesting_point:
+        "Myth language makes self-reflection feel creative rather than clinical.",
+      project_fit:
+        "The first version can be reflection input, card generation, and saved card detail.",
+      risk:
+        "If the tone becomes too fantasy-heavy, practical users may bounce.",
+      mvp_hint: "Build reflection input -> myth card -> saved deck.",
+    },
+    {
+      title: "Gentle Recurrence Map",
+      one_liner: "A quiet map of the ideas and feelings that repeat across small entries.",
+      short_summary:
+        "The user enters tiny notes and sees repeated patterns arranged as a simple map. The map helps them notice continuity without requiring long writing.",
+      interesting_point:
+        "A map gives lightweight entries a sense of progression.",
+      project_fit:
+        "An MVP can use note capture, recurrence detection, and a minimal map.",
+      risk:
+        "The map could feel empty until enough entries exist.",
+      mvp_hint: "Start with notes -> recurrence labels -> map.",
+    },
+    {
+      title: "Archive Prompt Lantern",
+      one_liner: "A daily prompt that lights up one saved symbol and asks a tiny follow-up.",
+      short_summary:
+        "The user gets a small follow-up prompt from a previous symbol or card. This turns the archive into a repeatable daily ritual.",
+      interesting_point:
+        "The archive becomes active without adding a heavy planning workflow.",
+      project_fit:
+        "The MVP needs saved symbols, prompt generation, and completion history.",
+      risk:
+        "If prompts feel generic, the ritual will not stick.",
+      mvp_hint: "Ship saved symbols -> daily prompt -> completion log.",
+    },
+  ];
+
+  return templates.map((template, index) => ({
+    id: `ore-${veinId}-${now}-${index + 1}`,
+    ...template,
+    selected_keywords: keywords,
+    sort_order: index + 1,
+    is_vaulted: false,
+  }));
+}
+
+function makeMockProjectSeedBrief(ore: IdeaOre): ProjectSeedBrief {
+  return {
+    id: `brief-${randomId()}`,
+    ore_id: ore.id,
+    product_concept: `${ore.title} is a focused MVP built around ${ore.mvp_hint.toLowerCase()}`,
+    target_user:
+      "An indie builder or reflective user who wants a lightweight personal tool without a heavy planning workflow.",
+    core_loop: [
+      "Open the product",
+      "Enter one short personal input",
+      "Receive a compact generated artifact",
+      "Save or revisit the result",
+    ],
+    mvp_features: [
+      "Single input flow",
+      "Generated result card",
+      "Saved archive",
+      "Basic empty and loading states",
+    ],
+    first_screens: ["Home", "Input", "Generated card", "Archive"],
+    not_to_build: ["Social sharing", "Team workspaces", "Advanced analytics", "Marketplace mechanics"],
+    data_model_hint:
+      "Use tables for users, ores, generated cards, and saved archive entries. Keep generated fields flat and copy-friendly.",
+    api_hint:
+      "Start with POST /entries to create input, POST /entries/{id}/generate to create a card, and GET /archive to list saved cards.",
+    vibe_coding_prompt:
+      `Build ${ore.title} as a small Next.js MVP. Start with the core loop: ${ore.mvp_hint} Keep the UI lightweight, private, and card-based.`,
+  };
+}
+
+export const mockOreApi = {
+  async getTodayVeins(): Promise<OreTodayVeinsResponse> {
+    await delay(300);
+    return {
+      veins: currentOreVeins,
+      generations_used: mockGenerationCount,
+      generations_max: 1,
+    };
+  },
+
+  async discover(veinId: string): Promise<OreDiscoverResponse> {
+    await delay(1200);
+    const vein = currentOreVeins.find((item) => item.id === veinId) ?? currentOreVeins[0];
+    const existing = mockDiscoveredOresByVein[vein.id];
+    if (existing) {
+      mockDiscoveredOres = existing;
+      return {
+        vein: {
+          id: vein.id,
+          keywords: vein.keywords,
+        },
+        ores: existing,
+      };
+    }
+    const ores = makeMockOres(vein.id, vein.keywords);
+    mockDiscoveredOres = ores;
+    mockDiscoveredOresByVein[vein.id] = ores;
+    vein.is_mined = true;
+    mockGenerationCount += 1;
+    return {
+      vein: {
+        id: vein.id,
+        keywords: vein.keywords,
+      },
+      ores,
+    };
+  },
+
+  async vault(oreId: string): Promise<OreVaultResponse> {
+    await delay(250);
+    const ore = mockDiscoveredOres.find((item) => item.id === oreId)
+      ?? mockVaultedOres.find((item) => item.id === oreId);
+    if (ore) {
+      ore.is_vaulted = true;
+      if (!mockVaultedOres.some((item) => item.id === ore.id)) {
+        mockVaultedOres.push(ore);
+      }
+    }
+    return { ore_id: oreId, is_vaulted: true };
+  },
+
+  async getVaultedOres(): Promise<IdeaOre[]> {
+    await delay(200);
+    return mockVaultedOres;
+  },
+
+  async getOre(oreId: string): Promise<IdeaOre> {
+    await delay(200);
+    const discovered = Object.values(mockDiscoveredOresByVein).flat();
+    const ore = [...mockVaultedOres, ...mockDiscoveredOres, ...discovered].find((item) => item.id === oreId);
+    if (!ore) {
+      throw new Error("Idea Ore not found");
+    }
+    return ore;
+  },
+
+  async projectize(oreId: string): Promise<ProjectSeedBrief> {
+    await delay(1400);
+    const existing = mockProjectSeedBriefs.find((brief) => brief.ore_id === oreId);
+    if (existing) {
+      return existing;
+    }
+    const ore = await this.getOre(oreId);
+    const brief = makeMockProjectSeedBrief(ore);
+    mockProjectSeedBriefs.push(brief);
+    return brief;
   },
 };
 

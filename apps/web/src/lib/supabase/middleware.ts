@@ -37,6 +37,7 @@ export async function updateSession(request: NextRequest) {
     pathname === "/mine" ||
     pathname === "/vault" ||
     pathname === "/lab" ||
+    pathname.startsWith("/lab/ore-") ||
     pathname.startsWith("/experience") ||
     pathname.startsWith("/api/experience-events");
 

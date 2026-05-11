@@ -1,6 +1,8 @@
 # IDEA MINE Safety Rails
 
-Updated: 2026-04-15
+Updated: 2026-05-11
+
+V3 note: product direction for future MVP planning is now defined in [Idea-Mine-V3-Idea-Ore-MVP.md](C:/Users/amy/Desktop/Idea%20Mine/docs/Idea-Mine-V3-Idea-Ore-MVP.md). This safety rails document remains useful for V2-era schema and operating constraints, but it should not override the V3 Idea Ore flow.
 
 This document replaces older v2/v3 transition notes. Git history preserves the old draft state. This file now describes the current operating rules for the project.
 

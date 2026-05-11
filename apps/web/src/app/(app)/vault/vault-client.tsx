@@ -1,124 +1,124 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { Lock, Pickaxe } from "lucide-react";
+import { ArrowRight, Lock, Pickaxe } from "lucide-react";
 import { VaultBackground } from "@/components/backgrounds/vault-background";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { SkeletonCard } from "@/components/vault/skeleton-card";
-import { VaultIdeaCard } from "@/components/vault/vault-idea-card";
-import { VAULT_LABELS, type VaultLanguage } from "@/components/vault/vault-labels";
-import { vaultApi } from "@/lib/api";
+import { oreApi, setMockMode } from "@/lib/api";
+import type { IdeaOre, OreKeyword } from "@/types/api";
 
-// --- Page ---
+function KeywordPill({ keyword }: { keyword: OreKeyword }) {
+  return (
+    <span className="inline-flex items-center rounded-full border border-line-steel/35 bg-bg-base/45 px-2.5 py-1 text-[11px] text-text-secondary">
+      {keyword.label}
+    </span>
+  );
+}
 
-export function VaultClient() {
-  const queryClient = useQueryClient();
-  const lang: VaultLanguage = "en";
+function VaultOreCard({ ore }: { ore: IdeaOre }) {
+  return (
+    <Link
+      href={`/lab/${ore.id}`}
+      className="group flex min-h-64 flex-col rounded-xl border border-line-steel/25 bg-surface-1/45 p-5 backdrop-blur-xl transition-all duration-200 hover:-translate-y-0.5 hover:border-cold-cyan/25 hover:bg-surface-1/65"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <h3 className="text-base font-semibold text-text-primary transition-colors group-hover:text-cold-cyan">
+          {ore.title}
+        </h3>
+        <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-text-secondary/45 transition-colors group-hover:text-cold-cyan" />
+      </div>
 
+      <p className="mt-3 text-sm font-medium leading-relaxed text-text-primary/85">
+        {ore.one_liner}
+      </p>
+      <p className="mt-3 line-clamp-3 flex-1 text-sm leading-relaxed text-text-secondary">
+        {ore.short_summary}
+      </p>
+
+      <div className="mt-4 flex flex-wrap gap-1.5">
+        {ore.selected_keywords.slice(0, 5).map((keyword) => (
+          <KeywordPill key={keyword.id} keyword={keyword} />
+        ))}
+      </div>
+
+      <div className="mt-5 border-t border-line-steel/15 pt-4">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-cold-cyan/80">
+          Open in Web Lab
+        </span>
+      </div>
+    </Link>
+  );
+}
+
+export function VaultClient({ mockMode = false }: { mockMode?: boolean }) {
   const {
-    data: ideas,
+    data: ores,
     isLoading,
     isError,
     error,
   } = useQuery({
-    queryKey: ["vaultedIdeas"],
-    queryFn: vaultApi.getVaultedIdeas,
-  });
-
-  // Check which ideas have overviews
-  const overviewQueries = useQuery({
-    queryKey: ["vaultOverviewCheck", ideas?.map((i) => i.id)],
-    queryFn: async () => {
-      if (!ideas) return {};
-      const results: Record<string, boolean> = {};
-      await Promise.all(
-        ideas.map(async (idea) => {
-          const overviews = await vaultApi.getOverviewsByIdea(idea.id);
-          results[idea.id] = overviews.length > 0;
-        }),
-      );
-      return results;
-    },
-    enabled: !!ideas && ideas.length > 0,
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: vaultApi.deleteIdea,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["vaultedIdeas"] });
+    queryKey: ["ideaOresVault"],
+    queryFn: () => {
+      setMockMode(mockMode);
+      return oreApi.getVaultedOres();
     },
   });
-
-  const hasOverviewMap = overviewQueries.data ?? {};
 
   return (
     <div className="relative flex min-h-0 flex-1">
       <VaultBackground />
 
-      <div className="relative z-10 flex min-h-0 flex-1 flex-col px-4 py-6 sm:px-6 lg:px-8">
-        {/* Header */}
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
         <div className="mx-auto mb-6 w-full max-w-5xl">
           <PageHeader
-            eyebrow={VAULT_LABELS.eyebrow[lang]}
-            title={VAULT_LABELS.title[lang]}
-            subtitle={VAULT_LABELS.subtitle[lang]}
+            eyebrow="VAULT"
+            title="Saved Idea Ores"
+            subtitle="Short directions worth opening in Web Lab."
             meta={
-              ideas && ideas.length > 0 ? (
-                <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.22em] text-text-secondary">
-                  {VAULT_LABELS.ideasCount[lang](ideas.length)}
+              ores && ores.length > 0 ? (
+                <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-text-secondary">
+                  {ores.length} saved
                 </span>
               ) : undefined
             }
           />
         </div>
 
-        {/* Content */}
         <div className="mx-auto w-full max-w-5xl flex-1">
           {isLoading ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               <SkeletonCard />
               <SkeletonCard />
               <SkeletonCard />
-              <SkeletonCard />
-              <SkeletonCard />
-              <SkeletonCard />
             </div>
           ) : isError ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
-              <p className="text-sm text-text-secondary">
-                {VAULT_LABELS.loadFailed[lang]}
-              </p>
+              <p className="text-sm text-text-secondary">Failed to load Vault.</p>
               <p className="mt-1 text-xs text-text-secondary/60">
-                {error instanceof Error ? error.message : VAULT_LABELS.unknownError[lang]}
+                {error instanceof Error ? error.message : "Unknown error"}
               </p>
             </div>
-          ) : ideas && ideas.length > 0 ? (
+          ) : ores && ores.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {ideas.map((idea) => (
-                <VaultIdeaCard
-                  key={idea.id}
-                  idea={idea}
-                  hasOverview={hasOverviewMap[idea.id] ?? false}
-                  onDelete={(id) => deleteMutation.mutate(id)}
-                  isDeleting={deleteMutation.isPending}
-                  lang={lang}
-                />
+              {ores.map((ore) => (
+                <VaultOreCard key={ore.id} ore={ore} />
               ))}
             </div>
           ) : (
             <EmptyState
               icon={<Lock className="h-12 w-12" />}
-              title={VAULT_LABELS.emptyTitle[lang]}
-              description={VAULT_LABELS.emptyHint[lang]}
+              title="No Idea Ores saved yet"
+              description="Vault stores the ores you want to projectize later."
               action={
                 <Link
                   href="/mine"
                   className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-line-steel bg-surface-2 px-5 py-2.5 text-sm font-medium text-text-secondary transition-all duration-200 hover:border-cold-cyan/30 hover:text-text-primary"
                 >
                   <Pickaxe className="h-4 w-4" />
-                  {VAULT_LABELS.goToMine[lang]}
+                  Go to Daily Mine
                 </Link>
               }
             />
