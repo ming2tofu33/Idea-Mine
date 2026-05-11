@@ -152,6 +152,14 @@ async def discover_ores(
                 "message": str(exc),
             },
         ) from exc
+    except ore_service.OreProviderError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "error": "ai_provider_error",
+                "message": str(exc),
+            },
+        ) from exc
 
     await increment_daily_count(
         supabase,
@@ -227,13 +235,22 @@ async def projectize_ore(
     )
     await check_cost_limit_l4(supabase, user["id"], tier, role=role)
 
-    brief = await ore_service.projectize_ore(
-        supabase=supabase,
-        user_id=user["id"],
-        tier=tier,
-        ore_id=ore_id,
-        source="web",
-    )
+    try:
+        brief = await ore_service.projectize_ore(
+            supabase=supabase,
+            user_id=user["id"],
+            tier=tier,
+            ore_id=ore_id,
+            source="web",
+        )
+    except ore_service.OreProviderError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "error": "ai_provider_error",
+                "message": str(exc),
+            },
+        ) from exc
     if not brief:
         raise HTTPException(status_code=404, detail="Idea Ore not found")
 

@@ -1,6 +1,7 @@
 import asyncio
 from types import SimpleNamespace
 
+from openai import OpenAIError
 import pytest
 
 from app.config import Settings
@@ -11,6 +12,7 @@ from app.services.ore_service import (
     discover_ores,
     format_ore_veins,
     normalize_discovered_ores,
+    OreProviderError,
     validate_discovered_ores,
 )
 from app.prompts.ore_discovery import ORE_DISCOVERY_LENSES
@@ -319,6 +321,37 @@ def test_discover_ores_uses_configured_reasoning_effort(monkeypatch):
     )
 
     assert completions.kwargs[0]["reasoning_effort"] == "minimal"
+
+
+def test_discover_ores_wraps_openai_provider_errors(monkeypatch):
+    class FailingCompletions:
+        def parse(self, **_kwargs):
+            raise OpenAIError("provider failed")
+
+    monkeypatch.setattr(
+        ore_service,
+        "get_openai",
+        lambda: SimpleNamespace(
+            beta=SimpleNamespace(
+                chat=SimpleNamespace(completions=FailingCompletions()),
+            )
+        ),
+    )
+    supabase = _FakeSupabase()
+
+    with pytest.raises(OreProviderError, match="AI provider request failed"):
+        asyncio.run(
+            discover_ores(
+                supabase=supabase,
+                user_id="user-1",
+                tier="free",
+                vein={"id": "vein-1"},
+                keywords=KEYWORDS,
+                source="web",
+            )
+        )
+
+    assert supabase.rows["ai_usage_logs"][0]["status"] == "error"
 
 
 def test_discover_ores_returns_existing_ores_without_calling_openai(monkeypatch):

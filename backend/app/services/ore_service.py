@@ -3,7 +3,7 @@ import uuid
 from collections import Counter
 from datetime import date
 
-from openai import OpenAI
+from openai import AuthenticationError, OpenAI, OpenAIError
 from supabase import Client
 
 from app.config import settings
@@ -56,6 +56,16 @@ META_FIELDS = (
 
 class OreDiscoveryValidationError(RuntimeError):
     """Raised when the LLM cannot produce a valid diverse 10-ore set."""
+
+
+class OreProviderError(RuntimeError):
+    """Raised when the AI provider request fails before usable output is produced."""
+
+
+def _provider_error_message(exc: OpenAIError) -> str:
+    if isinstance(exc, AuthenticationError):
+        return "AI provider authentication failed. Check OPENAI_API_KEY."
+    return "AI provider request failed."
 
 
 def get_openai() -> OpenAI:
@@ -420,6 +430,24 @@ async def discover_ores(
             status="success",
             source=source,
         )
+    except OpenAIError as exc:
+        elapsed_ms = int((time.time() - start_time) * 1000)
+        await _log_ai_usage(
+            supabase,
+            user_id=user_id,
+            tier=tier,
+            session_id=session_id,
+            feature_type="ore_discovery",
+            model=DISCOVERY_MODEL,
+            prompt_version=PROMPT_VERSION_DISCOVERY,
+            input_tokens=0,
+            output_tokens=0,
+            total_cost=0,
+            response_time_ms=elapsed_ms,
+            status="error",
+            source=source,
+        )
+        raise OreProviderError(_provider_error_message(exc)) from exc
     except Exception:
         elapsed_ms = int((time.time() - start_time) * 1000)
         await _log_ai_usage(
@@ -563,6 +591,24 @@ async def projectize_ore(
             status="success",
             source=source,
         )
+    except OpenAIError as exc:
+        elapsed_ms = int((time.time() - start_time) * 1000)
+        await _log_ai_usage(
+            supabase,
+            user_id=user_id,
+            tier=tier,
+            session_id=session_id,
+            feature_type="ore_projectize",
+            model=PROJECTIZE_MODEL,
+            prompt_version=PROMPT_VERSION_PROJECTIZE,
+            input_tokens=0,
+            output_tokens=0,
+            total_cost=0,
+            response_time_ms=elapsed_ms,
+            status="error",
+            source=source,
+        )
+        raise OreProviderError(_provider_error_message(exc)) from exc
     except Exception:
         elapsed_ms = int((time.time() - start_time) * 1000)
         await _log_ai_usage(
