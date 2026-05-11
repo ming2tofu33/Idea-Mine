@@ -15,6 +15,7 @@ from app.services import vein_service
 _openai: OpenAI | None = None
 
 DISCOVERY_MODEL = settings.ore_discovery_model
+DISCOVERY_REASONING_EFFORT = settings.ore_discovery_reasoning_effort
 PROJECTIZE_MODEL = settings.ore_projectize_model
 PROMPT_VERSION_DISCOVERY = "ore-discovery-v2"
 PROMPT_VERSION_PROJECTIZE = "ore-projectize-v1"
@@ -372,6 +373,7 @@ async def discover_ores(
 
             response = client.beta.chat.completions.parse(
                 model=DISCOVERY_MODEL,
+                reasoning_effort=DISCOVERY_REASONING_EFFORT,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": attempt_user_prompt},

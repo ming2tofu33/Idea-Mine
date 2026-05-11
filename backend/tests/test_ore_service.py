@@ -3,6 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from app.config import Settings
 from app.services import ore_service
 from app.services.ore_service import (
     build_idea_ore_rows,
@@ -192,8 +193,10 @@ class _FakeCompletions:
     def __init__(self, attempts: list[list[dict]]):
         self.attempts = attempts
         self.calls = 0
+        self.kwargs = []
 
     def parse(self, **kwargs):
+        self.kwargs.append(kwargs)
         self.calls += 1
         return _FakeResponse(self.attempts[self.calls - 1])
 
@@ -284,6 +287,38 @@ def test_discover_ores_retries_once_after_diversity_validation_failure(monkeypat
     assert completions.calls == 2
     assert len(result["ores"]) == 10
     assert supabase.rows["ai_usage_logs"][0]["status"] == "success"
+
+
+def test_ore_discovery_defaults_to_fast_daily_mine_generation_settings():
+    assert Settings.model_fields["ore_discovery_model"].default == "gpt-5-nano"
+    assert Settings.model_fields["ore_discovery_reasoning_effort"].default == "minimal"
+
+
+def test_discover_ores_uses_configured_reasoning_effort(monkeypatch):
+    completions = _FakeCompletions([[_ore(index) for index in range(1, 11)]])
+    monkeypatch.setattr(
+        ore_service,
+        "get_openai",
+        lambda: SimpleNamespace(
+            beta=SimpleNamespace(
+                chat=SimpleNamespace(completions=completions),
+            )
+        ),
+    )
+    supabase = _FakeSupabase()
+
+    asyncio.run(
+        discover_ores(
+            supabase=supabase,
+            user_id="user-1",
+            tier="free",
+            vein={"id": "vein-1"},
+            keywords=KEYWORDS,
+            source="web",
+        )
+    )
+
+    assert completions.kwargs[0]["reasoning_effort"] == "minimal"
 
 
 def test_discover_ores_returns_existing_ores_without_calling_openai(monkeypatch):

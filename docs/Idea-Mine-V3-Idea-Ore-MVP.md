@@ -403,6 +403,13 @@ Implementation notes:
 
 The model must generate Idea Ores, not finished startup plans.
 
+Daily Mine discovery is a lightweight interaction, so the default generation
+configuration should favor response time over deep reasoning. The backend should
+default Ore discovery to a fast GPT-5 family model such as `gpt-5-nano` with
+`reasoning_effort=minimal`, while still allowing environment overrides if a
+higher-quality model is needed later. Web Lab projectization can use a stronger
+model separately because it belongs to the deeper work phase.
+
 System behavior:
 
 - Generate exactly 10 Idea Ores from the provided Daily Vein keyword combination.
