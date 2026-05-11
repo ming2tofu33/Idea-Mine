@@ -159,10 +159,7 @@ def validate_discovered_ores(ores: list[dict]) -> list[dict]:
 
     for index, ore in enumerate(normalized, start=1):
         expected_lens = ORE_DISCOVERY_LENSES[index - 1]
-        if ore.get("generation_lens") != expected_lens:
-            raise RuntimeError(
-                f"Idea Ore {index} generation_lens must be {expected_lens}."
-            )
+        ore["generation_lens"] = expected_lens
 
         for field in (*PUBLIC_ORE_FIELDS, *META_FIELDS):
             value = str(ore.get(field, "")).strip()

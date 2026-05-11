@@ -145,6 +145,14 @@ def test_validate_discovered_ores_accepts_ten_diverse_ores():
     assert [ore["sort_order"] for ore in normalized] == list(range(1, 11))
 
 
+def test_validate_discovered_ores_normalizes_generation_lens_by_sort_order():
+    ores = [_ore(index, generation_lens="Wrong Lens") for index in range(1, 11)]
+
+    normalized = validate_discovered_ores(ores)
+
+    assert [ore["generation_lens"] for ore in normalized] == ORE_DISCOVERY_LENSES
+
+
 def test_validate_discovered_ores_rejects_duplicate_titles():
     ores = [_ore(index) for index in range(1, 11)]
     ores[1]["title"] = ores[0]["title"]
