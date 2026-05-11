@@ -51,6 +51,48 @@ async def get_today_ore_veins(
     tier_limits = TIER_LIMITS.get(tier, TIER_LIMITS["free"])
     return {
         "veins": veins,
+        "rerolls_used": state["rerolls_used"],
+        "rerolls_max": tier_limits["rerolls"],
+        "generations_used": state["generations_used"],
+        "generations_max": tier_limits["generations"],
+    }
+
+
+@router.post("/veins/reroll", response_model=OreTodayVeinsResponse)
+async def reroll_ore_veins(
+    user: dict = Depends(get_current_user),
+    supabase: Client = Depends(get_supabase),
+):
+    tier = get_effective_tier(user)
+    role = get_effective_role(user)
+
+    check_rate_limit_l1(user["id"], role=role)
+    state = await check_daily_limit_l2(
+        supabase,
+        user["id"],
+        tier,
+        action="reroll",
+        role=role,
+    )
+
+    veins = await ore_service.reroll_ore_veins(
+        supabase,
+        user["id"],
+        tier,
+        role=role,
+    )
+    await increment_daily_count(
+        supabase,
+        user["id"],
+        "reroll",
+        current_state=state,
+    )
+
+    tier_limits = TIER_LIMITS.get(tier, TIER_LIMITS["free"])
+    return {
+        "veins": veins,
+        "rerolls_used": state["rerolls_used"] + 1,
+        "rerolls_max": tier_limits["rerolls"],
         "generations_used": state["generations_used"],
         "generations_max": tier_limits["generations"],
     }

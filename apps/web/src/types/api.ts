@@ -79,6 +79,8 @@ export interface OreDailyVein {
 
 export interface OreTodayVeinsResponse {
   veins: OreDailyVein[];
+  rerolls_used: number;
+  rerolls_max: number;
   generations_used: number;
   generations_max: number;
 }

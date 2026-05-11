@@ -8,6 +8,7 @@ from app.services.ore_service import (
     build_idea_ore_rows,
     build_project_seed_brief_row,
     discover_ores,
+    format_ore_veins,
     normalize_discovered_ores,
     validate_discovered_ores,
 )
@@ -328,4 +329,42 @@ def test_discover_ores_returns_existing_ores_without_calling_openai(monkeypatch)
         {"id": "kw-cat", "label": "Cat"},
         {"id": "kw-dream", "label": "Dream"},
         {"id": "kw-guide", "label": "AI guide"},
+    ]
+
+
+def test_format_ore_veins_hides_keyword_categories_and_marks_mined():
+    veins = [
+        {
+            "id": "vein-1",
+            "slot_index": 1,
+            "is_selected": False,
+            "keywords": KEYWORDS,
+        },
+        {
+            "id": "vein-2",
+            "slot_index": 2,
+            "is_selected": True,
+            "keywords": KEYWORDS[:1],
+        },
+    ]
+
+    result = format_ore_veins(veins, mined_vein_ids={"vein-1"})
+
+    assert result == [
+        {
+            "id": "vein-1",
+            "slot_index": 1,
+            "keywords": [
+                {"id": "kw-cat", "label": "Cat"},
+                {"id": "kw-dream", "label": "Dream"},
+                {"id": "kw-guide", "label": "AI guide"},
+            ],
+            "is_mined": True,
+        },
+        {
+            "id": "vein-2",
+            "slot_index": 2,
+            "keywords": [{"id": "kw-cat", "label": "Cat"}],
+            "is_mined": True,
+        },
     ]

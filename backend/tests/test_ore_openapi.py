@@ -12,6 +12,10 @@ def test_ore_routes_expose_v3_response_models():
         == "#/components/schemas/OreTodayVeinsResponse"
     )
     assert (
+        _response_schema("/ore/veins/reroll", "post")["$ref"]
+        == "#/components/schemas/OreTodayVeinsResponse"
+    )
+    assert (
         _response_schema("/ore/discover", "post")["$ref"]
         == "#/components/schemas/OreDiscoverResponse"
     )
@@ -52,3 +56,15 @@ def test_ore_public_keyword_schema_hides_internal_category():
     ore_schema = components["IdeaOreOut"]
     selected_keywords = ore_schema["properties"]["selected_keywords"]
     assert selected_keywords["items"]["$ref"] == "#/components/schemas/OreVisibleKeyword"
+
+
+def test_ore_today_veins_response_includes_reroll_usage():
+    schema = app.openapi()["components"]["schemas"]["OreTodayVeinsResponse"]
+
+    assert set(schema["properties"]) >= {
+        "veins",
+        "rerolls_used",
+        "rerolls_max",
+        "generations_used",
+        "generations_max",
+    }

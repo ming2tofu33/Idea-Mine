@@ -546,6 +546,23 @@ export const mockOreApi = {
     await delay(300);
     return {
       veins: currentOreVeins,
+      rerolls_used: mockRerollCount,
+      rerolls_max: 2,
+      generations_used: mockGenerationCount,
+      generations_max: 1,
+    };
+  },
+
+  async rerollVeins(): Promise<OreTodayVeinsResponse> {
+    await delay(500);
+    mockRerollCount += 1;
+    currentOreVeins = makeOreDailyVeins();
+    mockDiscoveredOres = [];
+    mockDiscoveredOresByVein = {};
+    return {
+      veins: currentOreVeins,
+      rerolls_used: mockRerollCount,
+      rerolls_max: 2,
       generations_used: mockGenerationCount,
       generations_max: 1,
     };

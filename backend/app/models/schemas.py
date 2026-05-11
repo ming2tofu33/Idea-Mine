@@ -67,6 +67,8 @@ class OreDailyVeinOut(BaseModel):
 
 class OreTodayVeinsResponse(BaseModel):
     veins: list[OreDailyVeinOut]
+    rerolls_used: int
+    rerolls_max: int
     generations_used: int
     generations_max: int
 

@@ -125,6 +125,9 @@ const realOreApi = {
   getTodayVeins: () =>
     apiFetch<OreTodayVeinsResponse>("/ore/veins/today"),
 
+  rerollVeins: () =>
+    apiFetch<OreTodayVeinsResponse>("/ore/veins/reroll", { method: "POST" }),
+
   discover: (veinId: string) =>
     apiFetch<OreDiscoverResponse>("/ore/discover", {
       method: "POST",

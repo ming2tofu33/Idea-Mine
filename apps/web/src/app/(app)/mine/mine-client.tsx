@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Pickaxe, Save } from "lucide-react";
+import { Check, Pickaxe, RefreshCw, Save } from "lucide-react";
 import { MineBackground } from "@/components/backgrounds/mine-background";
 import { PageHeader } from "@/components/shared/page-header";
 import { oreApi, setMockMode } from "@/lib/api";
@@ -155,6 +155,15 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
     },
   });
 
+  const rerollMutation = useMutation({
+    mutationFn: oreApi.rerollVeins,
+    onSuccess: (response) => {
+      queryClient.setQueryData(["oreDailyVeins"], response);
+      setSelectedVeinId(response.veins[0]?.id ?? null);
+      setOres([]);
+    },
+  });
+
   const vaultMutation = useMutation({
     mutationFn: oreApi.vault,
     onMutate: (oreId) => {
@@ -184,9 +193,19 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
             title="Mine Idea Ores"
             subtitle="Mine today's Vein into short ores, then save the ones worth opening in Web Lab."
             meta={
-              <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-text-secondary">
-                3 veins / 10 ores
-              </span>
+              <>
+                <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-text-secondary">
+                  3 veins / 10 ores
+                </span>
+                {veinsQuery.data && (
+                  <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-text-secondary">
+                    Rerolls{" "}
+                    <span className="text-text-primary">
+                      {veinsQuery.data.rerolls_used}/{veinsQuery.data.rerolls_max}
+                    </span>
+                  </span>
+                )}
+              </>
             }
           />
 
@@ -200,24 +219,52 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
                   Three pre-given keyword clusters. No manual keyword setup.
                 </p>
               </div>
-              <button
-                type="button"
-                disabled={discoverMutation.isPending || !selectedVein}
-                onClick={() => {
-                  if (selectedVein) {
-                    discoverMutation.mutate(selectedVein.id);
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  disabled={
+                    rerollMutation.isPending ||
+                    discoverMutation.isPending ||
+                    !veinsQuery.data ||
+                    veinsQuery.data.rerolls_used >= veinsQuery.data.rerolls_max
                   }
-                }}
-                className={[
-                  "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200",
-                  !discoverMutation.isPending && selectedVein
-                    ? "border border-signal-pink/40 bg-signal-pink text-white hover:bg-signal-pink/90 hover:shadow-[0_0_24px_rgba(255,59,147,0.25)]"
-                    : "cursor-not-allowed border border-line-steel/25 bg-surface-2/40 text-text-secondary/45",
-                ].join(" ")}
-              >
-                <Pickaxe className="h-4 w-4" />
-                {discoverMutation.isPending ? "Mining" : "Mine Ores"}
-              </button>
+                  onClick={() => rerollMutation.mutate()}
+                  className={[
+                    "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-200",
+                    veinsQuery.data &&
+                    veinsQuery.data.rerolls_used < veinsQuery.data.rerolls_max &&
+                    !discoverMutation.isPending
+                      ? "border border-line-steel/35 bg-surface-1/45 text-text-primary hover:border-cold-cyan/35 hover:bg-surface-1/65"
+                      : "cursor-not-allowed border border-line-steel/25 bg-surface-2/40 text-text-secondary/45",
+                  ].join(" ")}
+                >
+                  <RefreshCw
+                    className={[
+                      "h-4 w-4",
+                      rerollMutation.isPending ? "animate-spin" : "",
+                    ].join(" ")}
+                  />
+                  {rerollMutation.isPending ? "Refreshing" : "Refresh Veins"}
+                </button>
+                <button
+                  type="button"
+                  disabled={discoverMutation.isPending || rerollMutation.isPending || !selectedVein}
+                  onClick={() => {
+                    if (selectedVein) {
+                      discoverMutation.mutate(selectedVein.id);
+                    }
+                  }}
+                  className={[
+                    "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200",
+                    !discoverMutation.isPending && !rerollMutation.isPending && selectedVein
+                      ? "border border-signal-pink/40 bg-signal-pink text-white hover:bg-signal-pink/90 hover:shadow-[0_0_24px_rgba(255,59,147,0.25)]"
+                      : "cursor-not-allowed border border-line-steel/25 bg-surface-2/40 text-text-secondary/45",
+                  ].join(" ")}
+                >
+                  <Pickaxe className="h-4 w-4" />
+                  {discoverMutation.isPending ? "Mining" : "Mine Ores"}
+                </button>
+              </div>
             </div>
 
             <div className="grid gap-3 lg:grid-cols-3">
@@ -258,6 +305,14 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
               {discoverMutation.error instanceof Error
                 ? discoverMutation.error.message
                 : "Failed to mine Idea Ores."}
+            </div>
+          )}
+
+          {rerollMutation.isError && (
+            <div className="rounded-lg border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-200">
+              {rerollMutation.error instanceof Error
+                ? rerollMutation.error.message
+                : "Failed to refresh Daily Veins."}
             </div>
           )}
 

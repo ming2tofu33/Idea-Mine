@@ -246,6 +246,13 @@ async def get_today_ore_veins(
         if row.get("vein_id")
     }
 
+    return format_ore_veins(veins, mined_vein_ids=mined_vein_ids)
+
+
+def format_ore_veins(
+    veins: list[dict],
+    mined_vein_ids: set[str],
+) -> list[dict]:
     return [
         {
             "id": vein["id"],
@@ -255,6 +262,22 @@ async def get_today_ore_veins(
         }
         for vein in veins
     ]
+
+
+async def reroll_ore_veins(
+    supabase: Client,
+    user_id: str,
+    tier: str,
+    role: str = "user",
+) -> list[dict]:
+    veins = await vein_service.reroll_veins(
+        supabase,
+        user_id,
+        tier,
+        role=role,
+    )
+    veins = await vein_service.resolve_vein_keywords(supabase, veins)
+    return format_ore_veins(veins, mined_vein_ids=set())
 
 
 async def get_active_daily_vein(
