@@ -3,7 +3,11 @@ from datetime import date, datetime
 
 from supabase import Client
 
-from app.services.daily_mine_keywords import DAILY_MINE_KEYWORD_SET, DAILY_MINE_ROLES
+from app.services.daily_mine_keywords import (
+    DAILY_MINE_FAMILIES,
+    DAILY_MINE_KEYWORD_SET,
+    DAILY_MINE_ROLES,
+)
 
 
 RARITY_TABLE = {
@@ -53,6 +57,40 @@ def build_daily_mine_vein_keyword_ids(
     return [keyword["id"] for keyword in selected_keywords]
 
 
+def build_daily_mine_family_vein_keyword_ids(
+    keywords_by_family_role: dict[str, dict[str, list[dict]]],
+    family: str,
+    rng=random,
+) -> list[str]:
+    return build_daily_mine_vein_keyword_ids(
+        keywords_by_family_role.get(family, {}),
+        rng,
+    )
+
+
+def build_daily_mine_vein_specs(
+    keywords_by_family_role: dict[str, dict[str, list[dict]]],
+    rng=random,
+) -> list[dict]:
+    return [
+        {
+            "slot_index": index,
+            "family": family,
+            "keyword_ids": build_daily_mine_family_vein_keyword_ids(
+                keywords_by_family_role,
+                family,
+                rng,
+            ),
+        }
+        for index, family in enumerate(DAILY_MINE_FAMILIES, start=1)
+    ]
+
+
+def _has_expected_daily_mine_families(veins: list[dict]) -> bool:
+    ordered_veins = sorted(veins, key=lambda vein: vein.get("slot_index") or 0)
+    return [vein.get("family") for vein in ordered_veins] == DAILY_MINE_FAMILIES
+
+
 def _get_rarity_condition(is_season: bool) -> str:
     is_weekend = datetime.now().weekday() >= 5
     season = "season" if is_season else "offseason"
@@ -95,7 +133,18 @@ async def get_or_create_today_veins(
     )
 
     if existing.data and len(existing.data) == 3:
-        return existing.data
+        if (
+            keyword_set != DAILY_MINE_KEYWORD_SET
+            or _has_expected_daily_mine_families(existing.data)
+        ):
+            return existing.data
+
+    if keyword_set == DAILY_MINE_KEYWORD_SET and existing.data:
+        supabase.table("veins").update(
+            {"is_active": False}
+        ).eq("user_id", user_id).eq("date", today).eq(
+            "keyword_set", keyword_set
+        ).eq("is_active", True).execute()
 
     return await _create_veins(
         supabase,
@@ -145,20 +194,27 @@ async def _create_veins(
     is_season = await _check_is_season(supabase, today, role=role)
 
     if keyword_set == DAILY_MINE_KEYWORD_SET:
-        vein_keyword_ids = _build_daily_mine_vein_keyword_sets(supabase)
+        vein_specs = _build_daily_mine_vein_specs(supabase)
     else:
-        vein_keyword_ids = _build_legacy_vein_keyword_sets(supabase, tier)
+        vein_specs = [
+            {"slot_index": index, "family": None, "keyword_ids": keyword_ids}
+            for index, keyword_ids in enumerate(
+                _build_legacy_vein_keyword_sets(supabase, tier),
+                start=1,
+            )
+        ]
 
     veins = []
-    for index, keyword_ids in enumerate(vein_keyword_ids, start=1):
+    for spec in vein_specs:
         vein = (
             supabase.table("veins")
             .insert(
                 {
                     "user_id": user_id,
                     "date": today,
-                    "slot_index": index,
-                    "keyword_ids": keyword_ids,
+                    "slot_index": spec["slot_index"],
+                    "family": spec["family"],
+                    "keyword_ids": spec["keyword_ids"],
                     "keyword_set": keyword_set,
                     "rarity": pick_rarity(is_season=is_season),
                     "is_active": True,
@@ -191,27 +247,29 @@ async def _check_is_season(supabase: Client, today: str, role: str) -> bool:
         return False
 
 
-def _build_daily_mine_vein_keyword_sets(supabase: Client) -> list[list[str]]:
+def _build_daily_mine_vein_specs(supabase: Client) -> list[dict]:
     all_keywords = (
         supabase.table("keywords")
-        .select("id, slug, category, subtype, role, keyword_set, label, is_premium")
+        .select("id, slug, category, subtype, role, family, keyword_set, label, is_premium")
         .eq("is_active", True)
         .eq("keyword_set", DAILY_MINE_KEYWORD_SET)
         .execute()
     ).data
 
-    keywords_by_role: dict[str, list[dict]] = {
-        role_name: [] for role_name in DAILY_MINE_ROLES
+    keywords_by_family_role: dict[str, dict[str, list[dict]]] = {
+        family: {role_name: [] for role_name in DAILY_MINE_ROLES}
+        for family in DAILY_MINE_FAMILIES
     }
     for keyword in all_keywords:
+        family = keyword.get("family")
         role_name = keyword.get("role")
-        if role_name in keywords_by_role:
-            keywords_by_role[role_name].append(keyword)
+        if (
+            family in keywords_by_family_role
+            and role_name in keywords_by_family_role[family]
+        ):
+            keywords_by_family_role[family][role_name].append(keyword)
 
-    return [
-        build_daily_mine_vein_keyword_ids(keywords_by_role, random)
-        for _ in range(3)
-    ]
+    return build_daily_mine_vein_specs(keywords_by_family_role, random)
 
 
 def _build_legacy_vein_keyword_sets(supabase: Client, tier: str) -> list[list[str]]:
@@ -261,7 +319,7 @@ async def resolve_vein_keywords(
 
     result = (
         supabase.table("keywords")
-        .select("id, slug, category, subtype, role, keyword_set, label, is_premium")
+        .select("id, slug, category, subtype, role, family, keyword_set, label, is_premium")
         .in_("id", list(all_ids))
         .execute()
     )

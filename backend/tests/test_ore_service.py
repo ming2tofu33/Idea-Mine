@@ -550,3 +550,34 @@ def test_format_ore_veins_hides_keyword_categories_and_marks_mined():
             "is_mined": True,
         },
     ]
+
+
+def test_format_ore_veins_hides_family_metadata():
+    veins = [
+        {
+            "id": "vein-1",
+            "slot_index": 1,
+            "family": "cozy_personal",
+            "is_selected": False,
+            "keywords": [
+                {
+                    "id": "kw-cat",
+                    "label": "cat",
+                    "category": "daily_mine",
+                    "role": "Subject",
+                    "family": "cozy_personal",
+                }
+            ],
+        }
+    ]
+
+    result = format_ore_veins(veins, mined_vein_ids=set())
+
+    assert result == [
+        {
+            "id": "vein-1",
+            "slot_index": 1,
+            "keywords": [{"id": "kw-cat", "label": "cat"}],
+            "is_mined": False,
+        }
+    ]

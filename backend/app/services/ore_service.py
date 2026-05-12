@@ -472,7 +472,7 @@ async def get_keywords_for_vein(
 
     result = (
         supabase.table("keywords")
-        .select("id, slug, category, subtype, role, keyword_set, label, is_premium")
+        .select("id, slug, category, subtype, role, family, keyword_set, label, is_premium")
         .in_("id", keyword_ids)
         .execute()
     )
