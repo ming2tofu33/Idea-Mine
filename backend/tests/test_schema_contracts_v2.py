@@ -284,6 +284,7 @@ def test_keywords_contract(schema):
         "category",
         "subtype",
         "label",
+        "family",
         "role",
         "keyword_set",
         "aliases",
@@ -305,6 +306,8 @@ def test_keywords_contract(schema):
     assert details["subtype"]["is_nullable"] is False
     assert details["label"]["data_type"] == "text"
     assert details["label"]["is_nullable"] is False
+    assert details["family"]["data_type"] == "text"
+    assert details["family"]["is_nullable"] is True
     assert details["role"]["data_type"] == "text"
     assert details["role"]["is_nullable"] is True
     assert details["keyword_set"]["data_type"] == "text"
@@ -341,6 +344,13 @@ def test_keywords_contract(schema):
         and "'daily_mine'" in item
         for item in constraint_definitions
     )
+    assert any(
+        "family" in item
+        and "'cozy_personal'" in item
+        and "'indie_tool'" in item
+        and "'practical_twist'" in item
+        for item in constraint_definitions
+    )
 
     indexes = schema.index_definitions("public", "keywords")
     assert "idx_keywords_category_active" in indexes
@@ -349,6 +359,12 @@ def test_keywords_contract(schema):
     assert "idx_keywords_daily_mine_role_active" in indexes
     assert "keyword_set, role, is_active" in indexes["idx_keywords_daily_mine_role_active"]
     assert "WHERE (is_active = true)" in indexes["idx_keywords_daily_mine_role_active"]
+    assert "idx_keywords_daily_mine_family_role_active" in indexes
+    assert (
+        "keyword_set, family, role, is_active"
+        in indexes["idx_keywords_daily_mine_family_role_active"]
+    )
+    assert "WHERE (is_active = true)" in indexes["idx_keywords_daily_mine_family_role_active"]
 
     assert schema.row_count("keywords") == 118
 
@@ -480,6 +496,7 @@ def test_veins_contract(schema):
         "slot_index",
         "keyword_ids",
         "keyword_set",
+        "family",
         "rarity",
         "is_active",
         "is_selected",
@@ -501,6 +518,8 @@ def test_veins_contract(schema):
     assert details["keyword_set"]["data_type"] == "text"
     assert details["keyword_set"]["is_nullable"] is False
     assert details["keyword_set"]["column_default"] == "'legacy'::text"
+    assert details["family"]["data_type"] == "text"
+    assert details["family"]["is_nullable"] is True
     assert details["rarity"]["data_type"] == "text"
     assert details["rarity"]["is_nullable"] is False
     assert "'common'::text" in details["rarity"]["column_default"]
@@ -529,6 +548,13 @@ def test_veins_contract(schema):
         and "'rare'" in item
         and "'golden'" in item
         and "'legend'" in item
+        for item in constraint_definitions
+    )
+    assert any(
+        "family" in item
+        and "'cozy_personal'" in item
+        and "'indie_tool'" in item
+        and "'practical_twist'" in item
         for item in constraint_definitions
     )
     assert any("cardinality" in item and "keyword_ids" in item and ">= 1" in item for item in constraint_definitions)
