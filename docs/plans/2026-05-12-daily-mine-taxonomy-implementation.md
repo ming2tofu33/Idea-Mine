@@ -748,7 +748,7 @@ git commit -m "docs: record daily mine taxonomy qa"
 - `gpt-5-mini` is the Ore discovery default.
 - Daily Mine Veins use 5 V3 taxonomy keywords.
 - Public API hides role/category/lane metadata.
-- Ore generation uses hidden 3/3/3/1 lane structure.
+- Current superseding target: Ore generation uses hidden family-weighted lanes: 6 family-core + 2 adjacent-family + 1 opposite-family + 1 weird bridge.
 - Each Ore stores and renders 3 to 4 active keywords.
 - Backend and frontend checks pass.
 - A production QA document confirms that at least one real Vein produces a diverse, save-worthy 10-Ore set.
