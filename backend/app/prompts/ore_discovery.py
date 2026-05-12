@@ -18,6 +18,18 @@ ORE_DISCOVERY_LANE_PLAN = [
     ("Weird Bridge", 1),
 ]
 
+FAMILY_DISPLAY_NAMES = {
+    "cozy_personal": "Cozy Personal",
+    "indie_tool": "Indie Tool",
+    "practical_twist": "Practical Twist",
+}
+
+FAMILY_ADJACENT_AND_OPPOSITE = {
+    "cozy_personal": ("Indie Tool", "Practical Twist"),
+    "indie_tool": ("Cozy Personal", "Practical Twist"),
+    "practical_twist": ("Indie Tool", "Cozy Personal"),
+}
+
 ORE_DISCOVERY_LANE_BY_SORT_ORDER = [
     lane
     for lane, count in ORE_DISCOVERY_LANE_PLAN
@@ -32,13 +44,46 @@ def _keyword_line(keyword: dict) -> str:
     return f"- {keyword['label']}"
 
 
-def build_ore_discovery_prompt(keywords: list[dict]) -> tuple[str, str]:
+def build_ore_discovery_lane_plan(vein_family: str | None) -> list[str]:
+    selected_family = FAMILY_DISPLAY_NAMES.get(vein_family or "")
+    if not selected_family:
+        return ORE_DISCOVERY_LANE_BY_SORT_ORDER.copy()
+
+    adjacent_family, opposite_family = FAMILY_ADJACENT_AND_OPPOSITE[vein_family]
+    return [
+        *([selected_family] * 6),
+        adjacent_family,
+        adjacent_family,
+        opposite_family,
+        "Weird Bridge",
+    ]
+
+
+def _lane_distribution_lines(lane_plan: list[str]) -> str:
+    counts: dict[str, int] = {}
+    for lane in lane_plan:
+        counts[lane] = counts.get(lane, 0) + 1
+    return "\n".join(f"- {count} ores: {lane}" for lane, count in counts.items())
+
+
+def _lane_sort_order_lines(lane_plan: list[str]) -> str:
+    return "\n".join(
+        f"- sort_order {index}: ore_lane must be {lane}"
+        for index, lane in enumerate(lane_plan, start=1)
+    )
+
+
+def build_ore_discovery_prompt(
+    keywords: list[dict],
+    vein_family: str | None = None,
+) -> tuple[str, str]:
     lens_lines = "\n".join(
         f"{index}. {lens}" for index, lens in enumerate(ORE_DISCOVERY_LENSES, start=1)
     )
-    lane_lines = "\n".join(
-        f"- {count} ores: {lane}" for lane, count in ORE_DISCOVERY_LANE_PLAN
-    )
+    lane_plan = build_ore_discovery_lane_plan(vein_family)
+    lane_lines = _lane_distribution_lines(lane_plan)
+    lane_sort_order_lines = _lane_sort_order_lines(lane_plan)
+    selected_family = FAMILY_DISPLAY_NAMES.get(vein_family or "", "Fallback Mixed")
 
     system_prompt = """You are the Idea Ore discovery engine for Idea Mine.
 
@@ -60,12 +105,13 @@ System behavior:
 - The output should feel like "this might be worth building," not "this is a complete business plan."
 - Diversity is mandatory: avoid repeated titles, repeated core loops, and repeated product forms.
 
-Hidden lane distribution:
+Selected hidden Vein family: {selected_family}
+
+Hidden family-weighted lane distribution:
 {lane_lines}
-- sort_order 1-3: ore_lane must be Cozy Personal
-- sort_order 4-6: ore_lane must be Indie Tool
-- sort_order 7-9: ore_lane must be Practical Twist
-- sort_order 10: ore_lane must be Weird Bridge
+
+Exact sort_order lane mapping:
+{lane_sort_order_lines}
 
 Internal discovery lenses:
 {lens_lines}
@@ -127,7 +173,9 @@ Product meaning:
 - A Vein is the provided keyword combination.
 - An Idea Ore is a short project-worthy direction extracted from that Vein.
 - An Idea Ore is not a complete business plan, market analysis, or pitch deck.""".format(
+        selected_family=selected_family,
         lane_lines=lane_lines,
+        lane_sort_order_lines=lane_sort_order_lines,
         lens_lines=lens_lines,
     )
 

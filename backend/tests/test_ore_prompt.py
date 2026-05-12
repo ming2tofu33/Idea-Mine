@@ -1,4 +1,9 @@
-from app.prompts.ore_discovery import ORE_DISCOVERY_LENSES, build_ore_discovery_prompt
+from app.prompts.ore_discovery import (
+    ORE_DISCOVERY_LANE_BY_SORT_ORDER,
+    ORE_DISCOVERY_LENSES,
+    build_ore_discovery_lane_plan,
+    build_ore_discovery_prompt,
+)
 from app.prompts.ore_projectize import build_ore_projectize_prompt
 
 
@@ -99,16 +104,56 @@ def test_ore_discovery_prompt_uses_hidden_diversity_lenses():
 def test_ore_discovery_prompt_uses_lane_distribution_and_active_keyword_subsets():
     system_prompt, user_prompt = build_ore_discovery_prompt(SAMPLE_KEYWORDS)
 
-    assert "sort_order 1-3: ore_lane must be Cozy Personal" in system_prompt
-    assert "sort_order 4-6: ore_lane must be Indie Tool" in system_prompt
-    assert "sort_order 7-9: ore_lane must be Practical Twist" in system_prompt
-    assert "sort_order 10: ore_lane must be Weird Bridge" in system_prompt
+    for index, lane in enumerate(ORE_DISCOVERY_LANE_BY_SORT_ORDER, start=1):
+        assert f"sort_order {index}: ore_lane must be {lane}" in system_prompt
     assert "Each ore must actively use exactly 3 or 4 keywords" in system_prompt
     assert "active_keywords must contain exact keyword labels only" in system_prompt
     assert "Do not mention non-active Vein keyword labels" in system_prompt
     assert "Do not force all 5 Vein keywords into every ore" in system_prompt
     assert "cat (Subject)" in user_prompt
     assert "only at night (Ritual / Constraint)" in user_prompt
+
+
+def test_ore_discovery_lane_plan_weights_the_selected_family():
+    lane_plan = build_ore_discovery_lane_plan("practical_twist")
+
+    assert len(lane_plan) == 10
+    assert lane_plan.count("Practical Twist") == 6
+    assert lane_plan.count("Cozy Personal") == 1
+    assert lane_plan.count("Indie Tool") == 2
+    assert lane_plan[-1] == "Weird Bridge"
+
+
+def test_ore_discovery_lane_plan_keeps_fallback_distribution_for_unknown_family():
+    assert build_ore_discovery_lane_plan(None) == ORE_DISCOVERY_LANE_BY_SORT_ORDER
+    assert build_ore_discovery_lane_plan("unknown") == ORE_DISCOVERY_LANE_BY_SORT_ORDER
+
+
+def test_ore_discovery_prompt_includes_hidden_family_weighted_lane_mapping():
+    system_prompt, user_prompt = build_ore_discovery_prompt(
+        SAMPLE_KEYWORDS,
+        vein_family="practical_twist",
+    )
+
+    expected_lanes = [
+        "Practical Twist",
+        "Practical Twist",
+        "Practical Twist",
+        "Practical Twist",
+        "Practical Twist",
+        "Practical Twist",
+        "Indie Tool",
+        "Indie Tool",
+        "Cozy Personal",
+        "Weird Bridge",
+    ]
+
+    assert "Selected hidden Vein family: Practical Twist" in system_prompt
+    assert "family-weighted lane distribution" in system_prompt
+    for index, lane in enumerate(expected_lanes, start=1):
+        assert f"sort_order {index}: ore_lane must be {lane}" in system_prompt
+    assert "Practical Twist" not in user_prompt
+    assert "vein_family" not in user_prompt
 
 
 def test_ore_projectize_prompt_keeps_the_brief_faithful_and_mvp_scoped():

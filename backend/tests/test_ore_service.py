@@ -16,7 +16,11 @@ from app.services.ore_service import (
     OreProviderError,
     validate_discovered_ores,
 )
-from app.prompts.ore_discovery import ORE_DISCOVERY_LANE_BY_SORT_ORDER, ORE_DISCOVERY_LENSES
+from app.prompts.ore_discovery import (
+    ORE_DISCOVERY_LANE_BY_SORT_ORDER,
+    ORE_DISCOVERY_LENSES,
+    build_ore_discovery_lane_plan,
+)
 
 
 KEYWORDS = [
@@ -101,6 +105,21 @@ def test_build_idea_ore_rows_persists_generated_ores_as_unvaulted_rows():
     ]
 
 
+def test_build_idea_ore_rows_stores_vein_family_in_generation_meta():
+    rows = build_idea_ore_rows(
+        user_id="user-1",
+        vein_id="vein-1",
+        keywords=KEYWORDS,
+        ores=ORES,
+        vein_family="cozy_personal",
+    )
+
+    assert rows[0]["generation_meta"]["vein_family"] == "cozy_personal"
+    public_ore = format_idea_ore_public(rows[0])
+    assert "generation_meta" not in public_ore
+    assert "vein_family" not in public_ore
+
+
 def test_build_project_seed_brief_row_keeps_brief_linked_to_the_ore():
     row = build_project_seed_brief_row(
         user_id="user-1",
@@ -168,6 +187,20 @@ def test_validate_discovered_ores_normalizes_generation_lens_by_sort_order():
 
     assert [ore["generation_lens"] for ore in normalized] == ORE_DISCOVERY_LENSES
     assert [ore["ore_lane"] for ore in normalized] == ORE_DISCOVERY_LANE_BY_SORT_ORDER
+
+
+def test_validate_discovered_ores_normalizes_family_weighted_lane_by_sort_order():
+    ores = [
+        _ore(index, generation_lens="Wrong Lens", ore_lane="Wrong Lane")
+        for index in range(1, 11)
+    ]
+
+    normalized = validate_discovered_ores(ores, vein_family="practical_twist")
+
+    assert [ore["generation_lens"] for ore in normalized] == ORE_DISCOVERY_LENSES
+    assert [ore["ore_lane"] for ore in normalized] == build_ore_discovery_lane_plan(
+        "practical_twist"
+    )
 
 
 def test_validate_discovered_ores_rejects_duplicate_titles():
@@ -394,6 +427,43 @@ def test_discover_ores_retries_once_after_diversity_validation_failure(monkeypat
     assert completions.calls == 2
     assert len(result["ores"]) == 10
     assert supabase.rows["ai_usage_logs"][0]["status"] == "success"
+
+
+def test_discover_ores_passes_vein_family_to_prompt_validation_and_rows(monkeypatch):
+    completions = _FakeCompletions([[_ore(index) for index in range(1, 11)]])
+    monkeypatch.setattr(
+        ore_service,
+        "get_openai",
+        lambda: SimpleNamespace(
+            beta=SimpleNamespace(
+                chat=SimpleNamespace(completions=completions),
+            )
+        ),
+    )
+    supabase = _FakeSupabase()
+
+    result = asyncio.run(
+        discover_ores(
+            supabase=supabase,
+            user_id="user-1",
+            tier="free",
+            vein={"id": "vein-1", "family": "practical_twist"},
+            keywords=KEYWORDS,
+            source="web",
+        )
+    )
+
+    system_prompt = completions.kwargs[0]["messages"][0]["content"]
+    assert "Selected hidden Vein family: Practical Twist" in system_prompt
+    assert [
+        ore["generation_meta"]["ore_lane"]
+        for ore in supabase.rows["idea_ores"]
+    ] == build_ore_discovery_lane_plan("practical_twist")
+    assert {
+        ore["generation_meta"]["vein_family"]
+        for ore in supabase.rows["idea_ores"]
+    } == {"practical_twist"}
+    assert "vein_family" not in result["ores"][0]
 
 
 def test_ore_discovery_defaults_to_fast_daily_mine_generation_settings():

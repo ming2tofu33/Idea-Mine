@@ -10,8 +10,8 @@ from supabase import Client
 from app.config import settings
 from app.models.llm_schemas import OreDiscoveryResponse, ProjectSeedBriefResponse
 from app.prompts.ore_discovery import (
-    ORE_DISCOVERY_LANE_BY_SORT_ORDER,
     ORE_DISCOVERY_LENSES,
+    build_ore_discovery_lane_plan,
     build_ore_discovery_prompt,
 )
 from app.prompts.ore_projectize import build_ore_projectize_prompt
@@ -132,8 +132,11 @@ def _visible_keywords(keywords: list[dict]) -> list[dict]:
     ]
 
 
-def _generation_meta(ore: dict) -> dict:
-    return {field: ore[field] for field in META_FIELDS}
+def _generation_meta(ore: dict, vein_family: str | None = None) -> dict:
+    meta = {field: ore[field] for field in META_FIELDS}
+    if vein_family:
+        meta["vein_family"] = vein_family
+    return meta
 
 
 def _keyword_lookup_by_label(keywords: list[dict]) -> dict[str, dict]:
@@ -179,6 +182,7 @@ def build_idea_ore_rows(
     vein_id: str,
     keywords: list[dict],
     ores: list[dict],
+    vein_family: str | None = None,
 ) -> list[dict]:
     selected_keywords = _normalize_keywords(keywords)
     rows = []
@@ -197,7 +201,7 @@ def build_idea_ore_rows(
                 "mvp_hint": ore["mvp_hint"],
                 "selected_keywords": selected_keywords,
                 "active_keywords": _active_keyword_objects(ore, keywords),
-                "generation_meta": _generation_meta(ore),
+                "generation_meta": _generation_meta(ore, vein_family=vein_family),
                 "sort_order": ore.get("sort_order", index),
                 "is_vaulted": False,
             }
@@ -213,6 +217,7 @@ def normalize_discovered_ores(ores: list[dict]) -> list[dict]:
 def validate_discovered_ores(
     ores: list[dict],
     keywords: list[dict] | None = None,
+    vein_family: str | None = None,
 ) -> list[dict]:
     if len(ores) != 10:
         raise RuntimeError("Ore discovery must return exactly 10 Idea Ores.")
@@ -226,10 +231,11 @@ def validate_discovered_ores(
     seen_core_loops: set[str] = set()
     product_forms: Counter[str] = Counter()
     keyword_lookup = _keyword_lookup_by_label(keywords or [])
+    lane_plan = build_ore_discovery_lane_plan(vein_family)
 
     for index, ore in enumerate(normalized, start=1):
         expected_lens = ORE_DISCOVERY_LENSES[index - 1]
-        expected_lane = ORE_DISCOVERY_LANE_BY_SORT_ORDER[index - 1]
+        expected_lane = lane_plan[index - 1]
         ore["generation_lens"] = expected_lens
         ore["ore_lane"] = expected_lane
 
@@ -517,7 +523,11 @@ async def discover_ores(
         return build_discover_response(vein, keywords, existing)
 
     session_id = str(uuid.uuid4())
-    system_prompt, user_prompt = build_ore_discovery_prompt(keywords)
+    vein_family = vein.get("family")
+    system_prompt, user_prompt = build_ore_discovery_prompt(
+        keywords,
+        vein_family=vein_family,
+    )
     client = get_openai()
     start_time = time.time()
     input_tokens = 0
@@ -531,8 +541,9 @@ async def discover_ores(
                 attempt_user_prompt = (
                     f"{user_prompt}\n\n"
                     f"Previous attempt failed validation: {validation_error}\n"
-                    "Regenerate the full set. Keep exactly 10 ores, one per lens and lane, "
-                    "with distinct titles, core loops, product forms, and valid active keywords."
+                    "Regenerate the full set. Keep exactly 10 ores, follow the selected "
+                    "family-weighted lane plan, and keep distinct titles, core loops, "
+                    "product forms, and valid active keywords."
                 )
 
             response = client.beta.chat.completions.parse(
@@ -559,6 +570,7 @@ async def discover_ores(
                 ores_raw = validate_discovered_ores(
                     [ore.model_dump() for ore in parsed.ores],
                     keywords=keywords,
+                    vein_family=vein_family,
                 )
                 break
             except RuntimeError as exc:
@@ -627,6 +639,7 @@ async def discover_ores(
         vein_id=vein["id"],
         keywords=keywords,
         ores=ores_raw,
+        vein_family=vein_family,
     )
     result = supabase.table("idea_ores").insert(rows).execute()
 
