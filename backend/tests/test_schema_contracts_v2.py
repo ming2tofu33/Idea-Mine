@@ -564,6 +564,12 @@ def test_veins_contract(schema):
     assert "UNIQUE INDEX" in indexes["uq_veins_active_slot_keyword_set"]
     assert "(user_id, date, slot_index, keyword_set)" in indexes["uq_veins_active_slot_keyword_set"]
     assert "WHERE (is_active = true)" in indexes["uq_veins_active_slot_keyword_set"]
+    assert "idx_veins_daily_mine_family_active" in indexes
+    assert (
+        "user_id, date, keyword_set, family, is_active"
+        in indexes["idx_veins_daily_mine_family_active"]
+    )
+    assert "WHERE (is_active = true)" in indexes["idx_veins_daily_mine_family_active"]
 
     assert schema.row_count("veins") == 0
 
