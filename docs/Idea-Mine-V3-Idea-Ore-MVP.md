@@ -1,6 +1,6 @@
 # Idea Mine V3: Idea Ore MVP Direction
 
-Updated: 2026-05-11
+Updated: 2026-05-12
 
 This document is the product direction source for Idea Mine V3. It resets the MVP around a clearer Idea Ore flow:
 
@@ -18,11 +18,13 @@ The product rhythm is:
 
 1. The product gives the user 3 pre-made keyword clusters.
 2. Each pre-given keyword cluster is a Vein.
-3. The user mines one Vein.
-4. The system extracts 10 short Idea Ores from that Vein.
-5. The user saves promising ores to Vault.
-6. The user opens a saved ore in Web Lab.
-7. Web Lab projectizes the ore into a Project Seed Brief and Vibe Coding Prompt.
+3. Internally, the three Veins are one `cozy_personal`, one `indie_tool`, and one `practical_twist` Vein.
+4. The user mines one Vein.
+5. The system extracts 10 short Idea Ores from that Vein.
+6. The selected Vein's hidden family controls the Ore lane mix: 6 family-core, 2 adjacent-family, 1 opposite-family, and 1 weird bridge.
+7. The user saves promising ores to Vault.
+8. The user opens a saved ore in Web Lab.
+9. Web Lab projectizes the ore into a Project Seed Brief and Vibe Coding Prompt.
 
 V3 is a focus reset, not a request to add more surface area. The main goal is to make the MVP feel lightweight at discovery time and practical at projectization time.
 
@@ -35,6 +37,7 @@ Daily Mine is the lightweight daily discovery experience.
 - Users do not need to write long thoughts.
 - Users do not need to search for, type, or manually select keywords.
 - The product gives users 3 pre-made Veins of attractive keywords.
+- The three server-provided Veins always cover the hidden families `cozy_personal`, `indie_tool`, and `practical_twist`.
 - The product generates short Idea Ores.
 - Users quickly save interesting ores to Vault.
 - Daily Mine must not contain long reports, blueprint editing, complex project documents, or heavy planning workflows.
@@ -86,7 +89,7 @@ Keyword categories may include:
 - `ai`
 - `tech`
 
-Keyword categories are internal metadata. They must not be shown as visible tags in Daily Mine, Vault, or Web Lab. The user should see the keyword labels only, because visible category tags can narrow interpretation and reduce the range of ideas the Vein suggests.
+Keyword categories, roles, and families are internal metadata. They must not be shown as visible tags in Daily Mine, Vault, or Web Lab. Public keyword objects expose only `id` and `label`, because visible category tags can narrow interpretation and reduce the range of ideas the Vein suggests.
 
 Example keywords:
 
@@ -105,6 +108,8 @@ Example keywords:
 A Vein is a pre-given keyword combination.
 
 A Vein is not an idea. It is a cluster of provided keywords that produces 10 Idea Ores when mined in the MVP.
+
+Daily Mine always shows three server-provided Veins. Internally, those Veins are one `cozy_personal`, one `indie_tool`, and one `practical_twist` Vein. The selected Vein's hidden family is used only by the backend to weight the 10-Ore distribution.
 
 Example:
 
@@ -251,6 +256,7 @@ Reuse existing FastAPI, Supabase, OpenAI structured output, service, and typing 
 ### `GET /ore/veins/today`
 
 Returns the 3 server-provided Daily Veins for the current user. Keyword categories remain internal and are not returned.
+Keyword roles and families are also internal and are not returned; public keyword objects expose only `id` and `label`.
 
 Output:
 
@@ -398,6 +404,8 @@ Create new tables if needed:
 Implementation notes:
 
 - V3 reuses the existing `veins` table for server-provided Daily Veins, separated by `veins.keyword_set='daily_mine_v3'`.
+- `veins.family` stores the hidden Daily Mine family (`cozy_personal`, `indie_tool`, or `practical_twist`) for generation. It is internal schema metadata and must not be returned to the UI.
+- `keywords.family` stores hidden keyword family metadata. Public keyword objects expose only `id` and `label`.
 - `POST /ore/discover` persists generated ores immediately with `is_vaulted=false`, so refresh and Lab navigation do not lose the result.
 - `POST /ore/{ore_id}/projectize` returns an existing Project Seed Brief if one already exists. Regeneration can be a later feature.
 - `(user_id, vein_id, sort_order)` should be unique for persisted Idea Ores.
@@ -418,7 +426,7 @@ model separately because it belongs to the deeper work phase.
 System behavior:
 
 - Generate exactly 10 Idea Ores from the provided Daily Vein keyword combination.
-- Follow the hidden lane distribution: 3 Cozy Personal, 3 Indie Tool, 3 Practical Twist, and 1 Weird Bridge.
+- Follow the hidden family-weighted lane distribution from the selected Vein: 6 family-core, 2 adjacent-family, 1 opposite-family, and 1 Weird Bridge.
 - Each Ore must actively use exactly 3 or 4 of the 5 Vein keywords.
 - Generate one ore per internal discovery lens:
   - Direct Core

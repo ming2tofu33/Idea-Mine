@@ -15,21 +15,19 @@ from openai import OpenAI
 from pydantic import BaseModel
 
 from app.config import settings
+from app.prompts.ore_discovery import (
+    FAMILY_DISPLAY_NAMES,
+    build_ore_discovery_lane_plan,
+)
 
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
 REPO_DIR = BACKEND_DIR.parent
 
-LANE_PLAN = [
-    ("Cozy Personal", 3),
-    ("Indie Tool", 3),
-    ("Practical Twist", 3),
-    ("Weird Bridge", 1),
-]
-
 TEST_VEINS = [
     {
         "name": "Cozy Night Archive",
+        "family": "cozy_personal",
         "keywords": [
             {"id": "test-subject-cat", "label": "cat", "role": "Subject"},
             {
@@ -56,6 +54,7 @@ TEST_VEINS = [
     },
     {
         "name": "Indie Context Tool",
+        "family": "indie_tool",
         "keywords": [
             {
                 "id": "test-subject-messy-downloads-folder",
@@ -86,6 +85,7 @@ TEST_VEINS = [
     },
     {
         "name": "Practical Travel Safety",
+        "family": "practical_twist",
         "keywords": [
             {
                 "id": "test-subject-solo-traveler",
@@ -128,8 +128,25 @@ class TaxonomyOreResponse(BaseModel):
     ores: list[TaxonomyOre]
 
 
+def _lane_distribution_lines(lane_plan: list[str]) -> str:
+    counts: dict[str, int] = {}
+    for lane in lane_plan:
+        counts[lane] = counts.get(lane, 0) + 1
+    return "\n".join(f"- {count} ores: {lane}" for lane, count in counts.items())
+
+
+def _lane_sort_order_lines(lane_plan: list[str]) -> str:
+    return "\n".join(
+        f"- sort_order {index}: ore_lane must be {lane}"
+        for index, lane in enumerate(lane_plan, start=1)
+    )
+
+
 def build_taxonomy_prompt(vein: dict) -> tuple[str, str]:
-    lane_lines = "\n".join(f"- {count} ores: {lane}" for lane, count in LANE_PLAN)
+    lane_plan = build_ore_discovery_lane_plan(vein["family"])
+    lane_lines = _lane_distribution_lines(lane_plan)
+    lane_sort_order_lines = _lane_sort_order_lines(lane_plan)
+    selected_family = FAMILY_DISPLAY_NAMES[vein["family"]]
     keyword_lines = "\n".join(
         f"- {keyword['label']} ({keyword['role']})"
         for keyword in vein["keywords"]
@@ -139,18 +156,21 @@ def build_taxonomy_prompt(vein: dict) -> tuple[str, str]:
 
 Generate Idea Ores, not finished startup plans.
 
-Use this hidden lane plan exactly:
+Selected hidden Vein family: {selected_family}
+
+Use this hidden family-weighted lane plan exactly:
 {lane_lines}
 
-Sort-order lane mapping:
-- sort_order 1-3: ore_lane must be Cozy Personal
-- sort_order 4-6: ore_lane must be Indie Tool
-- sort_order 7-9: ore_lane must be Practical Twist
-- sort_order 10: ore_lane must be Weird Bridge
+Exact sort_order lane mapping:
+{lane_sort_order_lines}
 
 Rules:
 - Generate exactly 10 Idea Ores.
 - sort_order must be 1 through 10.
+- The selected family must receive 6 family-core ores.
+- The adjacent family must receive 2 ores.
+- The opposite family must receive 1 ore.
+- Weird Bridge must receive 1 ore.
 - Each ore must actively use exactly 3 or 4 keywords from the 5 Vein keywords.
 - active_keywords must contain exact keyword labels only, copied from the visible keyword labels.
 - active_keywords must not contain roles such as Subject, Material, Tension, Shape, or Ritual / Constraint.
@@ -202,11 +222,7 @@ def _validate_result(vein: dict, ores: list[TaxonomyOre]) -> None:
         raise RuntimeError(f"{vein['name']} sort_order must be 1 through 10.")
 
     allowed_keywords = {keyword["label"] for keyword in vein["keywords"]}
-    expected_lanes = [
-        lane
-        for lane, count in LANE_PLAN
-        for _ in range(count)
-    ]
+    expected_lanes = build_ore_discovery_lane_plan(vein["family"])
     sorted_ores = sorted(ores, key=lambda item: item.sort_order)
     for ore, expected_lane in zip(sorted_ores, expected_lanes, strict=True):
         ore.ore_lane = expected_lane
@@ -245,6 +261,7 @@ def generate_samples(model: str) -> list[dict]:
         samples.append(
             {
                 "vein_name": vein["name"],
+                "family": vein["family"],
                 "keywords": vein["keywords"],
                 "ores": [ore.model_dump() for ore in ores],
             }
@@ -261,7 +278,7 @@ def render_markdown(samples: list[dict]) -> str:
         "",
         "Purpose: review whether the V3 Daily Mine taxonomy can produce varied Idea Ores before changing production keyword generation.",
         "",
-        "Hidden lane target per Vein: 3 Cozy Personal, 3 Indie Tool, 3 Practical Twist, 1 Weird Bridge.",
+        "Hidden lane target per Vein: 6 family-core, 2 adjacent-family, 1 opposite-family, 1 Weird Bridge.",
         "",
     ]
 

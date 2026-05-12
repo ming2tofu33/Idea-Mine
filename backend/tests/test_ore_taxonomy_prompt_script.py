@@ -1,10 +1,14 @@
 from scripts.test_ore_taxonomy_prompt import (
-    LANE_PLAN,
     TEST_VEINS,
     TaxonomyOre,
     _validate_result,
     build_taxonomy_prompt,
     render_markdown,
+)
+
+from app.prompts.ore_discovery import (
+    FAMILY_DISPLAY_NAMES,
+    build_ore_discovery_lane_plan,
 )
 
 
@@ -18,6 +22,11 @@ def test_test_veins_use_five_daily_mine_roles():
     }
 
     assert len(TEST_VEINS) == 3
+    assert [vein["family"] for vein in TEST_VEINS] == [
+        "cozy_personal",
+        "indie_tool",
+        "practical_twist",
+    ]
     for vein in TEST_VEINS:
         assert {keyword["role"] for keyword in vein["keywords"]} == expected_roles
 
@@ -25,9 +34,15 @@ def test_test_veins_use_five_daily_mine_roles():
 def test_prompt_requires_hidden_lanes_and_active_keyword_subsets():
     system_prompt, user_prompt = build_taxonomy_prompt(TEST_VEINS[0])
 
-    for lane, count in LANE_PLAN:
-        assert f"{count} ores: {lane}" in system_prompt
-    assert "sort_order 1-3: ore_lane must be Cozy Personal" in system_prompt
+    assert "Selected hidden Vein family: Cozy Personal" in system_prompt
+    assert "6 ores: Cozy Personal" in system_prompt
+    assert "2 ores: Indie Tool" in system_prompt
+    assert "1 ores: Practical Twist" in system_prompt
+    for index in range(1, 7):
+        assert f"sort_order {index}: ore_lane must be Cozy Personal" in system_prompt
+    assert "sort_order 7: ore_lane must be Indie Tool" in system_prompt
+    assert "sort_order 8: ore_lane must be Indie Tool" in system_prompt
+    assert "sort_order 9: ore_lane must be Practical Twist" in system_prompt
     assert "sort_order 10: ore_lane must be Weird Bridge" in system_prompt
     assert "Each ore must actively use exactly 3 or 4 keywords" in system_prompt
     assert "active_keywords must contain exact keyword labels only" in system_prompt
@@ -63,6 +78,7 @@ def test_render_markdown_groups_samples_by_vein_and_lane():
     markdown = render_markdown(sample_results)
 
     assert "# Idea Ore Taxonomy Prompt Samples" in markdown
+    assert "Hidden lane target per Vein: 6 family-core, 2 adjacent-family, 1 opposite-family, 1 Weird Bridge." in markdown
     assert "## Cozy Test" in markdown
     assert "### 1. Night Cat Cards" in markdown
     assert "**Lane:** Cozy Personal" in markdown
@@ -90,6 +106,17 @@ def test_validate_result_normalizes_lane_by_sort_order():
 
     _validate_result(TEST_VEINS[0], ores)
 
-    assert [ore.ore_lane for ore in ores] == [
-        lane for lane, count in LANE_PLAN for _ in range(count)
-    ]
+    assert [ore.ore_lane for ore in ores] == build_ore_discovery_lane_plan(
+        TEST_VEINS[0]["family"]
+    )
+
+
+def test_prompt_uses_selected_hidden_family_for_each_test_vein():
+    for vein in TEST_VEINS:
+        system_prompt, _ = build_taxonomy_prompt(vein)
+        selected_family = FAMILY_DISPLAY_NAMES[vein["family"]]
+        expected_plan = build_ore_discovery_lane_plan(vein["family"])
+
+        assert f"Selected hidden Vein family: {selected_family}" in system_prompt
+        for index, lane in enumerate(expected_plan, start=1):
+            assert f"sort_order {index}: ore_lane must be {lane}" in system_prompt

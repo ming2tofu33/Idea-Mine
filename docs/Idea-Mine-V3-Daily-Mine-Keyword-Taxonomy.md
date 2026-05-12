@@ -44,6 +44,8 @@ The first kind of Vein opens imagination. The second kind asks the model to comp
 
 ## 3. Recommended Vein Structure
 
+Daily Mine always shows three server-provided Veins. Internally those three Veins must be one `cozy_personal`, one `indie_tool`, and one `practical_twist` Vein.
+
 Each Daily Vein should contain 5 visible keywords.
 
 Those 5 keywords should have different internal roles:
@@ -70,6 +72,8 @@ Those 5 keywords should have different internal roles:
 
 These role labels are internal. Users should see only keyword labels.
 
+Keyword roles and families are hidden from users. Public keyword objects expose only `id` and `label`; `keywords.role`, `keywords.family`, and `veins.family` are internal schema metadata used for generation and validation.
+
 ## 4. Ore Keyword Usage
 
 A Vein can contain 5 keywords, but each Idea Ore should actively use only 3 to 4 of them.
@@ -92,22 +96,38 @@ Rules:
 
 ## 5. Hidden Ore Lanes
 
-The 10 Idea Ores from one Vein should be distributed across hidden lanes:
+The 10 Idea Ores from one selected Vein should be distributed across hidden family-weighted lanes:
 
-1. Cozy Personal Lane: 3 ores
-   - Emotional, cute, intimate, personal apps.
-   - Examples: companion, ritual, archive, card, diary.
+1. Family-core lane: 6 ores
+   - Uses the selected Vein's hidden family.
+   - For a `cozy_personal` Vein, these are Cozy Personal ores.
+   - For an `indie_tool` Vein, these are Indie Tool ores.
+   - For a `practical_twist` Vein, these are Practical Twist ores.
 
-2. Indie Tool Lane: 3 ores
-   - Weird but buildable tools for indie builders.
-   - Examples: tiny utility, browser tool, desktop widget, personal system.
+2. Adjacent-family lane: 2 ores
+   - Uses the selected family's adjacent lane.
+   - Keeps the set varied without abandoning the Vein's center of gravity.
 
-3. Practical Twist Lane: 3 ores
-   - Real-world problems solved with a slight twist.
-   - Examples: safety, memory, routine, travel, decision, trust.
+3. Opposite-family lane: 1 ore
+   - Uses the selected family's opposite lane.
+   - Adds one controlled contrast idea.
 
 4. Weird Bridge Lane: 1 ore
    - The oddest but still buildable bridge between the keywords.
+
+The three named family lanes mean:
+
+1. Cozy Personal Lane
+   - Emotional, cute, intimate, personal apps.
+   - Examples: companion, ritual, archive, card, diary.
+
+2. Indie Tool Lane
+   - Weird but buildable tools for indie builders.
+   - Examples: tiny utility, browser tool, desktop widget, personal system.
+
+3. Practical Twist Lane
+   - Real-world problems solved with a slight twist.
+   - Examples: safety, memory, routine, travel, decision, trust.
 
 These lanes are generation controls, not UI labels.
 
@@ -119,18 +139,18 @@ Visible Vein:
 
 `cat + dream + loneliness + card archive + tiny ritual`
 
-Possible 10-Ore distribution:
+Possible 10-Ore distribution for a `cozy_personal` Vein:
 
 | Lane | Active Keywords | Possible Ore Direction |
 | --- | --- | --- |
 | Cozy Personal | `cat + dream + card archive` | A soft dream-card collection guided by a cat character. |
 | Cozy Personal | `cat + loneliness + tiny ritual` | A small daily ritual where a cat companion checks in with the user. |
 | Cozy Personal | `dream + loneliness + card archive` | A private archive for lonely dreams and recurring symbols. |
+| Cozy Personal | `dream + loneliness + tiny ritual` | A bedtime reflection ritual that turns anxious dreams into gentle cards. |
+| Cozy Personal | `cat + loneliness + card archive` | A cute but private loneliness pattern log. |
+| Cozy Personal | `cat + dream + tiny ritual` | A nightly cat-guided prompt that saves one dream symbol. |
 | Indie Tool | `dream + card archive + tiny ritual` | A one-click dream tagging widget. |
 | Indie Tool | `cat + card archive + tiny ritual` | A desktop tool that sorts notes through a cat-card metaphor. |
-| Indie Tool | `loneliness + tiny ritual + card archive` | A personal emotional check-in system stored as cards. |
-| Practical Twist | `dream + loneliness + tiny ritual` | A bedtime reflection app that reduces pre-sleep anxiety. |
-| Practical Twist | `cat + loneliness + card archive` | A cute but practical loneliness pattern log. |
 | Practical Twist | `dream + card archive + tiny ritual` | A recurring dream pattern tracker. |
 | Weird Bridge | `cat + dream + loneliness + tiny ritual` | A dream cat that turns the user's mood into a tiny nightly ritual. |
 
@@ -171,7 +191,7 @@ to:
 
 This is now a core V3 direction:
 
-`5 visible Vein keywords -> 10 Idea Ores -> 3 Cozy + 3 Indie Tool + 3 Practical Twist + 1 Weird Bridge`
+`3 server-provided Veins -> select one hidden-family Vein -> 10 Idea Ores -> 6 family-core + 2 adjacent-family + 1 opposite-family + 1 Weird Bridge`
 
 ## 9. Candidate Keyword Pool v1
 
