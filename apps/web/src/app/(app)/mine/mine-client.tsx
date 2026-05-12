@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Pickaxe, RefreshCw, Save } from "lucide-react";
+import { Check, ChevronDown, Pickaxe, RefreshCw, Save } from "lucide-react";
 import { MineBackground } from "@/components/backgrounds/mine-background";
 import { PageHeader } from "@/components/shared/page-header";
 import { oreApi, setMockMode } from "@/lib/api";
@@ -65,6 +65,8 @@ function OreCard({
   isSaving: boolean;
   onVault: (oreId: string) => void;
 }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
     <article className="rounded-xl border border-line-steel/25 bg-surface-1/45 p-5 shadow-[inset_0px_1px_rgba(255,255,255,0.05),_0px_10px_24px_rgba(0,0,0,0.24)] backdrop-blur-xl">
       <div className="flex items-start justify-between gap-4">
@@ -79,18 +81,7 @@ function OreCard({
         </span>
       </div>
 
-      <p className="mt-4 text-sm leading-relaxed text-text-secondary/85">
-        {ore.short_summary}
-      </p>
-
-      <dl className="mt-5 grid gap-4 sm:grid-cols-2">
-        <FieldBlock label="Interesting point" value={ore.interesting_point} />
-        <FieldBlock label="Project fit" value={ore.project_fit} />
-        <FieldBlock label="Risk" value={ore.risk} />
-        <FieldBlock label="MVP hint" value={ore.mvp_hint} />
-      </dl>
-
-      <div className="mt-5 flex flex-wrap gap-1.5">
+      <div className="mt-4 flex flex-wrap gap-1.5">
         {ore.selected_keywords.map((keyword) => (
           <span
             key={keyword.id}
@@ -101,7 +92,22 @@ function OreCard({
         ))}
       </div>
 
-      <div className="mt-5 flex justify-end">
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <button
+          type="button"
+          aria-expanded={isExpanded}
+          onClick={() => setIsExpanded((current) => !current)}
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-line-steel/30 bg-bg-base/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary transition-all duration-200 hover:border-cold-cyan/30 hover:text-text-primary"
+        >
+          Details
+          <ChevronDown
+            className={[
+              "h-4 w-4 transition-transform duration-200",
+              isExpanded ? "rotate-180" : "",
+            ].join(" ")}
+          />
+        </button>
+
         <button
           type="button"
           disabled={ore.is_vaulted || isSaving}
@@ -127,6 +133,21 @@ function OreCard({
           )}
         </button>
       </div>
+
+      {isExpanded && (
+        <div className="mt-5 border-t border-line-steel/20 pt-5">
+          <p className="text-sm leading-relaxed text-text-secondary/85">
+            {ore.short_summary}
+          </p>
+
+          <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+            <FieldBlock label="Interesting point" value={ore.interesting_point} />
+            <FieldBlock label="Project fit" value={ore.project_fit} />
+            <FieldBlock label="Risk" value={ore.risk} />
+            <FieldBlock label="MVP hint" value={ore.mvp_hint} />
+          </dl>
+        </div>
+      )}
     </article>
   );
 }
