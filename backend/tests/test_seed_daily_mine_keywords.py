@@ -8,6 +8,8 @@ def test_build_keyword_rows_marks_daily_mine_v3_keywords():
     assert rows[0]["keyword_set"] == DAILY_MINE_KEYWORD_SET
     assert rows[0]["is_active"] is True
     assert rows[0]["category"] == "daily_mine"
+    assert rows[0]["slug"] == "daily-mine-v3-cat"
+    assert rows[0]["label"] == "cat"
     assert rows[0]["role"] == "Subject"
     assert rows[0]["family"] == DAILY_MINE_KEYWORDS[0]["family"]
     assert rows[0]["subtype"] == "subject"

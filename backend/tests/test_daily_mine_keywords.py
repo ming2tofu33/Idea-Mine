@@ -1,3 +1,5 @@
+import re
+
 from app.services.daily_mine_keywords import (
     DAILY_MINE_FAMILIES,
     DAILY_MINE_KEYWORDS,
@@ -33,6 +35,13 @@ def test_daily_mine_keywords_are_visible_labels_plus_internal_role_and_family():
         assert keyword["label"]
         assert keyword["role"] in DAILY_MINE_ROLES
         assert keyword["family"] in DAILY_MINE_FAMILIES
+
+
+def test_daily_mine_keyword_slugs_are_namespaced_lowercase_kebab_case():
+    slug_pattern = re.compile(r"^daily-mine-v3-[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+    for keyword in DAILY_MINE_KEYWORDS:
+        assert slug_pattern.fullmatch(keyword["slug"])
 
 
 def test_daily_mine_keywords_exclude_old_business_model_terms():
