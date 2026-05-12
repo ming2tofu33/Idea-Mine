@@ -32,6 +32,7 @@ def build_keyword_rows(keywords: list[dict]) -> list[dict]:
             "subtype": _subtype_for_role(keyword["role"]),
             "label": keyword["label"],
             "role": keyword["role"],
+            "family": keyword["family"],
             "keyword_set": DAILY_MINE_KEYWORD_SET,
             "aliases": [],
             "weight": 1.0,
@@ -43,6 +44,18 @@ def build_keyword_rows(keywords: list[dict]) -> list[dict]:
     ]
 
 
+def find_stale_daily_mine_slugs(
+    existing_rows: list[dict],
+    source_keywords: list[dict],
+) -> list[str]:
+    source_slugs = {keyword["slug"] for keyword in source_keywords}
+    return sorted(
+        row["slug"]
+        for row in existing_rows
+        if row.get("slug") not in source_slugs
+    )
+
+
 def main() -> None:
     validate_daily_mine_keyword_source()
     if not settings.supabase_url or not settings.supabase_service_key:
@@ -50,6 +63,20 @@ def main() -> None:
 
     rows = build_keyword_rows(DAILY_MINE_KEYWORDS)
     supabase = create_client(settings.supabase_url, settings.supabase_service_key)
+    existing = (
+        supabase.table("keywords")
+        .select("slug")
+        .eq("keyword_set", DAILY_MINE_KEYWORD_SET)
+        .execute()
+    ).data
+    for slug in find_stale_daily_mine_slugs(existing, DAILY_MINE_KEYWORDS):
+        (
+            supabase.table("keywords")
+            .update({"is_active": False})
+            .eq("slug", slug)
+            .eq("keyword_set", DAILY_MINE_KEYWORD_SET)
+            .execute()
+        )
     supabase.table("keywords").upsert(rows, on_conflict="slug").execute()
     print(f"Seeded {len(rows)} Daily Mine V3 keywords.")
 
