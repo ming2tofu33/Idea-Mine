@@ -139,21 +139,41 @@ async def get_or_create_today_veins(
         ):
             return existing.data
 
+    replacement_vein_specs = None
+    old_daily_mine_vein_ids = []
     if keyword_set == DAILY_MINE_KEYWORD_SET and existing.data:
+        replacement_vein_specs = _build_daily_mine_vein_specs(supabase)
+        old_daily_mine_vein_ids = [
+            vein["id"] for vein in existing.data
+            if vein.get("id")
+        ]
         supabase.table("veins").update(
             {"is_active": False}
         ).eq("user_id", user_id).eq("date", today).eq(
             "keyword_set", keyword_set
         ).eq("is_active", True).execute()
 
-    return await _create_veins(
-        supabase,
-        user_id,
-        tier,
-        today,
-        role=role,
-        mode=mode,
-    )
+    try:
+        return await _create_veins(
+            supabase,
+            user_id,
+            tier,
+            today,
+            role=role,
+            mode=mode,
+            vein_specs=replacement_vein_specs,
+        )
+    except Exception:
+        if old_daily_mine_vein_ids:
+            try:
+                supabase.table("veins").update(
+                    {"is_active": True}
+                ).eq("user_id", user_id).eq("date", today).eq(
+                    "keyword_set", keyword_set
+                ).in_("id", old_daily_mine_vein_ids).execute()
+            except Exception:
+                pass
+        raise
 
 
 async def reroll_veins(
@@ -189,13 +209,14 @@ async def _create_veins(
     today: str,
     role: str = "user",
     mode: str = LEGACY_KEYWORD_SET,
+    vein_specs: list[dict] | None = None,
 ) -> list[dict]:
     keyword_set = _keyword_set_for_mode(mode)
     is_season = await _check_is_season(supabase, today, role=role)
 
-    if keyword_set == DAILY_MINE_KEYWORD_SET:
+    if vein_specs is None and keyword_set == DAILY_MINE_KEYWORD_SET:
         vein_specs = _build_daily_mine_vein_specs(supabase)
-    else:
+    elif vein_specs is None:
         vein_specs = [
             {"slot_index": index, "family": None, "keyword_ids": keyword_ids}
             for index, keyword_ids in enumerate(
@@ -204,28 +225,21 @@ async def _create_veins(
             )
         ]
 
-    veins = []
-    for spec in vein_specs:
-        vein = (
-            supabase.table("veins")
-            .insert(
-                {
-                    "user_id": user_id,
-                    "date": today,
-                    "slot_index": spec["slot_index"],
-                    "family": spec["family"],
-                    "keyword_ids": spec["keyword_ids"],
-                    "keyword_set": keyword_set,
-                    "rarity": pick_rarity(is_season=is_season),
-                    "is_active": True,
-                }
-            )
-            .execute()
-            .data[0]
-        )
-        veins.append(vein)
+    rows = [
+        {
+            "user_id": user_id,
+            "date": today,
+            "slot_index": spec["slot_index"],
+            "family": spec["family"],
+            "keyword_ids": spec["keyword_ids"],
+            "keyword_set": keyword_set,
+            "rarity": pick_rarity(is_season=is_season),
+            "is_active": True,
+        }
+        for spec in vein_specs
+    ]
 
-    return veins
+    return supabase.table("veins").insert(rows).execute().data
 
 
 async def _check_is_season(supabase: Client, today: str, role: str) -> bool:
