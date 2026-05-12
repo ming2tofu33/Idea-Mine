@@ -2,6 +2,8 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+> **Superseded lane-plan note:** This is a historical implementation plan. Its equal-lane 3 Cozy Personal / 3 Indie Tool / 3 Practical Twist / 1 Weird Bridge target is superseded. Current direction: each day has one `cozy_personal`, one `indie_tool`, and one `practical_twist` Vein; the selected Vein produces 10 Ores with `6 family-core + 2 adjacent-family + 1 opposite-family + 1 weird bridge`.
+
 **Goal:** Move V3 Daily Mine from old startup-style keyword generation to the new taxonomy-driven Idea Ore flow.
 
 **Architecture:** Keep the existing FastAPI/Supabase/Next.js Ore flow, but replace the Daily Vein keyword source and Ore discovery prompt contract. The backend remains the source of truth for Vein generation, hidden keyword roles, hidden Ore lanes, active keyword subsets, validation, and persistence.
@@ -23,6 +25,8 @@ The V3 Daily Mine direction is now:
 `Subject + Material + Tension + Shape + Ritual / Constraint`
 
 One Daily Vein contains 5 visible keyword labels, one from each role. One mined Vein produces exactly 10 Idea Ores:
+
+> **Superseded:** The following equal-lane target is historical. Current direction uses the selected Vein's hidden family: `6 family-core + 2 adjacent-family + 1 opposite-family + 1 weird bridge`.
 
 - 3 Cozy Personal
 - 3 Indie Tool
@@ -497,6 +501,7 @@ active_keywords: list[str]
 Test prompt content:
 
 - Includes lane distribution:
+  - **Superseded mapping:** this old fixed 3/3/3/1 sort-order mapping has been replaced by the family-weighted plan. Current direction: selected hidden family gets sort_order 1-6, adjacent family gets 7-8, opposite family gets 9, and Weird Bridge gets 10.
   - `sort_order 1-3: ore_lane must be Cozy Personal`
   - `sort_order 4-6: ore_lane must be Indie Tool`
   - `sort_order 7-9: ore_lane must be Practical Twist`

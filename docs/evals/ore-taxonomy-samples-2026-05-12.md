@@ -4,7 +4,7 @@ Generated: 2026-05-12
 
 Purpose: review whether the V3 Daily Mine taxonomy can produce varied Idea Ores before changing production keyword generation.
 
-Hidden lane target per Vein: 3 Cozy Personal, 3 Indie Tool, 3 Practical Twist, 1 Weird Bridge.
+Superseded note: this sample was generated from an older equal-lane experiment. The old target was 3 Cozy Personal, 3 Indie Tool, 3 Practical Twist, and 1 Weird Bridge. Current direction supersedes it: each day has one `cozy_personal`, one `indie_tool`, and one `practical_twist` Vein; the selected Vein produces 10 Ores with `6 family-core + 2 adjacent-family + 1 opposite-family + 1 weird bridge`.
 
 ## Cozy Night Archive
 
