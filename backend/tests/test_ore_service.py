@@ -10,18 +10,21 @@ from app.services.ore_service import (
     build_idea_ore_rows,
     build_project_seed_brief_row,
     discover_ores,
+    format_idea_ore_public,
     format_ore_veins,
     normalize_discovered_ores,
     OreProviderError,
     validate_discovered_ores,
 )
-from app.prompts.ore_discovery import ORE_DISCOVERY_LENSES
+from app.prompts.ore_discovery import ORE_DISCOVERY_LANE_BY_SORT_ORDER, ORE_DISCOVERY_LENSES
 
 
 KEYWORDS = [
-    {"id": "kw-cat", "label": "Cat", "category": "domain"},
-    {"id": "kw-dream", "label": "Dream", "category": "mood"},
-    {"id": "kw-guide", "label": "AI guide", "category": "ai"},
+    {"id": "kw-cat", "label": "cat", "category": "daily_mine", "role": "Subject"},
+    {"id": "kw-dream", "label": "dream fragment", "category": "daily_mine", "role": "Material"},
+    {"id": "kw-lonely", "label": "loneliness", "category": "daily_mine", "role": "Tension"},
+    {"id": "kw-card", "label": "card archive", "category": "daily_mine", "role": "Shape"},
+    {"id": "kw-night", "label": "only at night", "category": "daily_mine", "role": "Ritual / Constraint"},
 ]
 
 
@@ -35,8 +38,10 @@ ORES = [
         "risk": "It could drift into generic horoscope language.",
         "mvp_hint": "Build dream input -> interpretation card -> archive.",
         "sort_order": 1,
+        "ore_lane": "Cozy Personal",
+        "active_keywords": ["cat", "dream fragment", "card archive"],
         "generation_lens": "Direct Core",
-        "primary_anchor_keyword": "Cat",
+        "primary_anchor_keyword": "cat",
         "product_form": "card archive",
         "core_loop_signature": "dream_input_to_card_archive",
         "novelty_axis": "cat_symbol_interpreter",
@@ -77,9 +82,15 @@ def test_build_idea_ore_rows_persists_generated_ores_as_unvaulted_rows():
             "risk": "It could drift into generic horoscope language.",
             "mvp_hint": "Build dream input -> interpretation card -> archive.",
             "selected_keywords": KEYWORDS,
+            "active_keywords": [
+                {"id": "kw-cat", "label": "cat"},
+                {"id": "kw-dream", "label": "dream fragment"},
+                {"id": "kw-card", "label": "card archive"},
+            ],
             "generation_meta": {
+                "ore_lane": "Cozy Personal",
                 "generation_lens": "Direct Core",
-                "primary_anchor_keyword": "Cat",
+                "primary_anchor_keyword": "cat",
                 "product_form": "card archive",
                 "core_loop_signature": "dream_input_to_card_archive",
                 "novelty_axis": "cat_symbol_interpreter",
@@ -117,6 +128,8 @@ def _ore(index: int, **overrides):
         **ORES[0],
         "title": f"Ore {index}",
         "sort_order": index,
+        "ore_lane": ORE_DISCOVERY_LANE_BY_SORT_ORDER[(index - 1) % 10],
+        "active_keywords": ["cat", "dream fragment", "loneliness"],
         "generation_lens": ORE_DISCOVERY_LENSES[(index - 1) % len(ORE_DISCOVERY_LENSES)],
         "primary_anchor_keyword": KEYWORDS[(index - 1) % len(KEYWORDS)]["label"],
         "product_form": f"form-{(index - 1) % 5}",
@@ -146,11 +159,15 @@ def test_validate_discovered_ores_accepts_ten_diverse_ores():
 
 
 def test_validate_discovered_ores_normalizes_generation_lens_by_sort_order():
-    ores = [_ore(index, generation_lens="Wrong Lens") for index in range(1, 11)]
+    ores = [
+        _ore(index, generation_lens="Wrong Lens", ore_lane="Wrong Lane")
+        for index in range(1, 11)
+    ]
 
     normalized = validate_discovered_ores(ores)
 
     assert [ore["generation_lens"] for ore in normalized] == ORE_DISCOVERY_LENSES
+    assert [ore["ore_lane"] for ore in normalized] == ORE_DISCOVERY_LANE_BY_SORT_ORDER
 
 
 def test_validate_discovered_ores_rejects_duplicate_titles():
@@ -174,6 +191,86 @@ def test_validate_discovered_ores_rejects_overused_product_forms():
 
     with pytest.raises(RuntimeError, match="product_form"):
         validate_discovered_ores(ores)
+
+
+def test_validate_discovered_ores_rejects_unknown_active_keywords():
+    ores = [_ore(index) for index in range(1, 11)]
+    ores[0]["active_keywords"] = ["cat", "dream fragment", "not in vein"]
+
+    with pytest.raises(RuntimeError, match="active_keywords"):
+        validate_discovered_ores(ores, keywords=KEYWORDS)
+
+
+def test_validate_discovered_ores_adds_public_mentions_missing_from_active_keywords():
+    ores = [_ore(index) for index in range(1, 11)]
+    ores[0]["active_keywords"] = ["cat", "dream fragment", "card archive"]
+    ores[0]["interesting_point"] = "This turns loneliness into a small ritual."
+
+    normalized = validate_discovered_ores(ores, keywords=KEYWORDS)
+
+    assert normalized[0]["active_keywords"] == [
+        "cat",
+        "dream fragment",
+        "card archive",
+        "loneliness",
+    ]
+
+
+def test_validate_discovered_ores_rejects_too_many_public_keyword_mentions():
+    ores = [_ore(index) for index in range(1, 11)]
+    ores[0]["active_keywords"] = ["cat", "dream fragment", "loneliness", "card archive"]
+    ores[0]["interesting_point"] = (
+        "Use cat, dream fragment, loneliness, card archive, and only at night together."
+    )
+
+    with pytest.raises(RuntimeError, match="mentioned in public text"):
+        validate_discovered_ores(ores, keywords=KEYWORDS)
+
+
+def test_validate_discovered_ores_replaces_unmentioned_active_keyword():
+    ores = [_ore(index) for index in range(1, 11)]
+    ores[0]["active_keywords"] = ["cat", "dream fragment", "loneliness", "card archive"]
+    ores[0]["interesting_point"] = "This works best only at night."
+
+    normalized = validate_discovered_ores(ores, keywords=KEYWORDS)
+
+    assert normalized[0]["active_keywords"] == [
+        "cat",
+        "loneliness",
+        "card archive",
+        "only at night",
+    ]
+
+
+def test_validate_discovered_ores_rejects_hardware_first_outputs():
+    ores = [_ore(index) for index in range(1, 11)]
+    ores[0]["mvp_hint"] = "Prototype with an NFC tag and a microcontroller."
+
+    with pytest.raises(RuntimeError, match="software-first"):
+        validate_discovered_ores(ores, keywords=KEYWORDS)
+
+
+def test_format_idea_ore_public_uses_active_keywords_when_present():
+    ore = {
+        **_ore(1),
+        "id": "ore-1",
+        "selected_keywords": KEYWORDS,
+        "active_keywords": [
+            {"id": "kw-cat", "label": "cat"},
+            {"id": "kw-dream", "label": "dream fragment"},
+            {"id": "kw-lonely", "label": "loneliness"},
+        ],
+    }
+
+    result = format_idea_ore_public(ore)
+
+    assert result["selected_keywords"] == [
+        {"id": "kw-cat", "label": "cat"},
+        {"id": "kw-dream", "label": "dream fragment"},
+        {"id": "kw-lonely", "label": "loneliness"},
+    ]
+    assert "active_keywords" not in result
+    assert "generation_meta" not in result
 
 
 class _FakeParsedOre:
@@ -300,7 +397,7 @@ def test_discover_ores_retries_once_after_diversity_validation_failure(monkeypat
 
 
 def test_ore_discovery_defaults_to_fast_daily_mine_generation_settings():
-    assert Settings.model_fields["ore_discovery_model"].default == "gpt-5-nano"
+    assert Settings.model_fields["ore_discovery_model"].default == "gpt-5-mini"
     assert Settings.model_fields["ore_discovery_reasoning_effort"].default == "minimal"
 
 
@@ -365,13 +462,18 @@ def test_discover_ores_wraps_openai_provider_errors(monkeypatch):
 def test_discover_ores_returns_existing_ores_without_calling_openai(monkeypatch):
     existing = [
         {
+            **_ore(index),
             "id": f"ore-{index}",
             "user_id": "user-1",
             "vein_id": "vein-1",
             "selected_keywords": KEYWORDS,
+            "active_keywords": [
+                {"id": "kw-cat", "label": "cat"},
+                {"id": "kw-dream", "label": "dream fragment"},
+                {"id": "kw-lonely", "label": "loneliness"},
+            ],
             "generation_meta": {},
             "is_vaulted": False,
-            **_ore(index),
         }
         for index in range(1, 11)
     ]
@@ -402,9 +504,11 @@ def test_discover_ores_returns_existing_ores_without_calling_openai(monkeypatch)
     assert completions.calls == 0
     assert [ore["id"] for ore in result["ores"]] == [f"ore-{index}" for index in range(1, 11)]
     assert result["vein"]["keywords"] == [
-        {"id": "kw-cat", "label": "Cat"},
-        {"id": "kw-dream", "label": "Dream"},
-        {"id": "kw-guide", "label": "AI guide"},
+        {"id": "kw-cat", "label": "cat"},
+        {"id": "kw-dream", "label": "dream fragment"},
+        {"id": "kw-lonely", "label": "loneliness"},
+        {"id": "kw-card", "label": "card archive"},
+        {"id": "kw-night", "label": "only at night"},
     ]
 
 
@@ -431,16 +535,18 @@ def test_format_ore_veins_hides_keyword_categories_and_marks_mined():
             "id": "vein-1",
             "slot_index": 1,
             "keywords": [
-                {"id": "kw-cat", "label": "Cat"},
-                {"id": "kw-dream", "label": "Dream"},
-                {"id": "kw-guide", "label": "AI guide"},
+                {"id": "kw-cat", "label": "cat"},
+                {"id": "kw-dream", "label": "dream fragment"},
+                {"id": "kw-lonely", "label": "loneliness"},
+                {"id": "kw-card", "label": "card archive"},
+                {"id": "kw-night", "label": "only at night"},
             ],
             "is_mined": True,
         },
         {
             "id": "vein-2",
             "slot_index": 2,
-            "keywords": [{"id": "kw-cat", "label": "Cat"}],
+            "keywords": [{"id": "kw-cat", "label": "cat"}],
             "is_mined": True,
         },
     ]

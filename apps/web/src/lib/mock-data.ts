@@ -355,12 +355,18 @@ export const mockMiningApi = {
 };
 
 function makeOreDailyVeins(): OreDailyVein[] {
-  return makeVeins().map((vein) => ({
-    id: vein.id,
-    slot_index: vein.slot_index,
-    keywords: vein.keywords.map((keyword) => ({
-      id: keyword.id,
-      label: keyword.label,
+  const veins = [
+    ["cat", "dream fragment", "loneliness", "card archive", "only at night"],
+    ["messy downloads folder", "screenshot", "lost context", "tiny widget", "two-minute sort"],
+    ["solo traveler", "map pin", "safety anxiety", "map diary", "offline-first"],
+  ];
+
+  return veins.map((labels, index) => ({
+    id: `ore-vein-${index + 1}-${randomId()}`,
+    slot_index: index + 1,
+    keywords: labels.map((label, keywordIndex) => ({
+      id: `ore-v${index + 1}-kw${keywordIndex + 1}`,
+      label,
     })),
     is_mined: false,
   }));
@@ -369,6 +375,18 @@ function makeOreDailyVeins(): OreDailyVein[] {
 function makeMockOres(veinId: string, keywords: OreKeyword[]): IdeaOre[] {
   const keywordLabels = keywords.map((keyword) => keyword.label).join(", ");
   const now = randomId();
+  const activeKeywordSlots = [
+    [0, 1, 3],
+    [0, 2, 4],
+    [1, 2, 3],
+    [1, 3, 4],
+    [0, 3, 4],
+    [2, 3, 4],
+    [0, 1, 2],
+    [0, 2, 3],
+    [1, 2, 4],
+    [0, 1, 2, 4],
+  ];
   const templates = [
     {
       title: "Cat Dream Archive",
@@ -505,7 +523,9 @@ function makeMockOres(veinId: string, keywords: OreKeyword[]): IdeaOre[] {
   return templates.map((template, index) => ({
     id: `ore-${veinId}-${now}-${index + 1}`,
     ...template,
-    selected_keywords: keywords,
+    selected_keywords: activeKeywordSlots[index]
+      .map((keywordIndex) => keywords[keywordIndex])
+      .filter(Boolean),
     sort_order: index + 1,
     is_vaulted: false,
   }));

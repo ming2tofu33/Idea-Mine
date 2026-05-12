@@ -24,6 +24,7 @@ class MiningResponse(BaseModel):
 
 class OreDiscoveryIdea(BaseModel):
     sort_order: int
+    ore_lane: str
     title: str
     one_liner: str
     short_summary: str
@@ -31,6 +32,7 @@ class OreDiscoveryIdea(BaseModel):
     project_fit: str
     risk: str
     mvp_hint: str
+    active_keywords: list[str]
     generation_lens: str
     primary_anchor_keyword: str
     product_form: str

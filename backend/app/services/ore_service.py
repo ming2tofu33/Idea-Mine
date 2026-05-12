@@ -1,3 +1,4 @@
+import re
 import time
 import uuid
 from collections import Counter
@@ -8,9 +9,14 @@ from supabase import Client
 
 from app.config import settings
 from app.models.llm_schemas import OreDiscoveryResponse, ProjectSeedBriefResponse
-from app.prompts.ore_discovery import ORE_DISCOVERY_LENSES, build_ore_discovery_prompt
+from app.prompts.ore_discovery import (
+    ORE_DISCOVERY_LANE_BY_SORT_ORDER,
+    ORE_DISCOVERY_LENSES,
+    build_ore_discovery_prompt,
+)
 from app.prompts.ore_projectize import build_ore_projectize_prompt
 from app.services import vein_service
+from app.services.daily_mine_keywords import DAILY_MINE_KEYWORD_SET
 
 _openai: OpenAI | None = None
 
@@ -35,6 +41,21 @@ TEXT_LENGTH_LIMITS = {
     "mvp_hint": 260,
 }
 
+BANNED_NON_SOFTWARE_TERMS = (
+    "hardware",
+    "firmware",
+    "microcontroller",
+    "nfc",
+    "ble",
+    "servo",
+    "3d-print",
+    "3d print",
+    "physical token",
+    "waterproof card",
+    "porch-sensor",
+    "sensor",
+)
+
 PUBLIC_ORE_FIELDS = (
     "title",
     "one_liner",
@@ -47,6 +68,7 @@ PUBLIC_ORE_FIELDS = (
 
 META_FIELDS = (
     "generation_lens",
+    "ore_lane",
     "primary_anchor_keyword",
     "product_form",
     "core_loop_signature",
@@ -85,14 +107,19 @@ def _calculate_cost(model: str, input_tokens: int, output_tokens: int) -> float:
 
 
 def _normalize_keywords(keywords: list[dict]) -> list[dict]:
-    return [
-        {
+    normalized = []
+    for keyword in keywords:
+        item = {
             "id": keyword["id"],
             "label": keyword["label"],
             "category": keyword.get("category", ""),
         }
-        for keyword in keywords
-    ]
+        if keyword.get("role"):
+            item["role"] = keyword["role"]
+        if keyword.get("keyword_set"):
+            item["keyword_set"] = keyword["keyword_set"]
+        normalized.append(item)
+    return normalized
 
 
 def _visible_keywords(keywords: list[dict]) -> list[dict]:
@@ -107,6 +134,44 @@ def _visible_keywords(keywords: list[dict]) -> list[dict]:
 
 def _generation_meta(ore: dict) -> dict:
     return {field: ore[field] for field in META_FIELDS}
+
+
+def _keyword_lookup_by_label(keywords: list[dict]) -> dict[str, dict]:
+    return {
+        str(keyword["label"]).strip().lower(): keyword
+        for keyword in keywords
+    }
+
+
+def _active_keyword_objects(ore: dict, keywords: list[dict]) -> list[dict]:
+    lookup = _keyword_lookup_by_label(keywords)
+    active_keywords = []
+    for label in ore.get("active_keywords") or []:
+        keyword = lookup[str(label).strip().lower()]
+        active_keywords.append({"id": keyword["id"], "label": keyword["label"]})
+    return active_keywords
+
+
+def _public_text_mentions_label(public_text: str, label: str) -> bool:
+    pattern = rf"(?<![\w-]){re.escape(label.lower())}(?![\w-])"
+    return bool(re.search(pattern, public_text))
+
+
+def format_idea_ore_public(ore: dict) -> dict:
+    public_ore = dict(ore)
+    active_keywords = public_ore.get("active_keywords") or []
+    if active_keywords and isinstance(active_keywords[0], dict):
+        keyword_source = active_keywords
+    else:
+        keyword_source = public_ore.get("selected_keywords", [])
+    public_ore["selected_keywords"] = _visible_keywords(keyword_source)
+    public_ore.pop("active_keywords", None)
+    public_ore.pop("generation_meta", None)
+    return public_ore
+
+
+def format_idea_ores_public(ores: list[dict]) -> list[dict]:
+    return [format_idea_ore_public(ore) for ore in ores]
 
 
 def build_idea_ore_rows(
@@ -131,6 +196,7 @@ def build_idea_ore_rows(
                 "risk": ore["risk"],
                 "mvp_hint": ore["mvp_hint"],
                 "selected_keywords": selected_keywords,
+                "active_keywords": _active_keyword_objects(ore, keywords),
                 "generation_meta": _generation_meta(ore),
                 "sort_order": ore.get("sort_order", index),
                 "is_vaulted": False,
@@ -144,7 +210,10 @@ def normalize_discovered_ores(ores: list[dict]) -> list[dict]:
     return validate_discovered_ores(ores)
 
 
-def validate_discovered_ores(ores: list[dict]) -> list[dict]:
+def validate_discovered_ores(
+    ores: list[dict],
+    keywords: list[dict] | None = None,
+) -> list[dict]:
     if len(ores) != 10:
         raise RuntimeError("Ore discovery must return exactly 10 Idea Ores.")
 
@@ -156,15 +225,100 @@ def validate_discovered_ores(ores: list[dict]) -> list[dict]:
     seen_titles: set[str] = set()
     seen_core_loops: set[str] = set()
     product_forms: Counter[str] = Counter()
+    keyword_lookup = _keyword_lookup_by_label(keywords or [])
 
     for index, ore in enumerate(normalized, start=1):
         expected_lens = ORE_DISCOVERY_LENSES[index - 1]
+        expected_lane = ORE_DISCOVERY_LANE_BY_SORT_ORDER[index - 1]
         ore["generation_lens"] = expected_lens
+        ore["ore_lane"] = expected_lane
 
         for field in (*PUBLIC_ORE_FIELDS, *META_FIELDS):
             value = str(ore.get(field, "")).strip()
             if not value:
                 raise RuntimeError(f"Idea Ore {index} field {field} is required.")
+
+        active_keywords = ore.get("active_keywords")
+        if not isinstance(active_keywords, list) or len(active_keywords) not in (3, 4):
+            raise RuntimeError(
+                f"Idea Ore {index} active_keywords must contain exactly 3 or 4 labels."
+            )
+
+        normalized_active_keywords = []
+        seen_active_labels: set[str] = set()
+        for label in active_keywords:
+            label_value = str(label).strip()
+            label_key = label_value.lower()
+            if not label_value:
+                raise RuntimeError(f"Idea Ore {index} active_keywords cannot be empty.")
+            if label_key in seen_active_labels:
+                raise RuntimeError(f"Idea Ore {index} active_keywords contains duplicates.")
+            if keyword_lookup and label_key not in keyword_lookup:
+                raise RuntimeError(
+                    f"Idea Ore {index} active_keywords contains a label outside the Vein: "
+                    f"{label_value}"
+                )
+            seen_active_labels.add(label_key)
+            normalized_active_keywords.append(
+                keyword_lookup[label_key]["label"] if keyword_lookup else label_value
+            )
+        ore["active_keywords"] = normalized_active_keywords
+        active_label_keys = {
+            label.strip().lower()
+            for label in normalized_active_keywords
+        }
+        public_text = " ".join(
+            str(ore.get(field, ""))
+            for field in PUBLIC_ORE_FIELDS
+        ).lower()
+        product_form_text = str(ore.get("product_form", "")).lower()
+        non_software_terms = [
+            term for term in BANNED_NON_SOFTWARE_TERMS
+            if _public_text_mentions_label(public_text, term)
+            or _public_text_mentions_label(product_form_text, term)
+        ]
+        if non_software_terms:
+            raise RuntimeError(
+                f"Idea Ore {index} must stay software-first; avoid hardware-first terms: "
+                + ", ".join(non_software_terms)
+            )
+
+        mentioned_but_inactive = [
+            keyword["label"]
+            for label_key, keyword in keyword_lookup.items()
+            if label_key not in active_label_keys
+            and _public_text_mentions_label(public_text, label_key)
+        ]
+        mentioned_label_keys = {
+            label_key for label_key in keyword_lookup
+            if _public_text_mentions_label(public_text, label_key)
+        }
+        if mentioned_but_inactive and len(normalized_active_keywords) + len(mentioned_but_inactive) > 4:
+            replaceable_keywords = [
+                label for label in normalized_active_keywords
+                if label.strip().lower() not in mentioned_label_keys
+            ]
+            for label in replaceable_keywords[:len(mentioned_but_inactive)]:
+                normalized_active_keywords.remove(label)
+            active_label_keys = {
+                label.strip().lower()
+                for label in normalized_active_keywords
+            }
+            mentioned_but_inactive = [
+                keyword["label"]
+                for label_key, keyword in keyword_lookup.items()
+                if label_key not in active_label_keys
+                and _public_text_mentions_label(public_text, label_key)
+            ]
+        if mentioned_but_inactive and len(normalized_active_keywords) + len(mentioned_but_inactive) <= 4:
+            normalized_active_keywords.extend(mentioned_but_inactive)
+            ore["active_keywords"] = normalized_active_keywords
+        elif mentioned_but_inactive:
+            raise RuntimeError(
+                f"Idea Ore {index} active_keywords must include every Vein keyword "
+                "mentioned in public text: "
+                + ", ".join(mentioned_but_inactive)
+            )
 
         for field, limit in TEXT_LENGTH_LIMITS.items():
             if len(str(ore[field])) > limit:
@@ -225,7 +379,7 @@ def build_discover_response(
             "id": vein["id"],
             "keywords": _visible_keywords(keywords),
         },
-        "ores": ores,
+        "ores": format_idea_ores_public(ores),
     }
 
 
@@ -240,6 +394,7 @@ async def get_today_ore_veins(
         user_id,
         tier,
         role=role,
+        mode=DAILY_MINE_KEYWORD_SET,
     )
     veins = await vein_service.resolve_vein_keywords(supabase, veins)
 
@@ -283,6 +438,7 @@ async def reroll_ore_veins(
         user_id,
         tier,
         role=role,
+        mode=DAILY_MINE_KEYWORD_SET,
     )
     veins = await vein_service.resolve_vein_keywords(supabase, veins)
     return format_ore_veins(veins, mined_vein_ids=set())
@@ -298,6 +454,7 @@ async def get_active_daily_vein(
         .select("*")
         .eq("id", vein_id)
         .eq("user_id", user_id)
+        .eq("keyword_set", DAILY_MINE_KEYWORD_SET)
         .eq("is_active", True)
         .eq("date", date.today().isoformat())
         .execute()
@@ -315,7 +472,7 @@ async def get_keywords_for_vein(
 
     result = (
         supabase.table("keywords")
-        .select("id, slug, category, subtype, label, is_premium")
+        .select("id, slug, category, subtype, role, keyword_set, label, is_premium")
         .in_("id", keyword_ids)
         .execute()
     )
@@ -374,8 +531,8 @@ async def discover_ores(
                 attempt_user_prompt = (
                     f"{user_prompt}\n\n"
                     f"Previous attempt failed validation: {validation_error}\n"
-                    "Regenerate the full set. Keep exactly 10 ores, one per lens, "
-                    "with distinct titles, core loops, and product forms."
+                    "Regenerate the full set. Keep exactly 10 ores, one per lens and lane, "
+                    "with distinct titles, core loops, product forms, and valid active keywords."
                 )
 
             response = client.beta.chat.completions.parse(
@@ -400,7 +557,8 @@ async def discover_ores(
             parsed = response.choices[0].message.parsed
             try:
                 ores_raw = validate_discovered_ores(
-                    [ore.model_dump() for ore in parsed.ores]
+                    [ore.model_dump() for ore in parsed.ores],
+                    keywords=keywords,
                 )
                 break
             except RuntimeError as exc:
@@ -485,7 +643,7 @@ async def get_ore(supabase: Client, user_id: str, ore_id: str) -> dict | None:
         .eq("user_id", user_id)
         .execute()
     )
-    return result.data[0] if result.data else None
+    return format_idea_ore_public(result.data[0]) if result.data else None
 
 
 async def get_vaulted_ores(supabase: Client, user_id: str) -> list[dict]:
@@ -497,7 +655,7 @@ async def get_vaulted_ores(supabase: Client, user_id: str) -> list[dict]:
         .order("created_at", desc=True)
         .execute()
     )
-    return result.data
+    return format_idea_ores_public(result.data)
 
 
 async def get_project_seed_brief(
@@ -530,7 +688,7 @@ async def vault_ore(supabase: Client, user_id: str, ore_id: str) -> dict | None:
         .execute()
     )
     updated = result.data[0] if result.data else {**existing, "is_vaulted": True}
-    return updated
+    return format_idea_ore_public(updated)
 
 
 async def projectize_ore(

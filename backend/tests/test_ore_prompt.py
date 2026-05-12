@@ -3,17 +3,25 @@ from app.prompts.ore_projectize import build_ore_projectize_prompt
 
 
 SAMPLE_KEYWORDS = [
-    {"id": "kw-cat", "label": "Cat", "category": "domain"},
-    {"id": "kw-dream", "label": "Dream", "category": "mood"},
+    {"id": "kw-cat", "label": "cat", "category": "daily_mine", "role": "Subject"},
+    {"id": "kw-dream", "label": "dream fragment", "category": "daily_mine", "role": "Material"},
     {
         "id": "kw-archive",
-        "label": "Emotional archive",
-        "category": "mechanism",
+        "label": "loneliness",
+        "category": "daily_mine",
+        "role": "Tension",
     },
     {
         "id": "kw-symbol",
-        "label": "Symbol interpretation",
-        "category": "ai",
+        "label": "card archive",
+        "category": "daily_mine",
+        "role": "Shape",
+    },
+    {
+        "id": "kw-night",
+        "label": "only at night",
+        "category": "daily_mine",
+        "role": "Ritual / Constraint",
     },
 ]
 
@@ -54,15 +62,16 @@ def test_ore_discovery_prompt_keeps_outputs_short_and_projectable():
     assert "Idea Ores, not finished startup plans" in system_prompt
     assert "Do not produce market-size claims" in system_prompt
     assert "Do not generate long reports" in system_prompt
+    assert "software-first" in system_prompt
+    assert "Do not propose hardware-first MVPs" in system_prompt
     assert "this might be worth building" in system_prompt
     assert "good idea generator" not in system_prompt.lower()
 
-    assert "Cat" in user_prompt
-    assert "Dream" in user_prompt
-    assert "Emotional archive" in user_prompt
+    assert "cat" in user_prompt
+    assert "dream fragment" in user_prompt
+    assert "only at night" in user_prompt
     assert "(domain)" not in user_prompt
-    assert "(mood)" not in user_prompt
-    assert "(mechanism)" not in user_prompt
+    assert "(daily_mine)" not in user_prompt
 
 
 def test_ore_discovery_prompt_uses_hidden_diversity_lenses():
@@ -73,6 +82,8 @@ def test_ore_discovery_prompt_uses_hidden_diversity_lenses():
 
     for field in (
         "generation_lens",
+        "ore_lane",
+        "active_keywords",
         "primary_anchor_keyword",
         "product_form",
         "core_loop_signature",
@@ -83,6 +94,21 @@ def test_ore_discovery_prompt_uses_hidden_diversity_lenses():
     assert "internal only" in system_prompt
     assert "do not expose" in system_prompt.lower()
     assert "Daily Vein keywords" in user_prompt
+
+
+def test_ore_discovery_prompt_uses_lane_distribution_and_active_keyword_subsets():
+    system_prompt, user_prompt = build_ore_discovery_prompt(SAMPLE_KEYWORDS)
+
+    assert "sort_order 1-3: ore_lane must be Cozy Personal" in system_prompt
+    assert "sort_order 4-6: ore_lane must be Indie Tool" in system_prompt
+    assert "sort_order 7-9: ore_lane must be Practical Twist" in system_prompt
+    assert "sort_order 10: ore_lane must be Weird Bridge" in system_prompt
+    assert "Each ore must actively use exactly 3 or 4 keywords" in system_prompt
+    assert "active_keywords must contain exact keyword labels only" in system_prompt
+    assert "Do not mention non-active Vein keyword labels" in system_prompt
+    assert "Do not force all 5 Vein keywords into every ore" in system_prompt
+    assert "cat (Subject)" in user_prompt
+    assert "only at night (Ritual / Constraint)" in user_prompt
 
 
 def test_ore_projectize_prompt_keeps_the_brief_faithful_and_mvp_scoped():

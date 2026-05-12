@@ -1,6 +1,6 @@
 ## Current Content Schema
 
-Updated: 2026-05-11
+Updated: 2026-05-12
 
 This project now uses a single-language English content contract.
 
@@ -26,6 +26,7 @@ V3 adds Idea Ore as the central MVP object. The Daily Mine surface should use 3 
 - `risk`
 - `mvp_hint`
 - `selected_keywords`
+- `active_keywords` (internal persisted subset; public API maps this to `selected_keywords`)
 - `generation_meta` (internal diversity metadata)
 - `sort_order`
 - `is_vaulted`
@@ -75,5 +76,9 @@ V3 adds Idea Ore as the central MVP object. The Daily Mine surface should use 3 
 - overview V2 rebuilds or consumes internal `kernel + family` anchors but still writes the same flat overview fields.
 - V3 stores generated Idea Ores in `idea_ores` and Project Seed Briefs in `project_seed_briefs`.
 - V3 stores hidden Ore diversity metadata in `idea_ores.generation_meta`; API clients must not render it.
+- V3 Daily Mine keywords use internal `keywords.role` and `keywords.keyword_set='daily_mine_v3'`; public keyword objects still expose only `id` and `label`.
+- V3 Daily Mine Veins use `veins.keyword_set` so old `legacy` mining Veins and new `daily_mine_v3` Veins do not compete for the same active slots.
+- `idea_ores.active_keywords` stores the 3 to 4 keyword labels actually used by each Ore as public-safe keyword objects; Ore responses expose these through `selected_keywords`.
+- `generation_meta` now includes hidden `ore_lane` plus diversity fields such as `generation_lens`, `product_form`, `core_loop_signature`, and `novelty_axis`.
 - Historical migration files still contain the old bilingual column names by design.
 - Older planning documents may mention bilingual fields because they were written before migrations `00016` and `00017`.

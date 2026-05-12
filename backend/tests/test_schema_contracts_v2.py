@@ -284,6 +284,8 @@ def test_keywords_contract(schema):
         "category",
         "subtype",
         "label",
+        "role",
+        "keyword_set",
         "aliases",
         "weight",
         "is_premium",
@@ -303,6 +305,10 @@ def test_keywords_contract(schema):
     assert details["subtype"]["is_nullable"] is False
     assert details["label"]["data_type"] == "text"
     assert details["label"]["is_nullable"] is False
+    assert details["role"]["data_type"] == "text"
+    assert details["role"]["is_nullable"] is True
+    assert details["keyword_set"]["data_type"] == "text"
+    assert details["keyword_set"]["is_nullable"] is True
     assert details["aliases"]["data_type"] == "ARRAY"
     assert details["aliases"]["is_nullable"] is False
     assert details["weight"]["data_type"] == "real"
@@ -332,6 +338,7 @@ def test_keywords_contract(schema):
         and "'tech'" in item
         and "'value'" in item
         and "'money'" in item
+        and "'daily_mine'" in item
         for item in constraint_definitions
     )
 
@@ -339,6 +346,9 @@ def test_keywords_contract(schema):
     assert "idx_keywords_category_active" in indexes
     assert "category, is_active" in indexes["idx_keywords_category_active"]
     assert "WHERE (is_active = true)" in indexes["idx_keywords_category_active"]
+    assert "idx_keywords_daily_mine_role_active" in indexes
+    assert "keyword_set, role, is_active" in indexes["idx_keywords_daily_mine_role_active"]
+    assert "WHERE (is_active = true)" in indexes["idx_keywords_daily_mine_role_active"]
 
     assert schema.row_count("keywords") == 118
 
@@ -469,6 +479,7 @@ def test_veins_contract(schema):
         "date",
         "slot_index",
         "keyword_ids",
+        "keyword_set",
         "rarity",
         "is_active",
         "is_selected",
@@ -487,6 +498,9 @@ def test_veins_contract(schema):
     assert details["slot_index"]["is_nullable"] is False
     assert details["keyword_ids"]["data_type"] == "ARRAY"
     assert details["keyword_ids"]["is_nullable"] is False
+    assert details["keyword_set"]["data_type"] == "text"
+    assert details["keyword_set"]["is_nullable"] is False
+    assert details["keyword_set"]["column_default"] == "'legacy'::text"
     assert details["rarity"]["data_type"] == "text"
     assert details["rarity"]["is_nullable"] is False
     assert "'common'::text" in details["rarity"]["column_default"]
@@ -520,10 +534,10 @@ def test_veins_contract(schema):
     assert any("cardinality" in item and "keyword_ids" in item and ">= 1" in item for item in constraint_definitions)
 
     indexes = schema.index_definitions("public", "veins")
-    assert "uq_veins_active_slot" in indexes
-    assert "UNIQUE INDEX" in indexes["uq_veins_active_slot"]
-    assert "(user_id, date, slot_index)" in indexes["uq_veins_active_slot"]
-    assert "WHERE (is_active = true)" in indexes["uq_veins_active_slot"]
+    assert "uq_veins_active_slot_keyword_set" in indexes
+    assert "UNIQUE INDEX" in indexes["uq_veins_active_slot_keyword_set"]
+    assert "(user_id, date, slot_index, keyword_set)" in indexes["uq_veins_active_slot_keyword_set"]
+    assert "WHERE (is_active = true)" in indexes["uq_veins_active_slot_keyword_set"]
 
     assert schema.row_count("veins") == 0
 
@@ -862,6 +876,7 @@ def test_idea_ores_contract(schema):
         "risk",
         "mvp_hint",
         "selected_keywords",
+        "active_keywords",
         "generation_meta",
         "sort_order",
         "is_vaulted",
@@ -891,6 +906,9 @@ def test_idea_ores_contract(schema):
     assert details["selected_keywords"]["data_type"] == "jsonb"
     assert details["selected_keywords"]["is_nullable"] is False
     assert details["selected_keywords"]["column_default"] == "'[]'::jsonb"
+    assert details["active_keywords"]["data_type"] == "jsonb"
+    assert details["active_keywords"]["is_nullable"] is False
+    assert details["active_keywords"]["column_default"] == "'[]'::jsonb"
     assert details["generation_meta"]["data_type"] == "jsonb"
     assert details["generation_meta"]["is_nullable"] is False
     assert details["generation_meta"]["column_default"] == "'{}'::jsonb"
@@ -916,6 +934,7 @@ def test_idea_ores_contract(schema):
     )
     assert any("sort_order" in item and ">= 1" in item and "<= 10" in item for item in constraint_definitions)
     assert any("jsonb_typeof(selected_keywords) = 'array'" in item for item in constraint_definitions)
+    assert any("jsonb_typeof(active_keywords) = 'array'" in item for item in constraint_definitions)
     assert any("jsonb_typeof(generation_meta) = 'object'" in item for item in constraint_definitions)
 
     triggers = schema.trigger_names("public", "idea_ores")

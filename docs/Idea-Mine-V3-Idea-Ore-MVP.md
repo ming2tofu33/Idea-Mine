@@ -368,13 +368,16 @@ Create new tables if needed:
 - `risk text`
 - `mvp_hint text`
 - `selected_keywords jsonb`
+- `active_keywords jsonb`
 - `generation_meta jsonb`
 - `sort_order integer`
 - `is_vaulted boolean default false`
 - `created_at timestamptz default now()`
 - `updated_at timestamptz default now()`
 
-`generation_meta` stores internal-only diversity metadata such as `generation_lens`, `primary_anchor_keyword`, `product_form`, `core_loop_signature`, and `novelty_axis`. It must not be returned to the UI.
+`active_keywords` stores the 3 to 4 Vein keyword objects actually used by each Ore. Public Ore responses map this subset to `selected_keywords` so the UI does not show every Vein keyword on every Ore.
+
+`generation_meta` stores internal-only diversity metadata such as `ore_lane`, `generation_lens`, `primary_anchor_keyword`, `product_form`, `core_loop_signature`, and `novelty_axis`. It must not be returned to the UI.
 
 ### `project_seed_briefs`
 
@@ -394,7 +397,7 @@ Create new tables if needed:
 
 Implementation notes:
 
-- V3 reuses the existing `veins` table for server-provided Daily Veins.
+- V3 reuses the existing `veins` table for server-provided Daily Veins, separated by `veins.keyword_set='daily_mine_v3'`.
 - `POST /ore/discover` persists generated ores immediately with `is_vaulted=false`, so refresh and Lab navigation do not lose the result.
 - `POST /ore/{ore_id}/projectize` returns an existing Project Seed Brief if one already exists. Regeneration can be a later feature.
 - `(user_id, vein_id, sort_order)` should be unique for persisted Idea Ores.
@@ -407,7 +410,7 @@ The model must generate Idea Ores, not finished startup plans.
 
 Daily Mine discovery is a lightweight interaction, so the default generation
 configuration should favor response time over deep reasoning. The backend should
-default Ore discovery to a fast GPT-5 family model such as `gpt-5-nano` with
+default Ore discovery to a fast GPT-5 family model such as `gpt-5-mini` with
 `reasoning_effort=minimal`, while still allowing environment overrides if a
 higher-quality model is needed later. Web Lab projectization can use a stronger
 model separately because it belongs to the deeper work phase.
@@ -415,6 +418,8 @@ model separately because it belongs to the deeper work phase.
 System behavior:
 
 - Generate exactly 10 Idea Ores from the provided Daily Vein keyword combination.
+- Follow the hidden lane distribution: 3 Cozy Personal, 3 Indie Tool, 3 Practical Twist, and 1 Weird Bridge.
+- Each Ore must actively use exactly 3 or 4 of the 5 Vein keywords.
 - Generate one ore per internal discovery lens:
   - Direct Core
   - Emotional Ritual

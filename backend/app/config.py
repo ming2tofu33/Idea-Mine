@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     tavily_api_key: str = ""
     port: int = 8000
     ideation_v2_enabled: bool = False
-    ore_discovery_model: str = "gpt-5-nano"
+    ore_discovery_model: str = "gpt-5-mini"
     ore_discovery_reasoning_effort: str = "minimal"
     ore_projectize_model: str = "gpt-5"
 
