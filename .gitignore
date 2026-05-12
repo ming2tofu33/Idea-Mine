@@ -49,6 +49,7 @@ supabase/.branches/
 # Temp
 *.log
 *.tmp
+.worktrees/
 
 # QA / tooling artifacts
 /*.png
