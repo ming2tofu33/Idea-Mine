@@ -195,6 +195,11 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
       setOres([]);
     },
   });
+  const canRefreshVeins =
+    !rerollMutation.isPending &&
+    !discoverMutation.isPending &&
+    !!veinsQuery.data &&
+    veinsQuery.data.rerolls_used < veinsQuery.data.rerolls_max;
 
   const vaultMutation = useMutation({
     mutationFn: oreApi.vault,
@@ -256,17 +261,12 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
                 <button
                   type="button"
                   disabled={
-                    rerollMutation.isPending ||
-                    discoverMutation.isPending ||
-                    !veinsQuery.data ||
-                    veinsQuery.data.rerolls_used >= veinsQuery.data.rerolls_max
+                    !canRefreshVeins
                   }
                   onClick={() => rerollMutation.mutate()}
                   className={[
                     "inline-flex min-h-11 items-center justify-center gap-2 border px-4 py-2.5 text-sm font-semibold transition-all duration-200",
-                    veinsQuery.data &&
-                    veinsQuery.data.rerolls_used < veinsQuery.data.rerolls_max &&
-                    !discoverMutation.isPending
+                    canRefreshVeins
                       ? "border-cold-cyan/35 bg-cold-cyan/[0.08] text-cold-cyan hover:border-cold-cyan/55 hover:bg-cold-cyan/[0.12]"
                       : "cursor-not-allowed border-line-steel/25 bg-surface-2/40 text-text-secondary/45",
                   ].join(" ")}
@@ -350,7 +350,7 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
           )}
 
           {discoverMutation.isPending ? (
-            <div className="desktop-instrument-flat flex min-h-64 items-center justify-center border-dashed">
+            <div className="flex min-h-64 items-center justify-center border border-dashed border-line-steel/45 bg-bg-base/45 backdrop-blur-[10px]">
               <div className="text-center">
                 <div className="mx-auto mb-4 h-10 w-px animate-pulse bg-signal-pink" />
                 <p className="text-sm text-text-secondary">Extracting short Idea Ores...</p>
@@ -368,7 +368,7 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
               ))}
             </section>
           ) : (
-            <div className="desktop-instrument-flat border-dashed p-8 text-center">
+            <div className="border border-dashed border-line-steel/45 bg-bg-base/45 p-8 text-center backdrop-blur-[10px]">
               <div className="desktop-signal-line mx-auto mb-4 h-px max-w-72" />
               <p className="text-sm text-text-secondary">
                 Today&apos;s Vein is ready to mine.
