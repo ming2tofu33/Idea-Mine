@@ -22,14 +22,14 @@ function VaultOreCard({ ore }: { ore: IdeaOre }) {
   return (
     <Link
       href={`/lab/${ore.id}`}
-      className="desktop-instrument-flat group relative flex min-h-64 flex-col overflow-hidden p-5 transition-all duration-200 hover:border-cold-cyan/40 hover:bg-surface-1/55"
+      className="desktop-instrument-flat group relative flex min-h-64 flex-col overflow-hidden p-5 transition-all duration-200 hover:border-cold-cyan/40 hover:bg-surface-1/55 focus-visible:border-cold-cyan/50 focus-visible:bg-surface-1/55"
     >
-      <span className="absolute inset-y-0 left-0 w-px bg-cold-cyan opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
+      <span className="absolute inset-y-0 left-0 w-px bg-cold-cyan opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100" />
       <div className="flex items-start justify-between gap-3">
-        <h3 className="text-base font-semibold text-text-primary transition-colors group-hover:text-cold-cyan">
+        <h3 className="text-base font-semibold text-text-primary transition-colors group-hover:text-cold-cyan group-focus-visible:text-cold-cyan">
           {ore.title}
         </h3>
-        <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-text-secondary/45 transition-colors group-hover:text-cold-cyan" />
+        <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-text-secondary/45 transition-colors group-hover:text-cold-cyan group-focus-visible:text-cold-cyan" />
       </div>
 
       <p className="mt-3 text-sm font-medium leading-relaxed text-text-primary/85">
@@ -117,7 +117,7 @@ export function VaultClient({ mockMode = false }: { mockMode?: boolean }) {
               action={
                 <Link
                   href="/mine"
-                  className="inline-flex cursor-pointer items-center gap-2 border border-cold-cyan/35 bg-cold-cyan/[0.08] px-5 py-2.5 text-sm font-semibold text-cold-cyan transition-all duration-200 hover:border-cold-cyan/55 hover:bg-cold-cyan/[0.12]"
+                  className="inline-flex cursor-pointer items-center gap-2 border border-cold-cyan/35 bg-cold-cyan/[0.08] px-5 py-2.5 text-sm font-semibold text-cold-cyan transition-all duration-200 hover:border-cold-cyan/55 hover:bg-cold-cyan/[0.12] focus-visible:border-cold-cyan/60 focus-visible:bg-cold-cyan/[0.14]"
                 >
                   <Pickaxe className="h-4 w-4" />
                   Go to Daily Mine
