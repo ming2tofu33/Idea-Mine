@@ -67,14 +67,14 @@ export function LabClient({ mockMode = false }: { mockMode?: boolean }) {
                   className="desktop-instrument-flat group relative flex items-stretch gap-4 overflow-hidden p-4 transition-all duration-200 hover:border-cold-cyan/40 hover:bg-surface-1/55 focus-visible:border-cold-cyan/50 focus-visible:bg-surface-1/55 sm:p-5"
                 >
                   <span className="absolute inset-y-0 left-0 w-px bg-cold-cyan opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100" />
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 overflow-hidden">
                     <div className="flex items-start justify-between gap-4">
-                      <h3 className="min-w-0 text-base font-semibold leading-6 text-text-primary transition-colors group-hover:text-cold-cyan group-focus-visible:text-cold-cyan">
+                      <h3 className="line-clamp-2 min-w-0 overflow-hidden break-words text-base font-semibold leading-6 text-text-primary transition-colors group-hover:text-cold-cyan group-focus-visible:text-cold-cyan">
                         {ore.title}
                       </h3>
                       <ArrowRight className="mt-1 hidden h-4 w-4 shrink-0 text-text-secondary/45 transition-colors group-hover:text-cold-cyan group-focus-visible:text-cold-cyan sm:block" />
                     </div>
-                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-text-secondary">
+                    <p className="mt-2 line-clamp-2 overflow-hidden break-words text-sm leading-relaxed text-text-secondary">
                       {ore.one_liner}
                     </p>
                   </div>
