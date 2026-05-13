@@ -22,20 +22,31 @@ function VeinOptionCard({
       type="button"
       onClick={() => onSelect(vein.id)}
       className={[
-        "flex min-h-36 flex-col rounded-xl border p-4 text-left transition-all duration-200",
+        "relative flex min-h-36 flex-col overflow-hidden border p-4 text-left transition-all duration-200",
         isSelected
-          ? "border-signal-pink/45 bg-signal-pink/10 shadow-[0_0_20px_rgba(255,59,147,0.12)]"
-          : "border-line-steel/25 bg-surface-1/35 hover:border-cold-cyan/25 hover:bg-surface-1/55",
+          ? "border-cold-cyan/65 bg-cold-cyan/[0.08] shadow-[inset_0_1px_0_rgba(217,226,240,0.08),_0_0_24px_rgba(92,205,229,0.12)]"
+          : "desktop-instrument-flat hover:border-cold-cyan/35 hover:bg-surface-1/55",
       ].join(" ")}
     >
-      <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-text-secondary/65">
+      <span
+        className={[
+          "absolute inset-x-0 top-0 h-0.5",
+          isSelected ? "bg-cold-cyan" : "bg-line-steel/45",
+        ].join(" ")}
+      />
+      <span
+        className={[
+          "text-[11px] font-semibold uppercase tracking-[0.18em]",
+          isSelected ? "text-cold-cyan" : "text-text-secondary/65",
+        ].join(" ")}
+      >
         Vein {vein.slot_index}
       </span>
       <div className="mt-3 flex flex-wrap gap-1.5">
         {vein.keywords.map((keyword) => (
           <span
             key={keyword.id}
-            className="rounded-full border border-line-steel/35 bg-bg-base/45 px-2.5 py-1 text-xs text-text-secondary"
+            className="border border-line-steel/45 bg-bg-base/45 px-2 py-1 text-xs text-text-secondary"
           >
             {keyword.label}
           </span>
@@ -68,7 +79,7 @@ function OreCard({
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <article className="rounded-xl border border-line-steel/25 bg-surface-1/45 p-5 shadow-[inset_0px_1px_rgba(255,255,255,0.05),_0px_10px_24px_rgba(0,0,0,0.24)] backdrop-blur-xl">
+    <article className="desktop-instrument-surface p-5">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-lg font-semibold text-text-primary">{ore.title}</h3>
@@ -76,7 +87,7 @@ function OreCard({
             {ore.one_liner}
           </p>
         </div>
-        <span className="rounded-md border border-line-steel/35 bg-bg-base/50 px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-text-secondary">
+        <span className="shrink-0 border border-line-steel/45 bg-bg-base/50 px-2 py-1 text-[10px] uppercase tracking-[0.16em] text-text-secondary">
           Ore {ore.sort_order}
         </span>
       </div>
@@ -85,7 +96,7 @@ function OreCard({
         {ore.selected_keywords.map((keyword) => (
           <span
             key={keyword.id}
-            className="rounded-full border border-line-steel/35 bg-bg-base/45 px-2.5 py-1 text-[11px] text-text-secondary"
+            className="border border-line-steel/45 bg-bg-base/45 px-2 py-1 text-[11px] text-text-secondary"
           >
             {keyword.label}
           </span>
@@ -97,7 +108,7 @@ function OreCard({
           type="button"
           aria-expanded={isExpanded}
           onClick={() => setIsExpanded((current) => !current)}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-line-steel/30 bg-bg-base/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary transition-all duration-200 hover:border-cold-cyan/30 hover:text-text-primary"
+          className="inline-flex min-h-10 items-center justify-center gap-2 border border-line-steel/45 bg-bg-base/35 px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-text-secondary transition-all duration-200 hover:border-cold-cyan/40 hover:text-text-primary"
         >
           Details
           <ChevronDown
@@ -113,10 +124,10 @@ function OreCard({
           disabled={ore.is_vaulted || isSaving}
           onClick={() => onVault(ore.id)}
           className={[
-            "inline-flex min-w-32 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-200",
+            "inline-flex min-w-32 items-center justify-center gap-2 border px-4 py-2.5 text-sm font-semibold transition-all duration-200",
             ore.is_vaulted
-              ? "cursor-default border border-emerald-400/25 bg-emerald-400/10 text-emerald-300"
-              : "border border-signal-pink/35 bg-signal-pink/15 text-signal-pink hover:bg-signal-pink/25",
+              ? "cursor-default border-emerald-400/25 bg-emerald-400/10 text-emerald-300"
+              : "border-signal-pink/35 bg-signal-pink/10 text-signal-pink hover:border-signal-pink/55 hover:bg-signal-pink/15",
             isSaving ? "cursor-wait opacity-70" : "",
           ].join(" ")}
         >
@@ -208,18 +219,19 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
       <MineBackground />
 
       <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mx-auto w-full max-w-6xl space-y-6">
+        <div className="mx-auto w-full max-w-7xl space-y-6 pb-8">
           <PageHeader
             eyebrow="DAILY MINE"
             title="Mine Idea Ores"
             subtitle="Mine today's Vein into short ores, then save the ones worth opening in Web Lab."
+            className="border-b border-line-steel/45 pb-4"
             meta={
               <>
-                <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-text-secondary">
+                <span className="border border-line-steel/45 bg-bg-base/45 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-text-secondary">
                   3 veins / 10 ores
                 </span>
                 {veinsQuery.data && (
-                  <span className="rounded-md border border-line-steel/40 bg-surface-1/50 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-text-secondary">
+                  <span className="border border-line-steel/45 bg-bg-base/45 px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-text-secondary">
                     Rerolls{" "}
                     <span className="text-text-primary">
                       {veinsQuery.data.rerolls_used}/{veinsQuery.data.rerolls_max}
@@ -230,7 +242,7 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
             }
           />
 
-          <section className="rounded-xl border border-line-steel/20 bg-bg-base/30 p-4 backdrop-blur-xl">
+          <section className="desktop-instrument-surface p-4">
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-primary">
@@ -251,12 +263,12 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
                   }
                   onClick={() => rerollMutation.mutate()}
                   className={[
-                    "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all duration-200",
+                    "inline-flex min-h-11 items-center justify-center gap-2 border px-4 py-2.5 text-sm font-semibold transition-all duration-200",
                     veinsQuery.data &&
                     veinsQuery.data.rerolls_used < veinsQuery.data.rerolls_max &&
                     !discoverMutation.isPending
-                      ? "border border-line-steel/35 bg-surface-1/45 text-text-primary hover:border-cold-cyan/35 hover:bg-surface-1/65"
-                      : "cursor-not-allowed border border-line-steel/25 bg-surface-2/40 text-text-secondary/45",
+                      ? "border-cold-cyan/35 bg-cold-cyan/[0.08] text-cold-cyan hover:border-cold-cyan/55 hover:bg-cold-cyan/[0.12]"
+                      : "cursor-not-allowed border-line-steel/25 bg-surface-2/40 text-text-secondary/45",
                   ].join(" ")}
                 >
                   <RefreshCw
@@ -276,10 +288,10 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
                     }
                   }}
                   className={[
-                    "inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-all duration-200",
+                    "inline-flex min-h-11 items-center justify-center gap-2 border px-5 py-2.5 text-sm font-semibold transition-all duration-200",
                     !discoverMutation.isPending && !rerollMutation.isPending && selectedVein
-                      ? "border border-signal-pink/40 bg-signal-pink text-white hover:bg-signal-pink/90 hover:shadow-[0_0_24px_rgba(255,59,147,0.25)]"
-                      : "cursor-not-allowed border border-line-steel/25 bg-surface-2/40 text-text-secondary/45",
+                      ? "border-signal-pink/45 bg-signal-pink/10 text-signal-pink hover:border-signal-pink/60 hover:bg-signal-pink/15 hover:shadow-[0_0_22px_rgba(255,59,147,0.16)]"
+                      : "cursor-not-allowed border-line-steel/25 bg-surface-2/40 text-text-secondary/45",
                   ].join(" ")}
                 >
                   <Pickaxe className="h-4 w-4" />
@@ -293,7 +305,7 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
                 Array.from({ length: 3 }, (_, index) => (
                   <div
                     key={index}
-                    className="min-h-36 animate-pulse rounded-xl border border-line-steel/20 bg-surface-1/25"
+                    className="desktop-instrument-flat min-h-36 animate-pulse"
                   />
                 ))
               ) : (
@@ -338,9 +350,9 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
           )}
 
           {discoverMutation.isPending ? (
-            <div className="flex min-h-64 items-center justify-center rounded-xl border border-dashed border-line-steel/25 bg-surface-1/20">
+            <div className="desktop-instrument-flat flex min-h-64 items-center justify-center border-dashed">
               <div className="text-center">
-                <div className="mx-auto mb-4 h-2.5 w-2.5 animate-pulse rounded-full bg-signal-pink" />
+                <div className="mx-auto mb-4 h-10 w-px animate-pulse bg-signal-pink" />
                 <p className="text-sm text-text-secondary">Extracting short Idea Ores...</p>
               </div>
             </div>
@@ -356,7 +368,8 @@ export function MineClient({ mockMode = false }: { mockMode?: boolean }) {
               ))}
             </section>
           ) : (
-            <div className="rounded-xl border border-dashed border-line-steel/20 bg-surface-1/20 p-8 text-center">
+            <div className="desktop-instrument-flat border-dashed p-8 text-center">
+              <div className="desktop-signal-line mx-auto mb-4 h-px max-w-72" />
               <p className="text-sm text-text-secondary">
                 Today&apos;s Vein is ready to mine.
               </p>
