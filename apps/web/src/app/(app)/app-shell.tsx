@@ -71,7 +71,7 @@ export function AppShell({
   const profile = clientProfile ?? serverProfile;
 
   return (
-    <div className="relative flex min-h-full overflow-hidden bg-bg-deep text-text-primary">
+    <div className="relative flex min-h-screen overflow-hidden bg-bg-deep text-text-primary">
       <DesktopRail />
 
       <div className="flex min-w-0 flex-1 flex-col">
