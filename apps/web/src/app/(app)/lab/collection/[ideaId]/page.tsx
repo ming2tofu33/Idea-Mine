@@ -60,7 +60,7 @@ function Item({
   children: React.ReactNode;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-line-steel/20 bg-surface-1/40">
+    <div className="desktop-instrument-flat overflow-hidden rounded-xl">
       <button
         type="button"
         onClick={onToggle}
@@ -388,7 +388,7 @@ export default function CollectionPage({
               </div>
 
               {!overview ? (
-                <div className="rounded-xl border border-dashed border-line-steel/30 bg-surface-1/30 p-8 text-center">
+                <div className="desktop-instrument-flat rounded-xl border-dashed p-8 text-center">
                   <p className="mb-4 text-sm text-text-secondary">Generate an overview first to unlock the collection.</p>
                   <Link href={`/lab/overview/${ideaId}`} className="cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-6 py-3 text-sm font-medium text-cold-cyan hover:bg-cold-cyan/20">
                     Go to overview

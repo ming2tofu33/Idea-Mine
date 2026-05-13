@@ -18,7 +18,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-line-steel/25 bg-surface-1/45 p-5 backdrop-blur-xl">
+    <section className="desktop-instrument-surface rounded-xl p-5">
       <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-primary">
         {title}
       </h3>
@@ -91,7 +91,7 @@ function ListItems({ items }: { items: string[] }) {
   return (
     <ul className="space-y-2">
       {items.map((item) => (
-        <li key={item} className="rounded-lg border border-line-steel/15 bg-bg-base/25 px-3 py-2">
+        <li key={item} className="desktop-instrument-flat rounded-lg px-3 py-2">
           {item}
         </li>
       ))}
@@ -177,7 +177,7 @@ export default function LabOrePage({
                 }
               />
 
-              <section className="rounded-xl border border-line-steel/25 bg-surface-1/45 p-5 backdrop-blur-xl">
+              <section className="desktop-instrument-surface rounded-xl p-5">
                 <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-text-primary">
                   Idea Ore
                 </h2>

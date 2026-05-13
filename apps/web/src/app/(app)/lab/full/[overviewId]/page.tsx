@@ -196,7 +196,7 @@ function OlderVersion({
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
-    <div className="rounded-lg border border-line-steel/15 bg-surface-1/20">
+    <div className="desktop-instrument-flat rounded-lg">
       <div className="flex items-center justify-between px-4 py-3">
         <button
           type="button"
@@ -340,7 +340,7 @@ export default function FullOverviewPage({
               )}
             </>
           ) : (
-            <div className="rounded-xl border border-dashed border-line-steel/30 bg-surface-1/30 p-8 text-center">
+            <div className="desktop-instrument-flat rounded-xl border-dashed p-8 text-center">
               <p className="mb-4 text-sm text-text-secondary">
                 Generate the full overview to combine the narrative and technical plan.
               </p>

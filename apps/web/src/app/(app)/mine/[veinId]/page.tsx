@@ -186,7 +186,7 @@ export default function MiningResultPage({
       {/* Floating vault bar */}
       {selectedIds.size > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-center p-4">
-          <div className="flex w-full max-w-3xl items-center justify-between rounded-2xl border border-white/[0.06] bg-bg-deep/80 px-6 py-4 backdrop-blur-xl">
+          <div className="desktop-instrument-surface flex w-full max-w-3xl items-center justify-between rounded-xl px-6 py-4">
             <span className="text-sm text-text-secondary">
               <span className="font-semibold text-text-primary">
                 {selectedIds.size}

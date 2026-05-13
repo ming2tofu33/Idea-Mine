@@ -165,7 +165,7 @@ function OlderOverviewItem({
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
-    <div className="group rounded-lg border border-line-steel/15 bg-surface-1/20 opacity-65 transition-opacity hover:opacity-100">
+    <div className="desktop-instrument-flat group rounded-lg opacity-65 transition-opacity hover:opacity-100">
       <div className="flex items-center justify-between px-4 py-3">
         <button
           type="button"
@@ -483,7 +483,7 @@ export default function LabOverviewPage({
                   )}
                 </>
               ) : (
-                <div className="rounded-xl border border-dashed border-line-steel/30 bg-surface-1/30 p-8 text-center">
+                <div className="desktop-instrument-flat rounded-xl border-dashed p-8 text-center">
                   <p className="mb-4 text-sm text-text-secondary">
                     Generate an AI-written overview for this idea.
                   </p>
