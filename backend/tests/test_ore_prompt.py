@@ -114,6 +114,17 @@ def test_ore_discovery_prompt_uses_lane_distribution_and_active_keyword_subsets(
     assert "only at night (Ritual / Constraint)" in user_prompt
 
 
+def test_ore_discovery_prompt_limits_anchor_overuse_and_generic_product_forms():
+    system_prompt, _ = build_ore_discovery_prompt(SAMPLE_KEYWORDS)
+
+    assert "No single keyword label may appear in active_keywords for all 10 ores" in system_prompt
+    assert "primary_anchor_keyword may use the same keyword label at most 4 times" in system_prompt
+    assert "Avoid exact generic product_form values" in system_prompt
+    assert "mobile app" in system_prompt
+    assert "web app" in system_prompt
+    assert "If active_keywords would exceed 4 labels, rewrite the public text" in system_prompt
+
+
 def test_ore_discovery_lane_plan_weights_the_selected_family():
     lane_plan = build_ore_discovery_lane_plan("practical_twist")
 

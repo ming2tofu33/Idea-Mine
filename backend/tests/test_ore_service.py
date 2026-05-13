@@ -143,12 +143,30 @@ def test_build_project_seed_brief_row_keeps_brief_linked_to_the_ore():
 
 
 def _ore(index: int, **overrides):
+    active_keyword_sets = [
+        ["cat", "dream fragment", "loneliness"],
+        ["cat", "dream fragment", "card archive"],
+        ["cat", "loneliness", "only at night"],
+        ["dream fragment", "loneliness", "card archive"],
+        ["cat", "card archive", "only at night"],
+        ["dream fragment", "card archive", "only at night"],
+        ["cat", "dream fragment", "only at night"],
+        ["loneliness", "card archive", "only at night"],
+        ["cat", "loneliness", "card archive"],
+        ["dream fragment", "loneliness", "only at night"],
+    ]
     base = {
         **ORES[0],
         "title": f"Ore {index}",
+        "one_liner": "A compact software tool for a focused daily loop.",
+        "short_summary": "A short project direction with one repeatable action. It stays small enough for an MVP.",
+        "interesting_point": "The hook is specific without becoming a long report.",
+        "project_fit": "This can be built with one input, one output, and one saved record.",
+        "risk": "It could become too broad if the first loop is not constrained.",
+        "mvp_hint": "Start with capture -> transform -> save.",
         "sort_order": index,
         "ore_lane": ORE_DISCOVERY_LANE_BY_SORT_ORDER[(index - 1) % 10],
-        "active_keywords": ["cat", "dream fragment", "loneliness"],
+        "active_keywords": active_keyword_sets[(index - 1) % len(active_keyword_sets)],
         "generation_lens": ORE_DISCOVERY_LENSES[(index - 1) % len(ORE_DISCOVERY_LENSES)],
         "primary_anchor_keyword": KEYWORDS[(index - 1) % len(KEYWORDS)]["label"],
         "product_form": f"form-{(index - 1) % 5}",
@@ -226,6 +244,37 @@ def test_validate_discovered_ores_rejects_overused_product_forms():
         validate_discovered_ores(ores)
 
 
+def test_validate_discovered_ores_rejects_overused_generic_product_forms():
+    ores = [_ore(index) for index in range(1, 11)]
+    ores[0]["product_form"] = "mobile app"
+    ores[1]["product_form"] = "web app"
+    ores[2]["product_form"] = "desktop app"
+    ores[3]["product_form"] = "browser extension"
+
+    with pytest.raises(RuntimeError, match="generic product_form"):
+        validate_discovered_ores(ores)
+
+
+def test_validate_discovered_ores_rejects_overused_active_keywords():
+    ores = [
+        _ore(index, active_keywords=["cat", "dream fragment", "loneliness"])
+        for index in range(1, 11)
+    ]
+
+    with pytest.raises(RuntimeError, match="active_keywords overuse"):
+        validate_discovered_ores(ores, keywords=KEYWORDS)
+
+
+def test_validate_discovered_ores_rejects_overused_primary_anchor_keyword():
+    ores = [
+        _ore(index, primary_anchor_keyword="cat")
+        for index in range(1, 11)
+    ]
+
+    with pytest.raises(RuntimeError, match="primary_anchor_keyword"):
+        validate_discovered_ores(ores, keywords=KEYWORDS)
+
+
 def test_validate_discovered_ores_rejects_unknown_active_keywords():
     ores = [_ore(index) for index in range(1, 11)]
     ores[0]["active_keywords"] = ["cat", "dream fragment", "not in vein"]
@@ -268,7 +317,7 @@ def test_validate_discovered_ores_replaces_unmentioned_active_keyword():
     normalized = validate_discovered_ores(ores, keywords=KEYWORDS)
 
     assert normalized[0]["active_keywords"] == [
-        "cat",
+        "dream fragment",
         "loneliness",
         "card archive",
         "only at night",
@@ -425,6 +474,10 @@ def test_discover_ores_retries_once_after_diversity_validation_failure(monkeypat
     )
 
     assert completions.calls == 2
+    retry_prompt = completions.kwargs[1]["messages"][1]["content"]
+    assert "If public text uses any exact keyword label" in retry_prompt
+    assert "rewrite public text to avoid mentioning extra keyword labels" in retry_prompt
+    assert "Avoid exact generic product_form values" in retry_prompt
     assert len(result["ores"]) == 10
     assert supabase.rows["ai_usage_logs"][0]["status"] == "success"
 

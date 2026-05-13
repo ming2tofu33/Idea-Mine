@@ -1,5 +1,6 @@
 import asyncio
 import random
+from collections import Counter
 from datetime import date
 from types import SimpleNamespace
 
@@ -13,6 +14,7 @@ from app.services.daily_mine_keywords import (
 )
 from app.services.vein_service import (
     _has_expected_daily_mine_families,
+    DAILY_MINE_VEIN_ROLE_PATTERNS,
     build_daily_mine_family_vein_keyword_ids,
     build_daily_mine_vein_keyword_ids,
     build_daily_mine_vein_specs,
@@ -20,18 +22,59 @@ from app.services.vein_service import (
 )
 
 
-def test_build_daily_mine_vein_keyword_ids_selects_one_keyword_per_role():
-    keywords_by_role = {
-        role: [{"id": f"{index}-{role.lower().replace(' ', '-')}"}]
-        for index, role in enumerate(DAILY_MINE_ROLES, start=1)
+def _keywords_by_role(prefix: str = "kw", per_role: int = 3) -> dict[str, list[dict]]:
+    return {
+        role: [
+            {
+                "id": f"{prefix}-{role.lower().replace(' / ', '-').replace(' ', '-')}-{index}",
+                "label": f"{prefix} {role} {index}",
+                "role": role,
+            }
+            for index in range(1, per_role + 1)
+        ]
+        for role in DAILY_MINE_ROLES
     }
+
+
+def _roles_for_ids(keywords_by_role: dict[str, list[dict]], ids: list[str]) -> list[str]:
+    role_by_id = {
+        keyword["id"]: role
+        for role, keywords in keywords_by_role.items()
+        for keyword in keywords
+    }
+    return [role_by_id[keyword_id] for keyword_id in ids]
+
+
+def test_build_daily_mine_vein_keyword_ids_uses_loose_role_patterns():
+    keywords_by_role = _keywords_by_role()
+
+    selected_role_patterns = {
+        tuple(_roles_for_ids(
+            keywords_by_role,
+            build_daily_mine_vein_keyword_ids(keywords_by_role, random.Random(seed)),
+        ))
+        for seed in range(1, 20)
+    }
+
+    allowed_patterns = {tuple(pattern) for pattern in DAILY_MINE_VEIN_ROLE_PATTERNS}
+    assert selected_role_patterns.issubset(allowed_patterns)
+    assert selected_role_patterns != {tuple(DAILY_MINE_ROLES)}
+    assert any(
+        Counter(pattern)["Subject"] + Counter(pattern)["Material"] >= 3
+        and (
+            Counter(pattern)["Shape"] == 0
+            or Counter(pattern)["Ritual / Constraint"] == 0
+        )
+        for pattern in selected_role_patterns
+    )
+
+
+def test_build_daily_mine_vein_keyword_ids_selects_five_keywords():
+    keywords_by_role = _keywords_by_role()
 
     ids = build_daily_mine_vein_keyword_ids(keywords_by_role, random.Random(1))
 
-    assert ids == [
-        keywords_by_role[role][0]["id"]
-        for role in DAILY_MINE_ROLES
-    ]
+    assert len(ids) == 5
 
 
 def test_build_daily_mine_vein_keyword_ids_rejects_missing_role():
@@ -46,29 +89,45 @@ def test_build_daily_mine_vein_keyword_ids_rejects_missing_role():
 
 
 def test_build_daily_mine_vein_keyword_ids_avoids_duplicate_visible_labels():
-    keywords_by_role = {
-        "Subject": [{"id": "subject-old-photo", "label": "old photo"}],
-        "Material": [
-            {"id": "material-old-photo", "label": "old photo"},
-            {"id": "material-map-pin", "label": "map pin"},
-        ],
-        "Tension": [{"id": "tension-memory", "label": "memory fading"}],
-        "Shape": [{"id": "shape-capsule", "label": "photo capsule"}],
-        "Ritual / Constraint": [{"id": "ritual-question", "label": "one question at a time"}],
+    keywords_by_role = _keywords_by_role(per_role=3)
+    keywords_by_role["Subject"][0] = {
+        "id": "subject-old-photo",
+        "label": "old photo",
+        "role": "Subject",
+    }
+    keywords_by_role["Material"][0] = {
+        "id": "material-old-photo",
+        "label": "old photo",
+        "role": "Material",
     }
 
     ids = build_daily_mine_vein_keyword_ids(keywords_by_role, random.Random(1))
+    label_by_id = {
+        keyword["id"]: keyword["label"]
+        for keywords in keywords_by_role.values()
+        for keyword in keywords
+    }
+    selected_labels = [label_by_id[keyword_id] for keyword_id in ids]
 
-    assert ids[0] == "subject-old-photo"
-    assert ids[1] == "material-map-pin"
+    assert len(selected_labels) == len(set(selected_labels))
 
 
-def test_build_daily_mine_family_vein_keyword_ids_selects_one_keyword_per_role_for_family():
+def test_build_daily_mine_vein_keyword_ids_rejects_too_close_keyword_pairs_without_alternative():
+    keywords_by_role = _keywords_by_role(per_role=1)
+    keywords_by_role["Subject"] = [
+        {"id": "subject-browser-tab", "label": "browser tab", "role": "Subject"},
+    ]
+    keywords_by_role["Material"] = [
+        {"id": "material-downloaded-file", "label": "downloaded file", "role": "Material"},
+    ]
+
+    with pytest.raises(RuntimeError, match="Cannot create Daily Mine Vein"):
+        build_daily_mine_vein_keyword_ids(keywords_by_role, random.Random(1))
+
+
+def test_build_daily_mine_family_vein_keyword_ids_uses_loose_pattern_for_family():
     keywords_by_family_role = {
-        family: {
-            role: [{"id": f"{family}-{index}", "label": f"{family} {role}"}]
-            for index, role in enumerate(DAILY_MINE_ROLES, start=1)
-        }
+        family: _keywords_by_role(prefix=family)
         for family in DAILY_MINE_FAMILIES
     }
 
@@ -78,10 +137,9 @@ def test_build_daily_mine_family_vein_keyword_ids_selects_one_keyword_per_role_f
         random.Random(1),
     )
 
-    assert ids == [
-        keywords_by_family_role["indie_tool"][role][0]["id"]
-        for role in DAILY_MINE_ROLES
-    ]
+    roles = _roles_for_ids(keywords_by_family_role["indie_tool"], ids)
+    assert tuple(roles) in {tuple(pattern) for pattern in DAILY_MINE_VEIN_ROLE_PATTERNS}
+    assert len(ids) == 5
 
 
 def test_build_daily_mine_family_vein_keyword_ids_rejects_missing_role_for_family():
@@ -103,16 +161,17 @@ def test_build_daily_mine_family_vein_keyword_ids_rejects_missing_role_for_famil
 
 def test_build_daily_mine_family_vein_keyword_ids_avoids_duplicate_visible_labels_within_vein():
     keywords_by_family_role = {
-        "cozy_personal": {
-            "Subject": [{"id": "subject-shoebox", "label": "shoebox"}],
-            "Material": [
-                {"id": "material-shoebox", "label": "shoebox"},
-                {"id": "material-receipt", "label": "receipt"},
-            ],
-            "Tension": [{"id": "tension-forgotten", "label": "forgotten"}],
-            "Shape": [{"id": "shape-timeline", "label": "timeline"}],
-            "Ritual / Constraint": [{"id": "ritual-sunday", "label": "only Sundays"}],
-        }
+        "cozy_personal": _keywords_by_role(per_role=3),
+    }
+    keywords_by_family_role["cozy_personal"]["Subject"][0] = {
+        "id": "subject-shoebox",
+        "label": "shoebox",
+        "role": "Subject",
+    }
+    keywords_by_family_role["cozy_personal"]["Material"][0] = {
+        "id": "material-shoebox",
+        "label": "shoebox",
+        "role": "Material",
     }
 
     ids = build_daily_mine_family_vein_keyword_ids(
@@ -120,33 +179,27 @@ def test_build_daily_mine_family_vein_keyword_ids_avoids_duplicate_visible_label
         "cozy_personal",
         random.Random(1),
     )
+    label_by_id = {
+        keyword["id"]: keyword["label"]
+        for keywords in keywords_by_family_role["cozy_personal"].values()
+        for keyword in keywords
+    }
+    selected_labels = [label_by_id[keyword_id] for keyword_id in ids]
 
-    assert ids[0] == "subject-shoebox"
-    assert ids[1] == "material-receipt"
+    assert len(selected_labels) == len(set(selected_labels))
 
 
 def test_build_daily_mine_vein_specs_returns_one_spec_per_family_in_daily_order():
     keywords_by_family_role = {
-        family: {
-            role: [{"id": f"{family}-{index}", "label": f"{family} {role}"}]
-            for index, role in enumerate(DAILY_MINE_ROLES, start=1)
-        }
+        family: _keywords_by_role(prefix=family)
         for family in DAILY_MINE_FAMILIES
     }
 
     specs = build_daily_mine_vein_specs(keywords_by_family_role, random.Random(1))
 
-    assert specs == [
-        {
-            "slot_index": index,
-            "family": family,
-            "keyword_ids": [
-                keywords_by_family_role[family][role][0]["id"]
-                for role in DAILY_MINE_ROLES
-            ],
-        }
-        for index, family in enumerate(DAILY_MINE_FAMILIES, start=1)
-    ]
+    assert [spec["slot_index"] for spec in specs] == [1, 2, 3]
+    assert [spec["family"] for spec in specs] == DAILY_MINE_FAMILIES
+    assert all(len(spec["keyword_ids"]) == 5 for spec in specs)
 
 
 def test_has_expected_daily_mine_families_rejects_family_less_old_veins():
@@ -162,19 +215,20 @@ def test_has_expected_daily_mine_families_rejects_family_less_old_veins():
 def _daily_mine_keyword_rows() -> list[dict]:
     return [
         {
-            "id": f"{family}-{role_index}",
-            "slug": f"{family}-{role_index}",
+            "id": f"{family}-{role_index}-{variant}",
+            "slug": f"{family}-{role_index}-{variant}",
             "category": "daily_mine",
             "subtype": None,
             "role": role,
             "family": family,
             "keyword_set": DAILY_MINE_KEYWORD_SET,
-            "label": f"{family} {role}",
+            "label": f"{family} {role} {variant}",
             "is_premium": False,
             "is_active": True,
         }
         for family in DAILY_MINE_FAMILIES
         for role_index, role in enumerate(DAILY_MINE_ROLES, start=1)
+        for variant in range(1, 4)
     ]
 
 

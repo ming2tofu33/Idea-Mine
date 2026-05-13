@@ -104,6 +104,7 @@ System behavior:
 - Do not over-explain.
 - The output should feel like "this might be worth building," not "this is a complete business plan."
 - Diversity is mandatory: avoid repeated titles, repeated core loops, and repeated product forms.
+- Avoid exact generic product_form values such as "mobile app", "web app", "desktop app", "browser app", or "browser extension"; use more specific forms such as "lock-screen widget", "local proof locker", "calendar exporter", "card archive", "desktop OCR utility", or "browser notice triage extension".
 
 Selected hidden Vein family: {selected_family}
 
@@ -121,9 +122,11 @@ Active keyword rules:
 - active_keywords must contain exact keyword labels only, copied from the visible keyword labels.
 - active_keywords must not contain roles such as Subject, Material, Tension, Shape, or Ritual / Constraint.
 - If a public text field uses a visible Vein keyword label exactly, that label must be included in active_keywords for that ore.
+- If active_keywords would exceed 4 labels, rewrite the public text to avoid mentioning extra keyword labels.
 - Do not mention non-active Vein keyword labels in title, one_liner, short_summary, interesting_point, project_fit, risk, or mvp_hint.
 - Do not force all 5 Vein keywords into every ore.
 - Across all 10 ores, all 5 Vein keywords should be used multiple times.
+- No single keyword label may appear in active_keywords for all 10 ores.
 - Tension should appear often because it creates emotional or practical pressure.
 - Shape should not appear in every ore because it can over-fix product form.
 
@@ -149,6 +152,7 @@ Hidden metadata behavior:
 - active_keywords, ore_lane, generation_lens, primary_anchor_keyword, product_form, core_loop_signature, and novelty_axis are internal only.
 - generation_lens must exactly match the internal discovery lens for that sort_order.
 - primary_anchor_keyword must be one of the provided keyword labels.
+- primary_anchor_keyword may use the same keyword label at most 4 times across the full set.
 - product_form is the product shape, such as "card archive", "desktop widget", or "private timeline".
 - core_loop_signature is a short snake_case signature for the repeated user loop.
 - novelty_axis names why this ore is meaningfully different from the others.

@@ -20,12 +20,82 @@ RARITY_TABLE = {
 
 RARITY_ORDER = ["common", "rare", "golden", "legend"]
 LEGACY_KEYWORD_SET = "legacy"
+DAILY_MINE_VEIN_ROLE_PATTERNS = [
+    ("Subject", "Material", "Material", "Tension", "Ritual / Constraint"),
+    ("Subject", "Subject", "Material", "Tension", "Shape"),
+    ("Subject", "Material", "Tension", "Tension", "Ritual / Constraint"),
+    ("Subject", "Material", "Material", "Tension", "Shape"),
+    ("Subject", "Material", "Tension", "Material", "Ritual / Constraint"),
+]
+DAILY_MINE_CLOSE_LABEL_PAIRS = {
+    tuple(sorted(pair))
+    for pair in (
+        ("browser tab", "downloaded file"),
+        ("browser tab", "bookmark"),
+        ("browser tab", "saved link"),
+        ("download folder", "downloaded file"),
+        ("download folder", "download receipt"),
+        ("clipboard", "clipboard text"),
+        ("desktop clutter", "downloaded file"),
+        ("empty inbox", "email thread"),
+        ("medicine cabinet", "medicine label"),
+        ("medicine cabinet", "medicine schedule"),
+        ("map pin", "route line"),
+        ("solo traveler", "train ticket"),
+        ("appointment calendar", "schedule drift"),
+        ("empty fridge", "grocery list"),
+        ("old photo", "photo echo"),
+        ("dream journaler", "dream fragment"),
+        ("untitled file", "empty draft"),
+        ("screenshot", "floating screenshot"),
+        ("bookmark", "stale bookmark"),
+        ("error message", "copied error"),
+        ("warranty card", "warranty sticker"),
+    )
+}
+DAILY_MINE_VEIN_BUILD_ATTEMPTS = 120
 
 
 def _keyword_set_for_mode(mode: str) -> str:
     if mode == DAILY_MINE_KEYWORD_SET:
         return DAILY_MINE_KEYWORD_SET
     return LEGACY_KEYWORD_SET
+
+
+def _keyword_label_key(keyword: dict) -> str:
+    return str(keyword.get("label", keyword["id"])).strip().lower()
+
+
+def _has_close_daily_mine_label_pair(keywords: list[dict]) -> bool:
+    labels = [_keyword_label_key(keyword) for keyword in keywords]
+    for index, label in enumerate(labels):
+        for other_label in labels[index + 1:]:
+            if tuple(sorted((label, other_label))) in DAILY_MINE_CLOSE_LABEL_PAIRS:
+                return True
+    return False
+
+
+def _pick_daily_mine_keywords_for_pattern(
+    keywords_by_role: dict[str, list[dict]],
+    role_pattern: tuple[str, ...],
+    rng=random,
+) -> list[dict] | None:
+    selected_keywords = []
+    selected_labels: set[str] = set()
+
+    for role in role_pattern:
+        candidates = keywords_by_role[role]
+        non_duplicate_candidates = [
+            keyword for keyword in candidates
+            if _keyword_label_key(keyword) not in selected_labels
+        ]
+        if not non_duplicate_candidates:
+            return None
+        chosen = rng.choice(non_duplicate_candidates)
+        selected_keywords.append(chosen)
+        selected_labels.add(_keyword_label_key(chosen))
+
+    return selected_keywords
 
 
 def build_daily_mine_vein_keyword_ids(
@@ -42,19 +112,19 @@ def build_daily_mine_vein_keyword_ids(
             + ", ".join(missing_roles)
         )
 
-    selected_keywords = []
-    selected_labels: set[str] = set()
-    for role in DAILY_MINE_ROLES:
-        candidates = keywords_by_role[role]
-        non_duplicate_candidates = [
-            keyword for keyword in candidates
-            if str(keyword.get("label", keyword["id"])).strip().lower() not in selected_labels
-        ]
-        chosen = rng.choice(non_duplicate_candidates or candidates)
-        selected_keywords.append(chosen)
-        selected_labels.add(str(chosen.get("label", chosen["id"])).strip().lower())
+    for _ in range(DAILY_MINE_VEIN_BUILD_ATTEMPTS):
+        role_pattern = rng.choice(DAILY_MINE_VEIN_ROLE_PATTERNS)
+        selected_keywords = _pick_daily_mine_keywords_for_pattern(
+            keywords_by_role,
+            role_pattern,
+            rng,
+        )
+        if selected_keywords and not _has_close_daily_mine_label_pair(selected_keywords):
+            return [keyword["id"] for keyword in selected_keywords]
 
-    return [keyword["id"] for keyword in selected_keywords]
+    raise RuntimeError(
+        "Cannot create Daily Mine Vein; no loose role pattern satisfied diversity rules."
+    )
 
 
 def build_daily_mine_family_vein_keyword_ids(

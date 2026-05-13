@@ -91,6 +91,10 @@ Keyword categories may include:
 
 Keyword categories, roles, and families are internal metadata. They must not be shown as visible tags in Daily Mine, Vault, or Web Lab. Public keyword objects expose only `id` and `label`, because visible category tags can narrow interpretation and reduce the range of ideas the Vein suggests.
 
+Daily Mine keyword labels should remain suggestive rather than over-determining. In particular, `Shape` and `Ritual / Constraint` labels should act as soft experience hints, not locked product specs. Prefer labels like `background helper`, `temporary holding place`, `short sorting moment`, or `quick check-in surface` over labels that already decide the implementation, such as a specific app shell or screen type.
+
+The keyword pool should also include software-convertible object anchors. A physical or offbeat object is acceptable when it can become data, state, evidence, memory, a rule, a check, a notification trigger, a searchable record, or an automation target inside a software product. Avoid keywords that are only atmosphere and do not imply an input, transformation, repeated action, or buildable software loop.
+
 Example keywords:
 
 - cat
@@ -99,9 +103,15 @@ Example keywords:
 - symbol interpretation
 - collecting
 - cute but not childish
-- desktop app
+- background helper
 - personal ritual
 - AI guide
+- cat collar
+- old playlist
+- copied error
+- red badge
+- spare key
+- return label
 
 ### Vein
 
@@ -110,6 +120,15 @@ A Vein is a pre-given keyword combination.
 A Vein is not an idea. It is a cluster of provided keywords that produces 10 Idea Ores when mined in the MVP.
 
 Daily Mine always shows three server-provided Veins. Internally, those Veins are one `cozy_personal`, one `indie_tool`, and one `practical_twist` Vein. The selected Vein's hidden family is used only by the backend to weight the 10-Ore distribution.
+
+Daily Veins should use loose role patterns instead of selecting exactly one keyword from every role. A Vein should feel like a material cloud, not a nearly finished product sentence. The backend should generate candidates from patterns such as:
+
+- `Subject + Material + Material + Tension + Ritual / Constraint`
+- `Subject + Subject + Material + Tension + Shape`
+- `Subject + Material + Tension + Tension + Ritual / Constraint`
+- `Subject + Material + Material + Tension + Shape`
+
+This keeps at least three object/material/problem anchors in the Vein while making `Shape` and `Ritual / Constraint` optional. The generator should reject over-determined close pairs such as `browser tab + downloaded file`, `download folder + downloaded file`, `medicine cabinet + medicine label`, or `map pin + route line` when there are usable alternatives.
 
 Example:
 
@@ -441,6 +460,10 @@ System behavior:
   - Builder-friendly Project Seed
 - Each ore must be short, specific, and projectable.
 - Avoid repeated titles, repeated core loops, and overused product forms.
+- No single keyword should appear in `active_keywords` for all 10 ores.
+- No single keyword should be the `primary_anchor_keyword` for more than 4 ores.
+- Avoid exact generic `product_form` values such as `mobile app`, `web app`, `desktop app`, or `browser extension`; prefer specific buildable forms such as `lock-screen widget`, `calendar exporter`, `local proof locker`, `card archive`, or `browser notice triage extension`.
+- If public text would mention more than 4 exact Vein keyword labels, rewrite the public text instead of expanding `active_keywords`.
 - Avoid generic startup language.
 - Avoid buzzwords unless they are part of the selected keywords.
 - Do not produce market-size claims.

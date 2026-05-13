@@ -76,7 +76,11 @@ V3 adds Idea Ore as the central MVP object. The Daily Mine surface should use 3 
 - overview V2 rebuilds or consumes internal `kernel + family` anchors but still writes the same flat overview fields.
 - V3 stores generated Idea Ores in `idea_ores` and Project Seed Briefs in `project_seed_briefs`.
 - V3 stores hidden Ore diversity metadata in `idea_ores.generation_meta`; API clients must not render it.
+- V3 Ore discovery validation limits keyword and product-form collapse: one active keyword cannot dominate all 10 ores, one primary anchor cannot dominate the set, and exact generic product forms should be replaced by specific buildable forms.
 - V3 Daily Mine keywords use internal `keywords.role`, `keywords.family`, and `keywords.keyword_set='daily_mine_v3'`; public keyword objects still expose only `id` and `label`.
+- V3 Daily Mine `Shape` and `Ritual / Constraint` labels should stay soft enough for Ore discovery. They should hint at surfaces, moments, and interaction feel rather than preselecting a hard product form.
+- V3 Daily Mine `Subject` and `Material` labels should include software-convertible object anchors: physical or digital objects are valid when they can become records, checks, signals, rules, memories, or automation targets in a software product.
+- V3 Daily Mine Veins are generated from loose role patterns, not exactly one keyword per role. The backend favors Subject/Material/Tension-heavy material clouds and filters close pairs that would collapse the Vein into one obvious product.
 - V3 Daily Mine Veins use `veins.keyword_set` so old `legacy` mining Veins and new `daily_mine_v3` Veins do not compete for the same active slots.
 - V3 Daily Mine Veins use internal `veins.family` metadata to guarantee the three server-provided Veins cover `cozy_personal`, `indie_tool`, and `practical_twist`.
 - `keywords.family` and `veins.family` are internal schema metadata and must not be returned to public clients.

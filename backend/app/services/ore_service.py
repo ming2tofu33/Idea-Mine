@@ -40,6 +40,16 @@ TEXT_LENGTH_LIMITS = {
     "risk": 360,
     "mvp_hint": 260,
 }
+MAX_ACTIVE_KEYWORD_USAGE = 9
+MAX_PRIMARY_ANCHOR_USAGE = 4
+MAX_GENERIC_PRODUCT_FORM_COUNT = 3
+GENERIC_PRODUCT_FORMS = {
+    "mobile app",
+    "web app",
+    "desktop app",
+    "browser app",
+    "browser extension",
+}
 
 BANNED_NON_SOFTWARE_TERMS = (
     "hardware",
@@ -230,6 +240,9 @@ def validate_discovered_ores(
     seen_titles: set[str] = set()
     seen_core_loops: set[str] = set()
     product_forms: Counter[str] = Counter()
+    active_keyword_usage: Counter[str] = Counter()
+    primary_anchor_usage: Counter[str] = Counter()
+    generic_product_form_count = 0
     keyword_lookup = _keyword_lookup_by_label(keywords or [])
     lane_plan = build_ore_discovery_lane_plan(vein_family)
 
@@ -278,6 +291,16 @@ def validate_discovered_ores(
             for field in PUBLIC_ORE_FIELDS
         ).lower()
         product_form_text = str(ore.get("product_form", "")).lower()
+        primary_anchor_key = str(ore["primary_anchor_keyword"]).strip().lower()
+        if keyword_lookup and primary_anchor_key not in keyword_lookup:
+            raise RuntimeError(
+                f"Idea Ore {index} primary_anchor_keyword must be one of the Vein keywords."
+            )
+        if keyword_lookup:
+            ore["primary_anchor_keyword"] = keyword_lookup[primary_anchor_key]["label"]
+            primary_anchor_key = ore["primary_anchor_keyword"].strip().lower()
+        primary_anchor_usage[primary_anchor_key] += 1
+
         non_software_terms = [
             term for term in BANNED_NON_SOFTWARE_TERMS
             if _public_text_mentions_label(public_text, term)
@@ -325,6 +348,10 @@ def validate_discovered_ores(
                 "mentioned in public text: "
                 + ", ".join(mentioned_but_inactive)
             )
+        active_keyword_usage.update(
+            label.strip().lower()
+            for label in normalized_active_keywords
+        )
 
         for field, limit in TEXT_LENGTH_LIMITS.items():
             if len(str(ore[field])) > limit:
@@ -340,7 +367,10 @@ def validate_discovered_ores(
             raise RuntimeError(f"Duplicate core_loop_signature: {core_loop}")
         seen_core_loops.add(core_loop)
 
-        product_forms[str(ore["product_form"]).strip().lower()] += 1
+        product_form_key = str(ore["product_form"]).strip().lower()
+        product_forms[product_form_key] += 1
+        if product_form_key in GENERIC_PRODUCT_FORMS:
+            generic_product_form_count += 1
 
     overused_forms = [
         form for form, count in product_forms.items()
@@ -350,6 +380,31 @@ def validate_discovered_ores(
         raise RuntimeError(
             "Each product_form may appear at most twice; overused product_form: "
             + ", ".join(overused_forms)
+        )
+    overused_active_keywords = [
+        keyword for keyword, count in active_keyword_usage.items()
+        if count > MAX_ACTIVE_KEYWORD_USAGE
+    ]
+    if overused_active_keywords:
+        raise RuntimeError(
+            "active_keywords overuse: no single Vein keyword may appear in more than "
+            f"{MAX_ACTIVE_KEYWORD_USAGE} ores; overused: "
+            + ", ".join(overused_active_keywords)
+        )
+    overused_primary_anchors = [
+        keyword for keyword, count in primary_anchor_usage.items()
+        if count > MAX_PRIMARY_ANCHOR_USAGE
+    ]
+    if overused_primary_anchors:
+        raise RuntimeError(
+            "primary_anchor_keyword overuse: no single Vein keyword may anchor more than "
+            f"{MAX_PRIMARY_ANCHOR_USAGE} ores; overused: "
+            + ", ".join(overused_primary_anchors)
+        )
+    if generic_product_form_count > MAX_GENERIC_PRODUCT_FORM_COUNT:
+        raise RuntimeError(
+            "generic product_form overuse: use specific product forms instead of exact "
+            "generic values such as mobile app, web app, desktop app, or browser extension."
         )
 
     return normalized
@@ -543,7 +598,12 @@ async def discover_ores(
                     f"Previous attempt failed validation: {validation_error}\n"
                     "Regenerate the full set. Keep exactly 10 ores, follow the selected "
                     "family-weighted lane plan, and keep distinct titles, core loops, "
-                    "product forms, and valid active keywords."
+                    "product forms, and valid active keywords. If public text uses any "
+                    "exact keyword label, include that exact label in active_keywords. "
+                    "If active_keywords would exceed 4 labels, rewrite public text to "
+                    "avoid mentioning extra keyword labels. Avoid exact generic "
+                    "product_form values such as mobile app, web app, desktop app, or "
+                    "browser extension; use specific product forms instead."
                 )
 
             response = client.beta.chat.completions.parse(
