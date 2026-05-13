@@ -388,7 +388,7 @@ export default function CollectionPage({
               </div>
 
               {!overview ? (
-                <div className="desktop-instrument-flat rounded-xl border-dashed p-8 text-center">
+                <div className="rounded-xl border border-dashed border-line-steel/30 bg-surface-1/30 p-8 text-center backdrop-blur-sm">
                   <p className="mb-4 text-sm text-text-secondary">Generate an overview first to unlock the collection.</p>
                   <Link href={`/lab/overview/${ideaId}`} className="cursor-pointer rounded-lg border border-cold-cyan/30 bg-cold-cyan/10 px-6 py-3 text-sm font-medium text-cold-cyan hover:bg-cold-cyan/20">
                     Go to overview

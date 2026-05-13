@@ -483,7 +483,7 @@ export default function LabOverviewPage({
                   )}
                 </>
               ) : (
-                <div className="desktop-instrument-flat rounded-xl border-dashed p-8 text-center">
+                <div className="rounded-xl border border-dashed border-line-steel/30 bg-surface-1/30 p-8 text-center backdrop-blur-sm">
                   <p className="mb-4 text-sm text-text-secondary">
                     Generate an AI-written overview for this idea.
                   </p>

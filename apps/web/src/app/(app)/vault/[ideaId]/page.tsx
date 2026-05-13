@@ -196,7 +196,7 @@ export default function VaultDetailPage({
                   </SectionGroup>
                 </div>
               ) : (
-                <div className="desktop-instrument-flat rounded-xl border-dashed p-6 text-center">
+                <div className="rounded-xl border border-dashed border-line-steel/30 bg-surface-1/30 p-6 text-center backdrop-blur-sm">
                   <p className="mb-3 text-sm text-text-secondary">
                     No overview has been generated yet.
                   </p>

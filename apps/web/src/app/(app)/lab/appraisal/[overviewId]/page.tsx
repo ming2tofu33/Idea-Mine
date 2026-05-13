@@ -114,7 +114,7 @@ function DimensionCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.06 }}
       className={[
-        "desktop-instrument-flat rounded-xl p-5 transition-colors duration-200",
+        "rounded-xl border bg-surface-1/45 p-5 backdrop-blur-sm transition-colors duration-200",
         config.critical ? "border-cold-cyan/25" : "border-line-steel/20",
       ].join(" ")}
     >
@@ -267,7 +267,7 @@ export default function LabAppraisalPage({
               </div>
             </div>
           ) : (
-            <div className="desktop-instrument-flat rounded-xl border-dashed p-8 text-center">
+            <div className="rounded-xl border border-dashed border-line-steel/30 bg-surface-1/30 p-8 text-center backdrop-blur-sm">
               <p className="mb-4 text-sm text-text-secondary">
                 Generate an appraisal to pressure-test the idea before you build.
               </p>
